@@ -1,3 +1,4 @@
+using MudBlazor.Services;
 using NextLevel9.Components;
 
 namespace NextLevel9;
@@ -11,6 +12,8 @@ public class Program
         // Add services to the container.
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
+
+        builder.Services.AddMudServices();
 
         var app = builder.Build();
 

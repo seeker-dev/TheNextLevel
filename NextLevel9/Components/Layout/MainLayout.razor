@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@using NextLevel9.Components.Components
+@inherits LayoutComponentBase
 
 @* Required *@
 <MudThemeProvider />
@@ -12,11 +13,8 @@
 
 <MudLayout>
     <MudAppBar>
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="DrawerToggle" />
         My Application
     </MudAppBar>
-    <MudDrawer @bind-Open="@_drawerOpen">
-    </MudDrawer>
     <MudMainContent>
         @Body
     </MudMainContent>

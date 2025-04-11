@@ -1,7 +1,40 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<MudContainer Style="margin-top: 24px" MaxWidth="MaxWidth.Medium">
+    <MudStack>
+        @foreach (var task in tasks)
+        {
+            <MudCard>
+                <MudCardContent>
+                    <MudListItem T="string">
+                    <MudText>@task.Title</MudText>
+                    <MudText Typo="Typo.body2">@task.Description</MudText>
+                    <MudCheckBox @bind-Value="@task.IsCompleted" Label="Task completed" />
+                    </MudListItem>
+                </MudCardContent>
+            </MudCard>
+        }
+    </MudStack>
+</MudContainer>
 
-<h1>Hello, world!</h1>
+@code {
+    class Task
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public bool IsCompleted { get; set; } = false;
+    }
 
-Welcome to your new app.
+    private List<Task> tasks = new List<Task>
+    {
+        new Task { Title = "Task title 1", Description = "Task description", IsCompleted = true },
+        new Task { Title = "Task title 2", Description = "Task description" },
+        new Task { Title = "Task title 3", Description = "Task description" },
+        new Task { Title = "Task title 4", Description = "Task description" },
+        new Task { Title = "Task title 5", Description = "Task description" },
+        new Task { Title = "Task title 6", Description = "Task description" },
+        new Task { Title = "Task title 7", Description = "Task description" },
+        new Task { Title = "Task title 8", Description = "Task description" },
+        new Task { Title = "Task title 9", Description = "Task description" }
+    };
+}

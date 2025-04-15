@@ -1,0 +1,48 @@
+﻿@page "/managetasks"
+
+<h3>Manage your tasks</h3>
+
+<div class="row">
+    <div class="col-md-4">
+        <h4>Task List</h4>
+        <ul>
+            @foreach (var task in tasks)
+            {
+                <li>
+                    @task
+                    <button @onclick="() => DeleteTask(task)">Delete</button>
+                    <button @onclick="() => EditTask(task)">Edit</button>
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="col-md-8">
+        <h4>Add a new task</h4>
+        <input type="text" @bind="newTask" />
+        <button @onclick="AddTask">Add Task</button>
+    </div>
+</div>
+
+@code {
+    private List<string> tasks = new List<string>();
+    private string newTask;
+    private void AddTask()
+    {
+        if (!string.IsNullOrWhiteSpace(newTask))
+        {
+            tasks.Add(newTask);
+            newTask = string.Empty;
+        }
+    }
+    private void DeleteTask(string task)
+    {
+        tasks.Remove(task);
+    }
+    private void EditTask(string task)
+    {
+        // Implement edit logic here
+        // For example, you could set newTask to the task and allow the user to edit it
+        newTask = task;
+        tasks.Remove(task);
+    }
+}

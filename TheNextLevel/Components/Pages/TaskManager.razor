@@ -1,0 +1,98 @@
+﻿@page "/managetasks"
+@using TheNextLevel.Components.Shared
+
+<div class="task-manager">
+    <div class="header">
+        <div>
+            <h1 class="title">My Space</h1>
+            <p class="date">@DateTime.Now.ToString("dddd, MMMM d")</p>
+        </div>
+        <div>
+            <button class="btn-toggle" @onclick="ToggleCompletedTasks">
+                @(ShowCompletedTasks ? "Hide Completed" : "Show Completed")
+            </button>
+        </div>
+    </div>
+
+    <div class="task-grid">
+        @foreach (var task in FilteredTasks)
+        {
+            <TaskCard NLTask="task" OnStatusChanged="UpdateTaskStatus" />
+        }
+    </div>
+
+    @if (!FilteredTasks.Any())
+    {
+        <div class="empty-state">
+            <div class="emoji">🎉</div>
+            <p class="message">All caught up!</p>
+            <p class="sub-message">Time to add something new?</p>
+        </div>
+    }
+
+    <div class="new-task-container">
+        <button class="btn-new-task" @onclick="ShowNewTaskDialog">
+            <span>+</span>
+            <span class="tooltip">New Task</span>
+        </button>
+    </div>
+
+    <NewTaskDialog
+    IsVisible="@isNewTaskDialogVisible"
+    OnSave="HandleNewTaskSave"
+    OnCancel="HandleNewTaskCancel" />
+</div>
+
+@code {
+    private List<NLTask> Tasks = new List<NLTask>();
+    private bool ShowCompletedTasks = false;
+    private bool isNewTaskDialogVisible = false;
+
+    private IEnumerable<NLTask> FilteredTasks =>
+        Tasks.Where(t => !t.Completed || ShowCompletedTasks);
+
+    protected override void OnInitialized()
+    {
+        Tasks = new List<NLTask>
+        {
+            new NLTask { Id = 1, Title = "Work on database structure", Priority = "important", Category = "project" },
+            new NLTask { Id = 2, Title = "Add customization features", Priority = "important", Category = "project" },
+            new NLTask { Id = 3, Title = "Doctor's appointment", Priority = "urgent", Category = "personal" },
+            new NLTask { Id = 4, Title = "Research Blazor UI libraries", Completed = true, Priority = "normal", Category = "learning" },
+        };
+    }
+
+    private void ToggleCompletedTasks()
+    {
+        ShowCompletedTasks = !ShowCompletedTasks;
+    }
+
+    private void UpdateTaskStatus(NLTask task)
+    {
+        var existingTask = Tasks.FirstOrDefault(t => t.Id == task.Id);
+        if (existingTask != null)
+        {
+            existingTask.Completed = task.Completed;
+        }
+    }
+
+    private void ShowNewTaskDialog()
+    {
+        // Logic to show a dialog for creating a new task
+        // This could be a modal or a separate component
+        isNewTaskDialogVisible = true;
+    }
+
+    private void HandleNewTaskCancel()
+    {
+        isNewTaskDialogVisible = false;
+    }
+
+    private void HandleNewTaskSave(NLTask newTask)
+    {
+        newTask.Id = Tasks.Any() ? Tasks.Max(t => t.Id) + 1 : 1; // Assign a new ID
+        
+        Tasks.Add(newTask);
+        isNewTaskDialogVisible = false;
+    }
+}

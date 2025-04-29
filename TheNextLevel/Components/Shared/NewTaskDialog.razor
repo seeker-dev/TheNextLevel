@@ -1,0 +1,92 @@
+﻿<div class="dialog-overlay @(IsVisible ? "visible" : "")">
+    <div class="dialog-container">
+        <div class="dialog-header">
+            <h3>Create New Task</h3>
+            <button class="btn-close" @onclick="Cancel">x</button>
+        </div>
+
+        <div class="dialog-body">
+            <div class="form-group">
+                <label for="taskTitle">Task Title</label>
+                <input type="text" id="taskTitle" @bind="newTask.Title" class="form-control" placeholder="Enter task title" />
+            </div>
+
+            <div class="form-group">
+                <label>Priority</label>
+                <div class="priority-options">
+                    <label class="priority-option">
+                        <input type="radio" name="priority" value="normal" 
+                        checked="@(newTask.Priority == "normal")" 
+                        @onchange="@(() => newTask.Priority = "normal")"/>
+                        <span>Normal</span>
+                    </label>
+
+                    <label class="priority-option">
+                        <input type="radio" name="priority" value="important" 
+                        checked="@(newTask.Priority == "important")" 
+                        @onchange="@(() => newTask.Priority = "important")"/>
+                        <span>Important</span>
+                    </label>
+
+                    <label>
+                        <input type="radio" name="priority" value="urgent" 
+                        checked="@(newTask.Priority == "urgent")" 
+                        @onchange="@(() => newTask.Priority = "urgent")"/>
+                        <span>Urgent</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Category</label>
+                <select @bind="newTask.Category" class="form-control">
+                    <option value="project">Project</option>
+                    <option value="personal">Personal</option>
+                    <option value="learning">Learning</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="dialog-footer">
+            <button class="btn-cancel" @onclick="Cancel">Cancel</button>
+            <button class="btn-save" @onclick="Save" disabled="@string.IsNullOrWhiteSpace(newTask.Title)">
+                Save Task
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback<NLTask> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private NLTask newTask { get; set; } = new NLTask();
+
+    protected override void OnParametersSet()
+    {
+        if (IsVisible)
+        {
+            newTask = new NLTask(); // Reset the task when dialog is shown
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task Save()
+    {
+        if (!string.IsNullOrWhiteSpace(newTask.Title))
+        {
+            await OnSave.InvokeAsync(newTask);
+            newTask = new NLTask(); // Reset the task after saving
+        }
+    }
+}

@@ -6,12 +6,22 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+        <div class="page @(BackgroundImage != null ? "has-background" : "")" 
+             style="@(BackgroundImage != null ? $"background-image: url('{BackgroundImage}')" : "")">
 
-        <article class="content px-4">
-            @Body
-        </article>
+            <div class="container glass-container">
+                <article class="content px-4">
+                            @Body
+                </article>
+            </div>
+        </div>
     </main>
 </div>
+
+
+@code {
+    [Parameter]
+    public string? BackgroundImage { get; set; }
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; } = default!;
+}

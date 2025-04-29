@@ -1,0 +1,60 @@
+﻿@using TheNextLevel.Components.Shared
+
+<div class="task-card @GetCategoryClass() @GetPriorityClass() @(NLTask.Completed ? "completed" : "")">
+    <div class="task-content">
+        <label class="task-checkbox">
+            <input type="checkbox" checked="@NLTask.Completed" @onchange="HandleStatusChange"/>
+            <div class="task-details">
+                <div class="task-title">@NLTask.Title</div>
+                <div class="task-metadata">
+                    <span class="priority-badge">@NLTask.Priority</span>
+                    <span class="separator">•</span>
+                    <span class="category-label">@NLTask.Category</span>
+                </div>
+            </div>
+        </label>
+
+        <div class="task-actions">
+            <button class="btn-menu" @onclick="ShowTaskMenu">⋮</button>
+        </div>
+    </div>
+</div>
+@code {
+    [Parameter]
+    public NLTask NLTask { get; set; }
+
+    [Parameter]
+    public EventCallback<NLTask> OnStatusChanged { get; set; }
+
+    private string GetCategoryClass()
+    {
+        return NLTask.Category switch
+        {
+            "project" => "category-project",
+            "personal" => "category-personal",
+            "learning" => "category-learning",
+            _ => "category-default"
+        };
+    }
+
+    private string GetPriorityClass()
+    {
+        return NLTask.Priority switch
+        {
+            "important" => "priority-important",
+            "urgent" => "priority-urgent",
+            _ => "priority-normal",
+        };
+    }
+
+    private async Task HandleStatusChange(ChangeEventArgs e)
+    {
+        NLTask.Completed = (bool)e.Value;
+        await OnStatusChanged.InvokeAsync(NLTask);
+    }
+
+    private void ShowTaskMenu()
+    {
+        // Logic to show task menu (e.g., edit, delete)
+    }
+}

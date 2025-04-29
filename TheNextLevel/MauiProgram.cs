@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using TheNextLevel.Services;
 
 namespace TheNextLevel
 {
@@ -15,9 +16,10 @@ namespace TheNextLevel
                 });
 
             builder.Services.AddMauiBlazorWebView();
+            builder.Services.AddSingleton<BackgroundService>();
 
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
 #endif
 

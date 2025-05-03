@@ -17,6 +17,7 @@ namespace TheNextLevel
 
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<BackgroundService>();
+            builder.Services.AddSingleton<FilePickerService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

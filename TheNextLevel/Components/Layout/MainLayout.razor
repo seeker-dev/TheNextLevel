@@ -1,17 +1,20 @@
-﻿@inherits LayoutComponentBase
+﻿@using TheNextLevel.Services
+@inherits LayoutComponentBase
+@inject BackgroundService BackgroundService
+@implements IDisposable
 
 <div class="page">
-    <div class="sidebar">
+@*     <div class="sidebar">
         <NavMenu />
-    </div>
+    </div> *@
 
     <main>
-        <div class="page @(BackgroundImage != null ? "has-background" : "")" 
-             style="@(BackgroundImage != null ? $"background-image: url('{BackgroundImage}')" : "")">
+        <div class="page @(CurrentBackground != null ? "has-background" : "")"
+             style="@(CurrentBackground != null ? $"background-image: url('{CurrentBackground}')" : "")">
 
             <div class="container glass-container">
                 <article class="content px-4">
-                            @Body
+                    @Body
                 </article>
             </div>
         </div>
@@ -20,8 +23,15 @@
 
 
 @code {
-    [Parameter]
-    public string? BackgroundImage { get; set; }
-    [Inject]
-    private IJSRuntime JSRuntime { get; set; } = default!;
+    private string CurrentBackground => BackgroundService.CurrentBackground;
+
+    protected override void OnInitialized()
+    {
+        BackgroundService.OnBackgroundChanged += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        BackgroundService.OnBackgroundChanged -= StateHasChanged;
+    }
 }

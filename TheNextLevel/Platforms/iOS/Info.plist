@@ -28,5 +28,7 @@
     </array>
     <key>XSAppIconAssets</key>
     <string>Assets.xcassets/appicon.appiconset</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to photos to set background images.</string>
 </dict>
 </plist>

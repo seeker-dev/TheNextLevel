@@ -1,5 +1,125 @@
-﻿<h3>BackgroundSelector</h3>
+﻿@page "/settings"
+@using TheNextLevel.Services
+@inject FilePickerService FilePickerService
+@inject BackgroundService BackgroundService
+@inject NavigationManager NavigationManager
+
+<div class="background-selector">
+    <h3>Choose a Background</h3>
+
+    <div class="background-options">
+        <div class="background-option @(BackgroundService.CurrentBackground == null ? "selected" : "")"
+             @onclick="() => SelectBackground(null)">
+            <div class="bg-preview default-bg">
+                <span>Default</span>
+            </div>
+        </div>
+
+        @foreach (var bg in predefinedBackgrounds)
+        {
+            <div class="background-option @(BackgroundService.CurrentBackground == bg ? "selected" : "")"
+                 @onclick="() => SelectBackground(bg)">
+                <div class="bg-preview" style="background-image: url('@bg')"></div>
+            </div>
+        }
+
+        @foreach (var customBg in customBackgrounds)
+        {
+            <div class="background-option @(BackgroundService.CurrentBackground == customBg ? "selected" : "")"
+                 @onclick="() => SelectBackground(customBg)">
+                <div class="bg-preview" style="background-image: url('@customBg')">
+                    <button class="remove-bg" @onclick="() => RemoveBackground(customBg)">×</button>
+                </div>
+            </div>
+        }
+
+        <div class="background-option add-custom" @onclick="PickCustomBackground">
+            <div class="bg-preview add-bg">
+                <span>+</span>
+                <span>Add Custom</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn-primary" @onclick="GoBack">Save & Return</button>
+    </div>
+</div>
 
 @code {
+    private string[] predefinedBackgrounds = {
+        "images/backgrounds/mountains.jpg",
+        "images/backgrounds/ocean.jpg",
+        "images/backgrounds/forest.jpg"
+    };
 
+    private List<string> customBackgrounds = new List<string>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Load any previously saved custom backgrounds
+        await LoadCustomBackgrounds();
+    }
+
+    private async Task LoadCustomBackgrounds()
+    {
+        try
+        {
+            var backgroundsDir = Path.Combine(FileSystem.AppDataDirectory, "Backgrounds");
+            if (Directory.Exists(backgroundsDir))
+            {
+                var files = Directory.GetFiles(backgroundsDir);
+                customBackgrounds = files.Select(f => $"file://{f}").ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading backgrounds: {ex.Message}");
+        }
+    }
+
+    private async Task PickCustomBackground()
+    {
+        var imagePath = await FilePickerService.PickImageAsync();
+        if (!string.IsNullOrEmpty(imagePath))
+        {
+            customBackgrounds.Add(imagePath);
+            SelectBackground(imagePath);
+            StateHasChanged();
+        }
+    }
+
+    private void SelectBackground(string bgPath)
+    {
+        BackgroundService.SetBackground(bgPath);
+    }
+
+    private async Task RemoveBackground(string bgPath)
+    {
+        if (BackgroundService.CurrentBackground == bgPath)
+        {
+            BackgroundService.SetBackground(null);
+        }
+
+        customBackgrounds.Remove(bgPath);
+
+        // Remove the file from storage
+        try
+        {
+            var filePath = bgPath.Replace("file://", "");
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error removing background: {ex.Message}");
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/managetasks");
+    }
 }

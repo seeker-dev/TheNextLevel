@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using TaskManagement.Data;
+using TaskManagement.Data.Sqlite;
 using TheNextLevel.Services;
 
 namespace TheNextLevel
@@ -18,6 +20,9 @@ namespace TheNextLevel
             builder.Services.AddMauiBlazorWebView();
             builder.Services.AddSingleton<BackgroundService>();
             builder.Services.AddSingleton<FilePickerService>();
+
+            builder.Services.AddSingleton<IDatabaseServiceFactory, SqliteServiceFactory>();
+            builder.Services.AddSingleton<IDatabaseService, SqliteService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

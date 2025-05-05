@@ -14,8 +14,49 @@
             <span class="tooltip">New Task</span>
         </button>
     </div>
-        <NewTaskDialog
+    <NewTaskDialog
     IsVisible="@isNewTaskDialogVisible"
     OnSave="HandleNewTaskSave"
     OnCancel="HandleNewTaskCancel" />
 </div>
+
+@code {
+    private List<NLTask> Tasks => GetAllTasks();
+
+    private bool isNewTaskDialogVisible = false;
+    private bool ShowCompletedTasks = false;
+
+    private IEnumerable<NLTask> FilteredTasks => Tasks.Where(t => !t.Completed || ShowCompletedTasks);
+
+    private List<NLTask> GetAllTasks()
+    {
+        // IGetAllTasksCommand getAllTasksCommand = new GetAllTasksCommand();
+        // var tasks = getAllTasksCommand.Execute();
+        // return tasks.Where(t => !t.Completed || ShowCompletedTasks);
+        return new List<NLTask>();
+    }
+
+    private void ShowNewTaskDialog() =>
+        // Logic to show a dialog for creating a new task
+        // This could be a modal or a separate component
+        isNewTaskDialogVisible = true;
+
+    private void HandleNewTaskCancel() => isNewTaskDialogVisible = false;
+
+    private void HandleNewTaskSave(NLTask newTask)
+    {
+        newTask.Id = Tasks.Any() ? Tasks.Max(t => t.Id) + 1 : 1; // Assign a new ID
+
+        Tasks.Add(newTask);
+        isNewTaskDialogVisible = false;
+    }
+
+    private void UpdateTaskStatus(NLTask task)
+    {
+        var selectedTask = Tasks.FirstOrDefault(t => t.Id == task.Id);
+        if (selectedTask != null)
+        {
+            selectedTask.Completed = task.Completed;
+        }
+    }
+}

@@ -2,6 +2,6 @@
 {
     public interface ITMTask
     {
-
+        int Id { get; }
     }
 }

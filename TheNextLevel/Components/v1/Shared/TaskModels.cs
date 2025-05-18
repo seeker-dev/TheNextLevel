@@ -1,5 +1,4 @@
-﻿
-namespace TheNextLevel.Components.Shared
+﻿namespace TheNextLevel.Components.v1
 {
     public class NLTask
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TheNextLevel.Services
+namespace TheNextLevel.Services.v1
 {
     public class BackgroundService
     {
@@ -20,7 +20,7 @@ namespace TheNextLevel.Services
         {
             if (Preferences.ContainsKey(BackgroundPrefKey))
             {
-                CurrentBackground = Preferences.Get(BackgroundPrefKey, (string)null);
+                CurrentBackground = Preferences.Get(BackgroundPrefKey, null);
             }
         }
         public void SetBackground(string imagePath)

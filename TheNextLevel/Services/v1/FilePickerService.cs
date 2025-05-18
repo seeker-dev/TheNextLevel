@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Storage;
 
-namespace TheNextLevel.Services
+namespace TheNextLevel.Services.v1
 {
     public class FilePickerService
     {

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Commands\" />
+    <ProjectReference Include="..\TaskManagement.Data\TaskManagement.Data.csproj" />
   </ItemGroup>
 
 </Project>

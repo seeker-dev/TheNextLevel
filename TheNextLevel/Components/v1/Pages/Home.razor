@@ -1,5 +1,9 @@
 ﻿@page "/"
-@using TheNextLevel.Components.Shared
+@using TaskManagement.Domain.Commands.Task;
+@using TheNextLevel.Components.v1.Shared
+@using TheNextLevel.Components.v1
+@using TheNextLevel.Controllers;
+@using TheNextLevel.Controllers.v1
 
 <div class="task-manager">
     <div class="task-grid">
@@ -30,10 +34,7 @@
 
     private List<NLTask> GetAllTasks()
     {
-        // IGetAllTasksCommand getAllTasksCommand = new GetAllTasksCommand();
-        // var tasks = getAllTasksCommand.Execute();
-        // return tasks.Where(t => !t.Completed || ShowCompletedTasks);
-        return new List<NLTask>();
+        throw new NotImplementedException("This method should be implemented to fetch tasks from the database or API.");
     }
 
     private void ShowNewTaskDialog() =>

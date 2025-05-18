@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using TaskManagement.Data;
 using TaskManagement.Data.Sqlite;
-using TheNextLevel.Services;
+using TaskManagement.Domain.Commands.Task;
+using TheNextLevel.Services.v1;
 
 namespace TheNextLevel
 {
@@ -23,6 +24,8 @@ namespace TheNextLevel
 
             builder.Services.AddSingleton<IDatabaseServiceFactory, SqliteServiceFactory>();
             builder.Services.AddSingleton<IDatabaseService, SqliteService>();
+
+            builder.Services.AddSingleton<IListCommand, ListCommand>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

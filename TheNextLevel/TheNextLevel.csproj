@@ -75,6 +75,7 @@
     <ItemGroup>
       <Folder Include="Components\v2\" />
       <Folder Include="Controllers\v2\" />
+      <Folder Include="ViewModels\v2\" />
     </ItemGroup>
 
 </Project>

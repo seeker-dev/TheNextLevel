@@ -22,13 +22,13 @@ namespace TheNextLevel.Services.v1
                     return await CopyFileToAppStorage(result);
                 }
 
-                return null;
+                return string.Empty;
             }
             catch (Exception ex)
             {
                 // Handle exceptions
                 Console.WriteLine($"File picking failed: {ex.Message}");
-                return null;
+                return string.Empty;
             }
         }
 

@@ -1,0 +1,142 @@
+﻿.task-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 1.3rem;
+    color: white;
+    font-weight: 500;
+}
+
+.task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.task-card {
+    background: #000000;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    border-left: 4px solid;
+    transition: all 0.2s ease;
+    position: relative;
+    border: 1px solid rgba(139, 69, 19, 0.2);
+}
+
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(128, 0, 32, 0.4);
+    }
+
+    .task-card.completed {
+        opacity: 0.6;
+        background: #0a0a0a;
+    }
+
+    .task-card.priority-urgent {
+        border-left-color: #DC143C;
+    }
+
+    .task-card.priority-important {
+        border-left-color: #B22222;
+    }
+
+    .task-card.priority-normal {
+        border-left-color: #A0522D;
+    }
+
+.task-checkbox-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.task-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #8B0000;
+    cursor: pointer;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+    .task-checkbox:checked {
+        background: #228B22;
+        border-color: #228B22;
+    }
+
+.task-details {
+    flex: 1;
+}
+
+.task-title {
+    font-size: 1.1rem;
+    color: #f5f5f5;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+    .task-title.completed {
+        text-decoration: line-through;
+        color: #8B4513;
+    }
+
+.task-metadata {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.priority-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.priority-urgent {
+    background: rgba(220, 20, 60, 0.2);
+    color: #FF6B6B;
+}
+
+.priority-important {
+    background: rgba(178, 34, 34, 0.2);
+    color: #CD853F;
+}
+
+.priority-normal {
+    background: rgba(160, 82, 45, 0.2);
+    color: #DEB887;
+}
+
+.category-label {
+    color: #cd853f;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+}
+
+.separator {
+    color: #8B4513;
+}
+
+.task-actions {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}

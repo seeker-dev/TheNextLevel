@@ -1,6 +1,7 @@
-﻿@* <Router AppAssembly="@typeof(MauiProgram).Assembly">
+﻿@using TheNextLevel.Components.v2.Layout
+<Router AppAssembly="@typeof(MauiProgram).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+@*         <FocusOnNavigate RouteData="@routeData" Selector="h1" /> *@
     </Found>
-</Router> *@
+</Router>

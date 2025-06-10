@@ -23,9 +23,6 @@ namespace TheNextLevel
             // Utility services
             builder.Services.AddSingleton<IAppBackgroundSelectService, AppBackgroundSelectService>();
 
-            //builder.Services.AddSingleton<BackgroundService>();
-            //builder.Services.AddSingleton<FilePickerService>();
-
             builder.Services.AddSingleton<IDatabaseServiceFactory, SqliteServiceFactory>();
             builder.Services.AddSingleton<IDatabaseService, SqliteService>();
 

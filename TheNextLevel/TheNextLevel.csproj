@@ -73,8 +73,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\v2\" />
-      <Folder Include="ViewModels\v2\" />
+      <Folder Include="Controllers\" />
     </ItemGroup>
 
 </Project>

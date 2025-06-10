@@ -1,23 +1,32 @@
-﻿@page "/"
+﻿@using TheNextLevel.Components.v2.Objects
+@using TheNextLevel.ViewModels
+
+@page "/"
 <main class="main-content">
     <div class="task-section">
         <div class="section-header">
         </div>
-        <div class="task-grid">
-            <div class="task-card priority-normal">
-                <div class="task-actions">
-                    <button class="btn-menu">⋮</button>
-                </div>
-                <div class="task-checkbox-container">
-                    <input class="task-checkbox" type="checkbox">
-                    <div class="task-details">
-                        <div class="task-title">Task 1</div>
-                    </div>
-                </div>
+        @if (_isLoading)
+        {
+            <p>Loading tasks...</p>
+        }
+        else if (_tasks != null && _tasks.Count > 0)
+        {
+            <div class="task-grid">
+                @foreach (var task in _tasks)
+                {
+                    <TaskCard Task="@task" />
+                }
             </div>
-        </div>
+        }
+        else
+        {
+            <p>No tasks available.</p>
+        }
     </div>
 </main>
-@code {
-
+@code 
+{
+    private List<NLTask>? _tasks = new List<NLTask>();
+    private bool _isLoading = true;
 }

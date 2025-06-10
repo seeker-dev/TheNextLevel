@@ -1,0 +1,19 @@
+﻿@using TheNextLevel.ViewModels
+
+<div class="task-card priority-@(Task?.Priority?.ToLower() ?? "normal")">
+    <div class="task-actions">
+        <button class="btn-menu">⋮</button>
+    </div>
+    <div class="task-checkbox-container">
+        <input class="task-checkbox" type="checkbox" checked="@(Task?.IsCompleted ?? false)">
+        <div class="task-details">
+            <div class="task-title">@(Task?.Title ?? "Untitled")</div>
+        </div>
+    </div>
+</div>
+
+@code 
+{
+    [Parameter]
+    public NLTask? Task { get; set; }
+}

@@ -1,4 +1,5 @@
 ﻿@using TheNextLevel.Components.v2.Objects
+@using TheNextLevel.Components.v2.Dialogs
 @using TheNextLevel.ViewModels
 
 @page "/"
@@ -23,10 +24,45 @@
         {
             <p>No tasks available.</p>
         }
+        <div class="fab-container">
+            <button class="fab" @onclick="ShowNewTaskDialog">+</button>
+        </div>
+        <TaskCreateDialog IsVisible="@isNewTaskDialogVisible"
+                          OnSave="TaskCardOnSave"
+                          OnCancel="TaskCardOnCancel" />
     </div>
 </main>
-@code 
+@code
 {
     private List<NLTask>? _tasks = new List<NLTask>();
     private bool _isLoading = true;
+    private bool isNewTaskDialogVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+
+        // try
+        // {
+        //     _tasks = await TaskService.GetAllTasksAsync();
+        // }
+        // catch (Exception ex)
+        // {
+        //     Console.WriteLine($"Error loading tasks: {ex.Message}");
+        // }
+        // finally
+        // {
+        _isLoading = false;
+        // }
+    }
+
+    private void ShowNewTaskDialog() => isNewTaskDialogVisible = true;
+    private void TaskCardOnCancel() => isNewTaskDialogVisible = false;
+    private void TaskCardOnSave(NLTask newTask)
+    {
+        newTask.Id = _tasks.Any() ? _tasks.Max(t => t.Id) + 1 : 1; // Assign a new ID
+
+        _tasks.Add(newTask);
+        isNewTaskDialogVisible = false;
+    }
 }

@@ -1,0 +1,51 @@
+﻿@using TheNextLevel.ViewModels
+<div class="dialog-overlay @(IsVisible ? "visible" : "")">
+    <!--Form for creating a new task-->
+    <div class="new-task-dialog">
+        <div class="form-group">
+            <label for="taskTitle">Task Title</label>
+            <input type="text" id="taskTitle" @bind="newTask.Title" class="form-control" placeholder="Enter task title" />
+        </div>
+        <div class="dialog-footer">
+            <button class="btn-cancel" @onclick="Cancel">Cancel</button>
+            <button class="btn-save" @onclick="Save" disabled="@string.IsNullOrWhiteSpace(newTask.Title)">
+                Save Task
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback<NLTask> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private NLTask newTask { get; set; } = new NLTask();
+
+    protected override void OnParametersSet()
+    {
+        if (IsVisible)
+        {
+            newTask = new NLTask(); // Reset the task when dialog is shown
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task Save()
+    {
+        if (!string.IsNullOrWhiteSpace(newTask.Title))
+        {
+            await OnSave.InvokeAsync(newTask);
+            newTask = new NLTask(); // Reset the task after saving
+        }
+    }
+}

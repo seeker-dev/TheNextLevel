@@ -1,0 +1,19 @@
+{
+    "dotnet.defaultSolution": "TheNextLevel.sln",
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.enableEditorConfigSupport": true,
+    "omnisharp.enableImportCompletion": true,
+    "files.exclude": {
+        "**/bin": true,
+        "**/obj": true,
+        "**/*.user": true
+    },
+    "files.watcherExclude": {
+        "**/bin/**": true,
+        "**/obj/**": true
+    },
+    "search.exclude": {
+        "**/bin": true,
+        "**/obj": true
+    }
+}

@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET MAUI - Windows",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-windows",
+            "program": "${workspaceFolder}/TheNextLevel/bin/Debug/net9.0-windows10.0.19041.0/win10-x64/TheNextLevel.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/TheNextLevel",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": ".NET MAUI - Windows (Release)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-windows-release",
+            "program": "${workspaceFolder}/TheNextLevel/bin/Release/net9.0-windows10.0.19041.0/win10-x64/TheNextLevel.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/TheNextLevel",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Attach to .NET Process",
+            "type": "coreclr",
+            "request": "attach"
+        }
+    ]
+}

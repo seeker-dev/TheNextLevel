@@ -11,7 +11,7 @@
         {
             <p>Loading tasks...</p>
         }
-        else if (_tasks != null && _tasks.Count > 0)
+        else if (_tasks?.Count > 0)
         {
             <div class="task-grid">
                 @foreach (var task in _tasks)
@@ -25,11 +25,11 @@
             <p>No tasks available.</p>
         }
         <div class="fab-container">
-            <button class="fab" @onclick="ShowNewTaskDialog">+</button>
+            <button class="fab" @onclick="ShowNewTaskDialogHandler">+</button>
         </div>
         <TaskCreateDialog IsVisible="@isNewTaskDialogVisible"
-                          OnSave="TaskCardOnSave"
-                          OnCancel="TaskCardOnCancel" />
+                          OnSave="TaskCardOnSaveHandler"
+                          OnCancel="TaskCardOnCancelHandler" />
     </div>
 </main>
 @code
@@ -41,6 +41,7 @@
     protected override async Task OnInitializedAsync()
     {
         await Task.Yield();
+        await Task.Delay(2000);
 
         // try
         // {
@@ -56,9 +57,9 @@
         // }
     }
 
-    private void ShowNewTaskDialog() => isNewTaskDialogVisible = true;
-    private void TaskCardOnCancel() => isNewTaskDialogVisible = false;
-    private void TaskCardOnSave(NLTask newTask)
+    private void ShowNewTaskDialogHandler() => isNewTaskDialogVisible = true;
+    private void TaskCardOnCancelHandler() => isNewTaskDialogVisible = false;
+    private void TaskCardOnSaveHandler(NLTask newTask)
     {
         newTask.Id = _tasks.Any() ? _tasks.Max(t => t.Id) + 1 : 1; // Assign a new ID
 

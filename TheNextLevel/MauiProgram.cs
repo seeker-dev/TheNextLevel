@@ -2,7 +2,6 @@
 using TaskManagement.Data;
 using TaskManagement.Data.Sqlite;
 using TaskManagement.Domain.Commands.Task;
-using TheNextLevel.Services.v2;
 
 namespace TheNextLevel
 {
@@ -19,9 +18,6 @@ namespace TheNextLevel
                 });
 
             builder.Services.AddMauiBlazorWebView();
-
-            // Utility services
-            builder.Services.AddSingleton<IAppBackgroundSelectService, AppBackgroundSelectService>();
 
             builder.Services.AddSingleton<IDatabaseServiceFactory, SqliteServiceFactory>();
             builder.Services.AddSingleton<IDatabaseService, SqliteService>();

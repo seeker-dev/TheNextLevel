@@ -1,5 +1,4 @@
-﻿@using TheNextLevel.ViewModels
-<div class="ntd-overlay @(IsVisible ? "visible" : "")" @onclick="OnOverlayClick">
+﻿<div class="ntd-overlay @(IsVisible ? "visible" : "")" @onclick="OnOverlayClick">
     <div class="ntd-container" @onclick:stopPropagation="true">
         <div class="ntd-header">
             <h2 class="ntd-title">Create New Task</h2>
@@ -15,12 +14,27 @@
                 
                 <div class="ntd-form-group">
                     <label class="ntd-form-label">Title</label>
-                    <input class="ntd-form-input" @bind="newTask.Title" placeholder="Enter task title..." />
+                    <input class="ntd-form-input" @bind="taskTitle" placeholder="Enter task title..." />
                 </div>
                 
                 <div class="ntd-form-group">
                     <label class="ntd-form-label">Description</label>
-                    <textarea class="ntd-form-input ntd-form-textarea" @bind="newTask.Description" placeholder="Add task description..."></textarea>
+                    <textarea class="ntd-form-input ntd-form-textarea" @bind="taskDescription" placeholder="Add task description..."></textarea>
+                </div>
+                
+                <div class="ntd-form-group">
+                    <label class="ntd-form-label">Priority</label>
+                    <select class="ntd-form-input" @bind="taskPriority">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
+                    </select>
+                </div>
+                
+                <div class="ntd-form-group">
+                    <label class="ntd-form-label">Due Date (Optional)</label>
+                    <input type="date" class="ntd-form-input" @bind="taskDueDate" />
                 </div>
             </div>
         </div>
@@ -31,29 +45,40 @@
             </div>
             <div class="ntd-footer-right">
                 <button class="ntd-btn ntd-btn-cancel" @onclick="Cancel">Cancel</button>
-                <button class="ntd-btn ntd-btn-save" @onclick="Save" disabled="@string.IsNullOrWhiteSpace(newTask.Title)">Save Task</button>
+                <button class="ntd-btn ntd-btn-save" @onclick="Save">Save Task</button>
             </div>
         </div>
     </div>
 </div>
+
+@using TheNextLevel.Application.Tasks.Services
+@using TheNextLevel.Application.Tasks.DTOs
+@inject ITaskService TaskService
 
 @code {
 	[Parameter]
 	public bool IsVisible { get; set; }
 
 	[Parameter]
-	public EventCallback<NLTask> OnSave { get; set; }
+	public EventCallback<TaskDto> OnTaskCreated { get; set; }
 
 	[Parameter]
 	public EventCallback OnCancel { get; set; }
 
-	private NLTask newTask { get; set; } = new NLTask();
+	private string taskTitle = string.Empty;
+	private string taskDescription = string.Empty;
+	private string taskPriority = "Medium";
+	private DateTime? taskDueDate;
 
 	protected override void OnParametersSet()
 	{
 		if (IsVisible)
 		{
-			newTask = new NLTask(); // Reset the task when dialog is shown
+			// Reset form when dialog is shown
+			taskTitle = string.Empty;
+			taskDescription = string.Empty;
+			taskPriority = "Medium";
+			taskDueDate = null;
 		}
 	}
 
@@ -70,10 +95,28 @@
 
 	private async Task Save()
 	{
-		if (!string.IsNullOrWhiteSpace(newTask.Title))
+		if (!string.IsNullOrWhiteSpace(taskTitle))
 		{
-			await OnSave.InvokeAsync(newTask);
-			newTask = new NLTask(); // Reset the task after saving
+			var request = new CreateTaskRequest(
+				taskTitle.Trim(),
+				taskDescription?.Trim() ?? string.Empty,
+				taskPriority,
+				taskDueDate
+			);
+
+			var taskId = await TaskService.CreateTaskAsync(request);
+			var createdTask = await TaskService.GetTaskByIdAsync(taskId);
+			
+			if (createdTask != null)
+			{
+				await OnTaskCreated.InvokeAsync(createdTask);
+			}
+
+			// Reset form after saving
+			taskTitle = string.Empty;
+			taskDescription = string.Empty;
+			taskPriority = "Medium";
+			taskDueDate = null;
 		}
 	}
 }

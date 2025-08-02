@@ -1,13 +1,33 @@
-﻿@using TheNextLevel.ViewModels
+﻿@using TheNextLevel.Application.Tasks.DTOs
+@using TheNextLevel.Application.Tasks.Services
+@inject ITaskService TaskService
 
-<div class="task-card priority-@(Task?.Priority?.ToLower() ?? "normal")">
+<div class="task-card priority-@(Task?.Priority?.ToLower() ?? "normal")" style="border-left: 4px solid @(Task?.PriorityColor ?? "#6c757d")">
     <div class="task-actions">
-        <button class="btn-menu">⋮</button>
+        <button class="btn-menu" @onclick="OnMenuClick">⋮</button>
     </div>
     <div class="task-checkbox-container">
-        <input class="task-checkbox" type="checkbox" checked="@(Task?.IsCompleted ?? false)">
+        <input class="task-checkbox" type="checkbox" checked="@IsCompleted" @onchange="OnStatusChange">
         <div class="task-details">
             <div class="task-title">@(Task?.Title ?? "Untitled")</div>
+            @if (!string.IsNullOrEmpty(Task?.Description))
+            {
+                <div class="task-description">@Task.Description</div>
+            }
+            <div class="task-meta">
+                <span class="task-status">@(Task?.Status ?? "Unknown")</span>
+                <span class="task-priority" style="color: @(Task?.PriorityColor ?? "#6c757d")">@(Task?.Priority ?? "Medium")</span>
+                @if (Task?.DueDate != null)
+                {
+                    <span class="task-due-date @(Task.IsOverdue ? "overdue" : "")">
+                        Due: @Task.DueDate.Value.ToString("MMM dd")
+                        @if (Task.IsOverdue)
+                        {
+                            <span class="overdue-indicator">⚠️</span>
+                        }
+                    </span>
+                }
+            </div>
         </div>
     </div>
 </div>
@@ -15,5 +35,39 @@
 @code 
 {
     [Parameter]
-    public NLTask? Task { get; set; }
+    public TaskDto? Task { get; set; }
+    
+    [Parameter]
+    public EventCallback<TaskDto> OnTaskUpdated { get; set; }
+    
+    private bool IsCompleted => Task?.Status == "Completed";
+    
+    private async Task OnStatusChange(ChangeEventArgs e)
+    {
+        if (Task == null) return;
+        
+        var isChecked = (bool)(e.Value ?? false);
+        var taskId = new TheNextLevel.Domain.Tasks.ValueObjects.TaskId(Task.Id);
+        
+        if (isChecked && !IsCompleted)
+        {
+            await TaskService.CompleteTaskAsync(taskId);
+        }
+        else if (!isChecked && IsCompleted)
+        {
+            await TaskService.ReopenTaskAsync(taskId);
+        }
+        
+        // Refresh task data and notify parent
+        var updatedTask = await TaskService.GetTaskByIdAsync(taskId);
+        if (updatedTask != null)
+        {
+            await OnTaskUpdated.InvokeAsync(updatedTask);
+        }
+    }
+    
+    private void OnMenuClick()
+    {
+        // TODO: Implement task menu (edit, delete, etc.)
+    }
 }

@@ -1,11 +1,14 @@
 ﻿@using TheNextLevel.Components.Objects
 @using TheNextLevel.Components.Dialogs
-@using TheNextLevel.ViewModels
+@using TheNextLevel.Application.Tasks.DTOs
+@using TheNextLevel.Application.Tasks.Services
+@inject ITaskService TaskService
 
 @page "/"
 <main class="main-content">
     <div class="task-section">
         <div class="section-header">
+            <h1>My Tasks</h1>
         </div>
         @if (_isLoading)
         {
@@ -16,54 +19,74 @@
             <div class="task-grid">
                 @foreach (var task in _tasks)
                 {
-                    <TaskCard Task="@task" />
+                    <TaskCard Task="@task" OnTaskUpdated="OnTaskUpdated" />
                 }
             </div>
         }
         else
         {
-            <p>No tasks available.</p>
+            <div class="empty-state">
+                <p>No tasks yet. Create your first task to get started!</p>
+            </div>
         }
         <div class="fab-container">
             <button class="fab" @onclick="ShowNewTaskDialogHandler">+</button>
         </div>
         <TaskCreateDialog IsVisible="@isNewTaskDialogVisible"
-                          OnSave="TaskCardOnSaveHandler"
-                          OnCancel="TaskCardOnCancelHandler" />
+                          OnTaskCreated="OnTaskCreated"
+                          OnCancel="OnTaskDialogCancel" />
     </div>
 </main>
+
 @code
 {
-    private List<NLTask>? _tasks = new List<NLTask>();
+    private List<TaskDto> _tasks = new List<TaskDto>();
     private bool _isLoading = true;
     private bool isNewTaskDialogVisible = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await Task.Yield();
-        await Task.Delay(2000);
+        await LoadTasks();
+    }
 
-        // try
-        // {
-        //     _tasks = await TaskService.GetAllTasksAsync();
-        // }
-        // catch (Exception ex)
-        // {
-        //     Console.WriteLine($"Error loading tasks: {ex.Message}");
-        // }
-        // finally
-        // {
-        _isLoading = false;
-        // }
+    private async Task LoadTasks()
+    {
+        try
+        {
+            _isLoading = true;
+            var tasks = await TaskService.GetAllTasksAsync();
+            _tasks = tasks.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tasks: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
     }
 
     private void ShowNewTaskDialogHandler() => isNewTaskDialogVisible = true;
-    private void TaskCardOnCancelHandler() => isNewTaskDialogVisible = false;
-    private void TaskCardOnSaveHandler(NLTask newTask)
+    
+    private void OnTaskDialogCancel() => isNewTaskDialogVisible = false;
+    
+    private async Task OnTaskCreated(TaskDto newTask)
     {
-        newTask.Id = _tasks.Any() ? _tasks.Max(t => t.Id) + 1 : 1; // Assign a new ID
-
-        _tasks.Add(newTask);
         isNewTaskDialogVisible = false;
+        await LoadTasks(); // Refresh the task list
+    }
+    
+    private Task OnTaskUpdated(TaskDto updatedTask)
+    {
+        // Update the task in the local list
+        var index = _tasks.FindIndex(t => t.Id == updatedTask.Id);
+        if (index >= 0)
+        {
+            _tasks[index] = updatedTask;
+            StateHasChanged();
+        }
+        return Task.CompletedTask;
     }
 }

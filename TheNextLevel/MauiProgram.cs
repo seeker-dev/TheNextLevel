@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using TheNextLevel.Application.Tasks.Services;
+using TheNextLevel.Infrastructure.Data;
 
 namespace TheNextLevel
 {
@@ -15,6 +17,12 @@ namespace TheNextLevel
                 });
 
             builder.Services.AddMauiBlazorWebView();
+
+            // Register application services
+            builder.Services.AddScoped<ITaskService, TaskService>();
+            
+            // Register infrastructure services
+            builder.Services.AddSingleton<ITaskRepository, InMemoryTaskRepository>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

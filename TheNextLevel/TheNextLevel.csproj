@@ -67,12 +67,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TaskManagement.Common\TaskManagement.Domain.csproj" />
-      <ProjectReference Include="..\TaskManagement.Data.Sqlite\TaskManagement.Data.Sqlite.csproj" />
-      <ProjectReference Include="..\TaskManagement.Data\TaskManagement.Data.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Folder Include="Controllers\" />
     </ItemGroup>
 

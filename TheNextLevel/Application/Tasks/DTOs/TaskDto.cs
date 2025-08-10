@@ -5,25 +5,17 @@ public record TaskDto(
     string Title,
     string Description,
     string Status,
-    string Priority,
-    string PriorityColor,
-    DateTime CreatedAt,
-    DateTime? DueDate,
-    DateTime? CompletedAt,
-    bool IsOverdue,
-    int DaysUntilDue
+    DateTime CreatedAt
 );
 
 public record CreateTaskRequest(
     string Title,
     string Description,
-    string Priority,
     DateTime? DueDate = null
 );
 
 public record UpdateTaskRequest(
     string Title,
     string Description,
-    string Priority,
     DateTime? DueDate = null
 );

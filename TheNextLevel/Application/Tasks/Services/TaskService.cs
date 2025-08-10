@@ -30,8 +30,7 @@ public class TaskService : ITaskService
     
     public async System.Threading.Tasks.Task<TaskId> CreateTaskAsync(CreateTaskRequest request)
     {
-        var priority = Priority.FromString(request.Priority);
-        var task = DomainTask.Create(request.Title, request.Description, priority, request.DueDate);
+        var task = DomainTask.Create(request.Title, request.Description);
         
         await _taskRepository.AddAsync(task);
         return task.Id;
@@ -44,8 +43,6 @@ public class TaskService : ITaskService
         
         task.UpdateTitle(request.Title);
         task.UpdateDescription(request.Description);
-        task.UpdatePriority(Priority.FromString(request.Priority));
-        task.UpdateDueDate(request.DueDate);
         
         await _taskRepository.UpdateAsync(task);
         return true;
@@ -90,12 +87,6 @@ public class TaskService : ITaskService
         return true;
     }
     
-    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetOverdueTasksAsync()
-    {
-        var tasks = await _taskRepository.GetAllAsync();
-        return tasks.Where(t => t.IsOverdue).Select(MapToDto);
-    }
-    
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(string status)
     {
         var tasks = await _taskRepository.GetAllAsync();
@@ -110,13 +101,7 @@ public class TaskService : ITaskService
             task.Title,
             task.Description,
             task.Status.Name,
-            task.Priority.Name,
-            task.Priority.Color,
-            task.CreatedAt,
-            task.DueDate,
-            task.CompletedAt,
-            task.IsOverdue,
-            task.DaysUntilDue
+            task.CreatedAt
         );
     }
 }

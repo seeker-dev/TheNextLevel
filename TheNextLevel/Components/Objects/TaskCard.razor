@@ -2,7 +2,7 @@
 @using TheNextLevel.Application.Tasks.Services
 @inject ITaskService TaskService
 
-<div class="task-card priority-@(Task?.Priority?.ToLower() ?? "normal")" style="border-left: 4px solid @(Task?.PriorityColor ?? "#6c757d")">
+<div class="task-card" style="border-left: 4px solid #6c757d">
     <div class="task-actions">
         <button class="btn-menu" @onclick="OnMenuClick">⋮</button>
     </div>
@@ -16,17 +16,6 @@
             }
             <div class="task-meta">
                 <span class="task-status">@(Task?.Status ?? "Unknown")</span>
-                <span class="task-priority" style="color: @(Task?.PriorityColor ?? "#6c757d")">@(Task?.Priority ?? "Medium")</span>
-                @if (Task?.DueDate != null)
-                {
-                    <span class="task-due-date @(Task.IsOverdue ? "overdue" : "")">
-                        Due: @Task.DueDate.Value.ToString("MMM dd")
-                        @if (Task.IsOverdue)
-                        {
-                            <span class="overdue-indicator">⚠️</span>
-                        }
-                    </span>
-                }
             </div>
         </div>
     </div>

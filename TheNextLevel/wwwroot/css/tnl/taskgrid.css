@@ -45,17 +45,6 @@
         background: #0a0a0a;
     }
 
-    .task-card.priority-urgent {
-        border-left-color: #DC143C;
-    }
-
-    .task-card.priority-important {
-        border-left-color: #B22222;
-    }
-
-    .task-card.priority-normal {
-        border-left-color: #A0522D;
-    }
 
 .task-checkbox-container {
     display: flex;
@@ -101,29 +90,6 @@
     margin-bottom: 10px;
 }
 
-.priority-badge {
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.priority-urgent {
-    background: rgba(220, 20, 60, 0.2);
-    color: #FF6B6B;
-}
-
-.priority-important {
-    background: rgba(178, 34, 34, 0.2);
-    color: #CD853F;
-}
-
-.priority-normal {
-    background: rgba(160, 82, 45, 0.2);
-    color: #DEB887;
-}
 
 .category-label {
     color: #cd853f;

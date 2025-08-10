@@ -13,6 +13,5 @@ public interface ITaskService
     System.Threading.Tasks.Task<bool> CompleteTaskAsync(TaskId id);
     System.Threading.Tasks.Task<bool> StartTaskAsync(TaskId id);
     System.Threading.Tasks.Task<bool> ReopenTaskAsync(TaskId id);
-    System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetOverdueTasksAsync();
     System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(string status);
 }

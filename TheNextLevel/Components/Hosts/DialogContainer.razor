@@ -1,0 +1,82 @@
+@using TheNextLevel.Application.Common.Services
+@using System.Reflection
+@implements IDisposable
+@inject IDialogService DialogService
+
+<div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; pointer-events: none;">
+    @if (_currentDialog != null)
+    {
+        <div style="pointer-events: auto;">
+            <DynamicComponent Type="_currentDialog.ComponentType" Parameters="_dialogParameters" />
+        </div>
+    }
+</div>
+
+@code {
+    private DialogRequest? _currentDialog;
+    private Dictionary<string, object>? _dialogParameters;
+
+    protected override void OnInitialized()
+    {
+        DialogService.OnShowDialog += ShowDialog;
+        DialogService.OnHideDialog += HideDialog;
+    }
+
+    private void ShowDialog(DialogRequest request)
+    {
+        _currentDialog = request;
+        _dialogParameters = CreateDialogParameters(request);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void HideDialog()
+    {
+        _currentDialog?.CompletionSource?.SetResult(null);
+        _currentDialog = null;
+        _dialogParameters = null;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private Dictionary<string, object> CreateDialogParameters(DialogRequest request)
+    {
+        var parameters = new Dictionary<string, object>(request.Parameters ?? new Dictionary<string, object>());
+        
+        // Add common dialog parameters
+        parameters["IsVisible"] = true;
+        parameters["OnCancel"] = EventCallback.Factory.Create(this, () => HandleDialogResult(null));
+        
+        // Create properly typed OnResult callback using reflection
+        if (request.ResultType != null)
+        {
+            var method = GetType().GetMethod(nameof(CreateTypedCallback), BindingFlags.NonPublic | BindingFlags.Instance);
+            var genericMethod = method!.MakeGenericMethod(request.ResultType);
+            var callback = genericMethod.Invoke(this, null);
+            parameters["OnResult"] = callback!;
+        }
+        else
+        {
+            parameters["OnResult"] = EventCallback.Factory.Create<object>(this, HandleDialogResult);
+        }
+        
+        return parameters;
+    }
+
+    private EventCallback<T> CreateTypedCallback<T>()
+    {
+        return EventCallback.Factory.Create<T>(this, (T result) => HandleDialogResult(result));
+    }
+
+    private void HandleDialogResult(object? result)
+    {
+        _currentDialog?.CompletionSource?.SetResult(result);
+        _currentDialog = null;
+        _dialogParameters = null;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        DialogService.OnShowDialog -= ShowDialog;
+        DialogService.OnHideDialog -= HideDialog;
+    }
+}

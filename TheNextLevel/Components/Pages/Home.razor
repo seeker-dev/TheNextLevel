@@ -2,7 +2,9 @@
 @using TheNextLevel.Components.Dialogs
 @using TheNextLevel.Application.Tasks.DTOs
 @using TheNextLevel.Application.Tasks.Services
+@using TheNextLevel.Application.Common.Services
 @inject ITaskService TaskService
+@inject IDialogService DialogService
 
 @page "/"
 <main class="main-content">
@@ -32,9 +34,6 @@
         <div class="fab-container">
             <button class="fab" @onclick="ShowNewTaskDialogHandler">+</button>
         </div>
-        <TaskCreateDialog IsVisible="@_isNewTaskDialogVisible"
-                          OnTaskCreated="OnTaskCreated"
-                          OnCancel="OnTaskDialogCancel" />
     </div>
 </main>
 
@@ -42,7 +41,6 @@
 {
     private List<TaskDto> _tasks = new List<TaskDto>();
     private bool _isLoading = true;
-    private bool _isNewTaskDialogVisible = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -68,14 +66,13 @@
         }
     }
 
-    private void ShowNewTaskDialogHandler() => _isNewTaskDialogVisible = true;
-
-    private void OnTaskDialogCancel() => _isNewTaskDialogVisible = false;
-
-    private async Task OnTaskCreated(TaskDto newTask)
+    private async Task ShowNewTaskDialogHandler()
     {
-        _isNewTaskDialogVisible = false;
-        await LoadTasks(); // Refresh the task list
+        var result = await DialogService.ShowAsync<TaskDto>(typeof(NewTaskDialog));
+        if (result != null)
+        {
+            await LoadTasks(); // Refresh the task list
+        }
     }
     
     private Task OnTaskUpdated(TaskDto updatedTask)

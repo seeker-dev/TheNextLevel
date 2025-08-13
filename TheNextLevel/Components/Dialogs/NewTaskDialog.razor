@@ -1,0 +1,96 @@
+@using TheNextLevel.Components.Bases
+
+<BaseDialog TResult="TaskDto" IsVisible="IsVisible" Title="Create New Task" OnCancel="OnCancel" OnResult="OnResult">
+    <ChildContent>
+        <div class="ntd-form-section">
+            <div class="ntd-section-title">
+                <span class="ntd-section-icon">📝</span>
+                Task Details
+            </div>
+            
+            <div class="ntd-form-group">
+                <label class="ntd-form-label">Title</label>
+                <input class="ntd-form-input" @bind="taskTitle" placeholder="Enter task title..." />
+            </div>
+            
+            <div class="ntd-form-group">
+                <label class="ntd-form-label">Description</label>
+                <textarea class="ntd-form-input ntd-form-textarea" @bind="taskDescription" placeholder="Add task description..."></textarea>
+            </div>
+            
+            <div class="ntd-form-group">
+                <label class="ntd-form-label">Due Date (Optional)</label>
+                <input type="date" class="ntd-form-input" @bind="taskDueDate" />
+            </div>
+        </div>
+    </ChildContent>
+    <FooterContent>
+        <div class="ntd-footer-left">
+            <span class="ntd-motivation-text">Every task completed is a step forward! 🚀</span>
+        </div>
+        <div class="ntd-footer-right">
+            <button class="ntd-btn ntd-btn-cancel" @onclick="Cancel">Cancel</button>
+            <button class="ntd-btn ntd-btn-save" @onclick="Save">Save Task</button>
+        </div>
+    </FooterContent>
+</BaseDialog>
+
+@using TheNextLevel.Application.Tasks.Services
+@using TheNextLevel.Application.Tasks.DTOs
+@inject ITaskService TaskService
+
+@code {
+	[Parameter]
+	public bool IsVisible { get; set; }
+
+	[Parameter]
+	public EventCallback<TaskDto> OnResult { get; set; }
+
+	[Parameter]
+	public EventCallback OnCancel { get; set; }
+
+	private string taskTitle = string.Empty;
+	private string taskDescription = string.Empty;
+	private DateTime? taskDueDate;
+
+	protected override void OnParametersSet()
+	{
+		if (IsVisible)
+		{
+			// Reset form when dialog is shown
+			taskTitle = string.Empty;
+			taskDescription = string.Empty;
+			taskDueDate = null;
+		}
+	}
+
+	private async Task Cancel()
+	{
+		await OnCancel.InvokeAsync();
+	}
+
+	private async Task Save()
+	{
+		if (!string.IsNullOrWhiteSpace(taskTitle))
+		{
+			var request = new CreateTaskRequest(
+				taskTitle.Trim(),
+				taskDescription?.Trim() ?? string.Empty,
+				taskDueDate
+			);
+
+			var taskId = await TaskService.CreateTaskAsync(request);
+			var createdTask = await TaskService.GetTaskByIdAsync(taskId);
+			
+			if (createdTask != null)
+			{
+				await OnResult.InvokeAsync(createdTask);
+			}
+
+			// Reset form after saving
+			taskTitle = string.Empty;
+			taskDescription = string.Empty;
+			taskDueDate = null;
+		}
+	}
+}

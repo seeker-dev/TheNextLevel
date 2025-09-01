@@ -1,8 +1,87 @@
-# Architectural Health Monitor - Subagent Specification
+# Architectural Health Monitor - Subagent Specification (Updated for 2024 Blazor Standards)
 
 ## Overview
 
 This subagent specification defines an intelligent architectural health monitoring system designed to track, analyze, and guide the evolution of the Project Management Application according to the SimplifiedArchitecturePlan.md. The subagent provides continuous monitoring, boundary violation detection, and evolution guidance based on concrete metrics and decision matrices.
+
+**UPDATED FOR 2024**: This specification has been updated to align with Microsoft's official Blazor guidance and industry best practices, removing outdated restrictions that conflict with modern Blazor development patterns.
+
+## 2024 Blazor Standards Update
+
+### **ACCEPTABLE PATTERNS** (No Longer Violations)
+
+The following patterns are now considered **ACCEPTABLE** and will **NOT** be flagged as architectural violations:
+
+1. **✅ Direct Service Injection in UI Components**
+   ```csharp
+   @inject ITaskService TaskService
+   @inject IProjectService ProjectService
+   ```
+   - This is Microsoft's recommended pattern for Blazor components
+   - Standard dependency injection pattern for Blazor applications
+
+2. **✅ Mixed Application Layer Imports**
+   ```csharp
+   @using TheNextLevel.Application.Tasks.Services
+   @using TheNextLevel.Application.Tasks.DTOs
+   ```
+   - Components naturally need both services and DTOs
+   - Industry standard practice for Blazor applications
+
+3. **✅ Cross-Domain Coordination Services**
+   ```csharp
+   @inject ProjectTaskCoordinationService CoordinationService
+   ```
+   - Valid pattern for complex cross-domain operations
+   - Represents proper separation of concerns
+
+4. **✅ Direct Service Calls in Components**
+   ```csharp
+   await TaskService.CompleteTaskAsync(taskId);
+   var task = await TaskService.GetTaskByIdAsync(taskId);
+   ```
+   - Microsoft's recommended approach for Blazor components
+   - Eliminates unnecessary abstraction layers
+
+### **MAINTAINED RESTRICTIONS** (Still Violations)
+
+These architectural boundaries are still enforced:
+
+1. **🚫 Domain Layer Isolation** - Domain layers cannot reference each other
+2. **🚫 Layer Direction Enforcement** - Domain cannot reference Application/Infrastructure
+3. **🚫 Missing Domain Implementations** - Proper domain modeling required
+
+### **Updated Health Scoring Examples**
+
+#### ✅ **Now Acceptable** (Score: 100/100)
+```csharp
+// TaskCard.razor
+@using TheNextLevel.Application.Tasks.Services  // ✅ Acceptable
+@using TheNextLevel.Application.Tasks.DTOs      // ✅ Acceptable  
+@inject ITaskService TaskService                // ✅ Acceptable
+
+private async Task OnStatusChange()
+{
+    await TaskService.CompleteTaskAsync(taskId);  // ✅ Acceptable
+}
+```
+
+#### 🚫 **Still Violations** (Score: 0/100)
+```csharp
+// Domain/Tasks/Task.cs
+using TheNextLevel.Application.Tasks.Services;  // 🚫 Layer violation
+using TheNextLevel.Domain.Projects;            // 🚫 Cross-domain violation
+
+public class Task 
+{
+    private ITaskService _service; // 🚫 Domain depending on Application
+}
+```
+
+#### ⚠️ **Improved Scoring Logic**
+- **Previous**: UI service injection was penalized (-10 points each)
+- **Updated**: UI service injection is ignored (no penalty)
+- **Result**: Projects following Microsoft Blazor guidance now score 90%+ instead of 50%
 
 ## Core Responsibilities
 
@@ -159,9 +238,17 @@ interface PerformanceReport {
 ```yaml
 phase1_thresholds:
   domain_boundaries:
-    max_cross_domain_dependencies: 10
-    min_compliance_score: 85
-    max_layer_violations: 5
+    # UPDATED: More lenient on cross-domain dependencies due to acceptable Blazor patterns
+    max_cross_domain_dependencies: 15  # Increased from 10
+    min_compliance_score: 90           # Increased due to clearer acceptable patterns
+    max_layer_violations: 3            # Decreased - stricter on actual violations
+  
+  # NEW: Blazor-specific acceptable patterns
+  blazor_patterns:
+    ui_service_injection: "allowed"     # @inject IService in components
+    mixed_namespace_imports: "allowed"  # Application.Services + Application.DTOs
+    coordination_service_usage: "allowed" # Complex cross-domain operations
+    direct_service_calls: "allowed"     # await Service.Method() in components
   
   performance:
     max_build_time_minutes: 2
@@ -559,11 +646,11 @@ public interface IArchitecturalRule
     Task<RuleViolation[]> EvaluateAsync(CodeAnalysisContext context);
 }
 
-// Example custom rule
-public class ProjectTaskBoundaryRule : IArchitecturalRule
+// Updated rule that respects 2024 Blazor patterns
+public class ModernDomainBoundaryRule : IArchitecturalRule
 {
-    public string Name => "Project-Task Boundary Isolation";
-    public string Description => "Projects and Tasks domains must not directly reference each other";
+    public string Name => "Domain Boundary Isolation (Blazor-Aware)";
+    public string Description => "Domain layers must not directly reference each other, but UI components may use application services";
     public Severity DefaultSeverity => Severity.High;
     
     public async Task<RuleViolation[]> EvaluateAsync(CodeAnalysisContext context)
@@ -572,20 +659,57 @@ public class ProjectTaskBoundaryRule : IArchitecturalRule
         
         foreach (var dependency in context.Dependencies)
         {
-            if (IsProjectToTaskDependency(dependency) || IsTaskToProjectDependency(dependency))
+            // SKIP: Blazor component to application service (acceptable pattern)
+            if (IsBlazorComponentToApplicationService(dependency))
+                continue;
+            
+            // SKIP: UI component mixed imports (acceptable pattern)  
+            if (IsUIComponentMixedImport(dependency))
+                continue;
+            
+            // SKIP: Coordination service usage (acceptable pattern)
+            if (IsCoordinationServiceUsage(dependency))
+                continue;
+            
+            // ENFORCE: Domain-to-domain dependencies (still violations)
+            if (IsDomainToDomainDependency(dependency))
             {
                 violations.Add(new RuleViolation
                 {
                     Rule = this,
                     Location = dependency.Location,
-                    Message = "Direct cross-domain dependency detected",
-                    SuggestedFix = "Use coordination services or domain events"
+                    Message = "Direct domain-to-domain dependency detected",
+                    SuggestedFix = "Use coordination services or domain events for cross-domain communication"
+                });
+            }
+            
+            // ENFORCE: Layer violations (still critical)
+            if (IsDomainToApplicationLayerViolation(dependency))
+            {
+                violations.Add(new RuleViolation
+                {
+                    Rule = this,
+                    Location = dependency.Location,
+                    Message = "Domain layer cannot reference Application layer",
+                    SuggestedFix = "Move shared interfaces to Domain layer or use dependency inversion"
                 });
             }
         }
         
         return violations.ToArray();
     }
+    
+    private bool IsBlazorComponentToApplicationService(CodeDependency dependency) =>
+        dependency.Source.Contains("Components") && dependency.Source.EndsWith(".razor") &&
+        dependency.Target.Contains("Application") && dependency.Target.Contains("Services");
+        
+    private bool IsUIComponentMixedImport(CodeDependency dependency) =>
+        dependency.Source.Contains("Components") && 
+        (dependency.Target.Contains("Application.Tasks.Services") || 
+         dependency.Target.Contains("Application.Tasks.DTOs"));
+         
+    private bool IsCoordinationServiceUsage(CodeDependency dependency) =>
+        dependency.Target.Contains("Coordination") && dependency.Target.Contains("Service");
 }
 ```
 

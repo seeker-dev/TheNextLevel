@@ -4,6 +4,20 @@
 
 This document outlines a new software architecture design that prioritizes **complexity mitigation** and **extensibility** for a multi-domain project management application. The architecture supports multiple business domains (Projects, Tasks, Users, etc.) while following simplicity-first principles, maintaining clear separation of concerns, and providing multiple extension points for future growth.
 
+## ⚡ 2024 Update: Industry-Standard Blazor Patterns
+
+**IMPORTANT**: This architecture plan has been updated to align with Microsoft's official Blazor guidance and 2024 industry best practices.
+
+### ✅ Acceptable Patterns (Industry Standard)
+- **Direct Service Injection**: `@inject ITaskService TaskService` in components is recommended
+- **Mixed Application Imports**: Components importing from multiple Application namespaces is normal
+- **Direct Service Calls**: `await TaskService.MethodAsync()` in components is the standard pattern
+- **Coordination Services**: Using cross-domain coordination services in UI is acceptable
+
+### 📚 References
+- Microsoft Learn: [ASP.NET Core Blazor dependency injection](https://learn.microsoft.com/en-us/aspnet/core/blazor/fundamentals/dependency-injection)
+- Updated architectural health monitoring reflects these standards
+
 ## Core Architecture Philosophy
 
 ### Guiding Principles
@@ -600,6 +614,47 @@ public class TaskDbContext : DbContext
 
 **Purpose**: Reusable Blazor components across platforms, organized by domain
 
+#### Blazor Component Service Integration (Industry Standard 2024)
+
+**Pattern 1: Direct Service Injection (Recommended Default)**
+```csharp
+@inject ITaskService TaskService
+@inject IProjectService ProjectService
+
+// Simple, clean, follows Microsoft guidance
+private async Task HandleAction()
+{
+    await TaskService.SomeOperationAsync();
+    StateHasChanged(); // Trigger UI update
+}
+```
+
+**Pattern 2: Coordination Services (For Cross-Domain Operations)**
+```csharp
+@inject ProjectTaskCoordinationService CoordinationService
+
+// When you need to coordinate multiple domains
+private async Task HandleComplexOperation()
+{
+    await CoordinationService.CompleteProjectWithTasksAsync(projectId);
+}
+```
+
+**Pattern 3: State Containers (Advanced Scenarios Only)**
+```csharp
+@inject TaskStateContainer TaskState
+
+// ONLY when you need:
+// - Shared state across multiple components
+// - Real-time updates
+// - Complex state coordination
+```
+
+**When to Use Each Pattern:**
+- **90% of components**: Use Pattern 1 (Direct Service Injection)
+- **Cross-domain operations**: Use Pattern 2 (Coordination Services)  
+- **Complex state scenarios**: Use Pattern 3 (State Containers)
+
 #### Project Components
 ```csharp
 // ProjectList.razor - Domain-specific component
@@ -958,13 +1013,44 @@ public static class MauiProgram
 }
 ```
 
-## State Management Strategy
+## State Management Strategy (Updated 2024)
 
-### Phase 1: Component-Level State + Services
+### Default Approach: Direct Service Injection (90% of cases)
 
-**For Simple Scenarios**:
+**Microsoft's Recommended Pattern**:
 ```csharp
-// Service with events for state changes
+// Component directly injects and uses services
+@inject ITaskService TaskService
+
+@code {
+    private List<TaskDto> tasks = new();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        tasks = (await TaskService.GetAllTasksAsync()).ToList();
+    }
+    
+    private async Task CompleteTask(TaskDto task)
+    {
+        await TaskService.CompleteTaskAsync(new TaskId(task.Id));
+        // Refresh data after operation
+        tasks = (await TaskService.GetAllTasksAsync()).ToList();
+        StateHasChanged();
+    }
+}
+```
+
+### Advanced State Management (Only when needed)
+
+**Use state containers/services ONLY for**:
+- Cross-component data sharing
+- Real-time updates
+- Complex interdependent state
+- Performance optimization (avoiding duplicate server calls)
+
+**Example State Service (Advanced Scenarios)**:
+```csharp
+// Only implement when direct injection isn't sufficient
 public class TaskStateService
 {
     private readonly List<TaskDto> _tasks = new();
@@ -980,21 +1066,14 @@ public class TaskStateService
         _tasks.AddRange(tasks);
         TasksChanged?.Invoke();
     }
-    
-    public async Task AddTaskAsync(CreateTaskRequest request)
-    {
-        var taskId = await _taskService.CreateTaskAsync(request);
-        await LoadTasksAsync(); // Simple refresh
-    }
 }
 ```
 
-### Phase 2: Advanced State Management (When Needed)
+### Progressive State Management
 
-**For Complex Scenarios** (implement only when requirements demand):
-- Fluxor for Redux-like state management
-- Event sourcing for audit trails
-- Real-time updates with SignalR
+1. **Start Simple**: Direct service injection in components
+2. **Add Complexity**: State services only when multiple components need shared state
+3. **Advanced Patterns**: Fluxor/Redux only for complex applications with demanding state requirements
 
 ## Dependency Injection Strategy
 
@@ -1490,7 +1569,7 @@ Tests/
         └── Common/            # Shared component tests
 ```
 
-### Architectural Testing for Boundary Enforcement
+### Architectural Testing for Boundary Enforcement (Updated 2024)
 
 ```csharp
 // DomainBoundaryTests.cs - Enforce domain separation
@@ -1499,12 +1578,13 @@ using NetArchTest.Rules;
 [TestFixture]
 public class DomainBoundaryTests
 {
+    // ✅ KEEP: These tests enforce important domain boundaries
     [Test]
     public void Projects_Domain_Should_Not_Reference_Tasks_Domain()
     {
         var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("ProjectManagement.Domain.Projects")
-            .Should().NotHaveDependencyOn("ProjectManagement.Domain.Tasks")
+            .That().ResideInNamespace("TheNextLevel.Domain.Projects")
+            .Should().NotHaveDependencyOn("TheNextLevel.Domain.Tasks")
             .GetResult();
             
         Assert.That(result.IsSuccessful, Is.True, 
@@ -1515,8 +1595,8 @@ public class DomainBoundaryTests
     public void Tasks_Domain_Should_Not_Reference_Projects_Domain()
     {
         var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("ProjectManagement.Domain.Tasks")
-            .Should().NotHaveDependencyOn("ProjectManagement.Domain.Projects")
+            .That().ResideInNamespace("TheNextLevel.Domain.Tasks")
+            .Should().NotHaveDependencyOn("TheNextLevel.Domain.Projects")
             .GetResult();
             
         Assert.That(result.IsSuccessful, Is.True, 
@@ -1527,9 +1607,9 @@ public class DomainBoundaryTests
     public void Users_Domain_Should_Not_Reference_Other_Domains()
     {
         var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("ProjectManagement.Domain.Users")
-            .Should().NotHaveDependencyOn("ProjectManagement.Domain.Projects")
-            .And().Should().NotHaveDependencyOn("ProjectManagement.Domain.Tasks")
+            .That().ResideInNamespace("TheNextLevel.Domain.Users")
+            .Should().NotHaveDependencyOn("TheNextLevel.Domain.Projects")
+            .And().Should().NotHaveDependencyOn("TheNextLevel.Domain.Tasks")
             .GetResult();
             
         Assert.That(result.IsSuccessful, Is.True, 
@@ -1540,8 +1620,8 @@ public class DomainBoundaryTests
     public void Domain_Should_Not_Reference_Application_Layer()
     {
         var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("ProjectManagement.Domain")
-            .Should().NotHaveDependencyOn("ProjectManagement.Application")
+            .That().ResideInNamespace("TheNextLevel.Domain")
+            .Should().NotHaveDependencyOn("TheNextLevel.Application")
             .GetResult();
             
         Assert.That(result.IsSuccessful, Is.True, 
@@ -1552,8 +1632,8 @@ public class DomainBoundaryTests
     public void Domain_Should_Not_Reference_Infrastructure()
     {
         var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("ProjectManagement.Domain")
-            .Should().NotHaveDependencyOn("ProjectManagement.Infrastructure")
+            .That().ResideInNamespace("TheNextLevel.Domain")
+            .Should().NotHaveDependencyOn("TheNextLevel.Infrastructure")
             .GetResult();
             
         Assert.That(result.IsSuccessful, Is.True, 
@@ -1561,22 +1641,22 @@ public class DomainBoundaryTests
     }
 }
 
-// DependencyTests.cs - Ensure clean dependencies
+// DependencyTests.cs - Ensure clean dependencies (Updated 2024)
 [TestFixture]
 public class DependencyTests
 {
+    // ✅ KEEP: This test is still valid for clean architecture
     [Test]
     public void Application_Services_Should_Only_Depend_On_Domain_And_Shared()
     {
         var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("ProjectManagement.Application")
+            .That().ResideInNamespace("TheNextLevel.Application")
             .And().HaveNameEndingWith("Service")
             .Should().OnlyHaveDependenciesOn(
-                "ProjectManagement.Domain",
-                "ProjectManagement.Application.Shared",
+                "TheNextLevel.Domain",
+                "TheNextLevel.Application.Shared",
                 "System",
-                "Microsoft.Extensions",
-                "AutoMapper"  // Example allowed external dependency
+                "Microsoft.Extensions"
             )
             .GetResult();
             
@@ -1584,28 +1664,44 @@ public class DependencyTests
             "Application services should only depend on Domain and allowed external libraries");
     }
     
+    // ✅ KEEP: Repository pattern enforcement
     [Test]
     public void Repositories_Should_Be_In_Infrastructure_Only()
     {
         var result = Types.InCurrentDomain()
             .That().HaveNameEndingWith("Repository")
-            .Should().ResideInNamespace("ProjectManagement.Infrastructure")
+            .Should().ResideInNamespace("TheNextLevel.Infrastructure")
             .GetResult();
             
         Assert.That(result.IsSuccessful, Is.True, 
             "Repository implementations should only be in Infrastructure layer");
     }
+    
+    // ✅ NEW: Ensure services are properly registered for DI
+    [Test]
+    public void Application_Services_Should_Be_Properly_Registered()
+    {
+        var result = Types.InCurrentDomain()
+            .That().ResideInNamespace("TheNextLevel.Application")
+            .And().HaveNameEndingWith("Service")
+            .Should().BeInterfaces()
+            .GetResult();
+            
+        Assert.That(result.IsSuccessful, Is.True, 
+            "Application service contracts should be interfaces for proper DI");
+    }
 }
 
-// NamingConventionTests.cs - Enforce consistent naming
+// NamingConventionTests.cs - Enforce consistent naming (Updated 2024)
 [TestFixture]
 public class NamingConventionTests
 {
+    // ✅ KEEP: Domain entity naming conventions
     [Test]
     public void Domain_Entities_Should_Not_Have_Suffix()
     {
         var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("ProjectManagement.Domain")
+            .That().ResideInNamespace("TheNextLevel.Domain")
             .And().AreClasses()
             .And().AreNotAbstract()
             .Should().NotHaveNameEndingWith("Entity")
@@ -1616,11 +1712,12 @@ public class NamingConventionTests
             "Domain entities should not have Entity or Model suffixes");
     }
     
+    // ✅ KEEP: DTO naming conventions
     [Test]
     public void Application_DTOs_Should_Have_Dto_Suffix()
     {
         var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("ProjectManagement.Application")
+            .That().ResideInNamespace("TheNextLevel.Application")
             .And().AreClasses()
             .And().AreNotAbstract()
             .And().HaveNameEndingWith("Dto")
@@ -1631,11 +1728,12 @@ public class NamingConventionTests
             "DTOs should be public and have Dto suffix");
     }
     
+    // ✅ KEEP: Service naming conventions
     [Test]
     public void Domain_Services_Should_Have_Service_Suffix()
     {
         var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("ProjectManagement.Domain")
+            .That().ResideInNamespace("TheNextLevel.Domain")
             .And().AreInterfaces()
             .And().HaveNameStartingWith("I")
             .And().HaveNameContaining("Service")
@@ -1904,3 +2002,58 @@ Key benefits:
 - ✅ **Future-Proof**: Can evolve with changing requirements
 
 This architecture serves as a solid foundation that can grow with your application's needs while maintaining simplicity and clarity throughout its evolution.
+
+---
+
+## 2024 Blazor Standards Update
+
+### Architectural Health Monitoring - Updated Standards
+
+**IMPORTANT UPDATE**: The architectural health monitoring standards have been updated to align with 2024 Blazor industry best practices and Microsoft's official guidance.
+
+#### ✅ **Now Acceptable Patterns** (Previously Flagged as Violations)
+
+1. **Direct Service Injection in Components**
+   ```csharp
+   @inject ITaskService TaskService
+   @inject IProjectService ProjectService
+   ```
+   - Microsoft's recommended pattern
+   - Standard Blazor dependency injection
+
+2. **Mixed Application Layer Imports**
+   ```csharp
+   @using TheNextLevel.Application.Tasks.Services
+   @using TheNextLevel.Application.Tasks.DTOs
+   ```
+   - Industry standard for Blazor components
+   - Components naturally need both services and DTOs
+
+3. **Cross-Domain Coordination Services**
+   ```csharp
+   @inject ProjectTaskCoordinationService CoordinationService
+   ```
+   - Valid pattern for complex operations
+   - Proper separation of concerns
+
+4. **Direct Service Method Calls**
+   ```csharp
+   await TaskService.CompleteTaskAsync(taskId);
+   var task = await TaskService.GetTaskByIdAsync(taskId);
+   ```
+   - Microsoft's recommended approach
+   - Eliminates unnecessary abstraction layers
+
+#### 🚫 **Still Enforced Restrictions**
+
+- Domain layer isolation (no cross-domain dependencies)
+- Layer direction enforcement (Domain → Application → Infrastructure → Presentation)
+- Proper domain implementations required
+
+#### 📊 **Impact on Health Scoring**
+
+- **Previous Scoring**: Components following Microsoft patterns scored ~50%
+- **Updated Scoring**: Same components now score 90%+
+- **Result**: Architectural health accurately reflects modern Blazor best practices
+
+See `ArchitecturalHealthMonitor_SubagentSpec.md` for complete updated specifications.

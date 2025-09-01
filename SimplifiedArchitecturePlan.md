@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This document outlines a new software architecture design that prioritizes **complexity mitigation** and **extensibility** for a multi-domain project management application. The architecture supports multiple business domains (Projects, Tasks, Users, etc.) while following simplicity-first principles, maintaining clear separation of concerns, and providing multiple extension points for future growth.
+This document outlines a new software architecture design that prioritizes **complexity mitigation** and **extensibility** for a multi-domain application. The architecture supports multiple business domains while following simplicity-first principles, maintaining clear separation of concerns, and providing multiple extension points for future growth.
 
 ## ⚡ 2024 Update: Industry-Standard Blazor Patterns
 
@@ -50,23 +50,24 @@ This document outlines a new software architecture design that prioritizes **com
 ### Multi-Domain Layer Structure (Single Project)
 
 ```
-📁 ProjectManagement.Solution/
+📁 Application.Solution/
 ├── 🎯 Core/
-│   ├── ProjectManagement.Domain/
-│   │   ├── Projects/                 # Project bounded context
+│   ├── Application.Domain/
+│   │   ├── DomainA/                  # Domain A bounded context
 │   │   │   ├── Entities/
 │   │   │   ├── ValueObjects/
 │   │   │   ├── Services/
 │   │   │   └── Events/
-│   │   ├── Tasks/                    # Task bounded context
+│   │   ├── DomainB/                  # Domain B bounded context
 │   │   │   ├── Entities/
 │   │   │   ├── ValueObjects/
 │   │   │   ├── Services/
 │   │   │   └── Events/
-│   │   ├── Users/                    # User bounded context
+│   │   ├── DomainC/                  # Additional domains as needed
 │   │   │   ├── Entities/
 │   │   │   ├── ValueObjects/
-│   │   │   └── Services/
+│   │   │   ├── Services/
+│   │   │   └── Events/
 │   │   ├── Shared/                   # Cross-domain value objects
 │   │   │   ├── ValueObjects/
 │   │   │   └── Interfaces/
@@ -74,16 +75,16 @@ This document outlines a new software architecture design that prioritizes **com
 │   │       ├── Events/
 │   │       ├── Interfaces/
 │   │       └── Base/
-│   └── ProjectManagement.Application/
-│       ├── Projects/                 # Project use cases
+│   └── Application.Application/
+│       ├── DomainA/                  # Domain A use cases
 │       │   ├── Commands/
 │       │   ├── Queries/
 │       │   └── Services/
-│       ├── Tasks/                    # Task use cases
+│       ├── DomainB/                  # Domain B use cases
 │       │   ├── Commands/
 │       │   ├── Queries/
 │       │   └── Services/
-│       ├── Users/                    # User use cases
+│       ├── DomainC/                  # Additional domain use cases
 │       │   ├── Commands/
 │       │   ├── Queries/
 │       │   └── Services/
@@ -94,35 +95,36 @@ This document outlines a new software architecture design that prioritizes **com
 │           ├── Interfaces/
 │           └── Services/
 ├── 🔧 Infrastructure/
-│   ├── ProjectManagement.Persistence/
-│   │   ├── Projects/                 # Project data access
-│   │   ├── Tasks/                    # Task data access
-│   │   ├── Users/                    # User data access
+│   ├── Application.Persistence/
+│   │   ├── DomainA/                  # Domain A data access
+│   │   ├── DomainB/                  # Domain B data access
+│   │   ├── DomainC/                  # Additional domain data access
 │   │   ├── Common/                   # Shared data access
 │   │   └── Migrations/
-│   └── ProjectManagement.External/   # Third-party integrations
+│   └── Application.External/         # Third-party integrations
 ├── 🎨 Presentation/
-│   ├── ProjectManagement.UI.Shared/  # Shared Blazor components
-│   │   ├── Projects/                 # Project-specific components
-│   │   ├── Tasks/                    # Task-specific components
-│   │   ├── Users/                    # User-specific components
+│   ├── Application.UI.Shared/        # Shared Blazor components
+│   │   ├── DomainA/                  # Domain A-specific components
+│   │   ├── DomainB/                  # Domain B-specific components
+│   │   ├── DomainC/                  # Additional domain components
 │   │   ├── Common/                   # Shared UI components
 │   │   └── Layouts/                  # Layout components
-│   ├── ProjectManagement.MAUI/       # MAUI Blazor Hybrid app
-│   └── ProjectManagement.Web/        # Web Blazor app (future)
+│   ├── Application.MAUI/             # MAUI Blazor Hybrid app
+│   └── Application.Web/              # Web Blazor app (future)
 └── 🧪 Tests/
-    ├── ProjectManagement.Domain.Tests/
-    │   ├── Projects/
-    │   ├── Tasks/
-    │   └── Users/
-    ├── ProjectManagement.Application.Tests/
-    │   ├── Projects/
-    │   ├── Tasks/
-    │   ├── Users/
+    ├── Application.Domain.Tests/
+    │   ├── DomainA/
+    │   ├── DomainB/
+    │   └── DomainC/
+    ├── Application.Application.Tests/
+    │   ├── DomainA/
+    │   ├── DomainB/
+    │   ├── DomainC/
     │   └── Coordination/
-    └── ProjectManagement.UI.Tests/
-        ├── Projects/
-        ├── Tasks/
+    └── Application.UI.Tests/
+        ├── DomainA/
+        ├── DomainB/
+        ├── DomainC/
         └── Common/
 ```
 
@@ -132,157 +134,123 @@ This document outlines a new software architecture design that prioritizes **com
 
 **Purpose**: Core business logic and entities organized by bounded context
 
-#### Projects Domain
+#### Domain A Example
 ```csharp
-// Project aggregate root
-public class Project
+// Domain A aggregate root
+public class EntityA
 {
-    public ProjectId Id { get; private set; }
+    public EntityAId Id { get; private set; }
     public string Name { get; private set; }
     public string Description { get; private set; }
-    public ProjectStatus Status { get; private set; }
-    public UserId OwnerId { get; private set; }
+    public EntityAStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; }
-    public DateTime? DueDate { get; private set; }
+    public DateTime? CompletionDate { get; private set; }
     
     // Domain relationships (by ID to maintain boundaries)
-    private readonly List<TaskId> _taskIds = new();
-    public IReadOnlyList<TaskId> TaskIds => _taskIds.AsReadOnly();
+    private readonly List<EntityBId> _relatedEntityBIds = new();
+    public IReadOnlyList<EntityBId> RelatedEntityBIds => _relatedEntityBIds.AsReadOnly();
     
     // Business logic encapsulated in entity
-    public void AddTask(TaskId taskId)
+    public void AddRelatedEntityB(EntityBId entityBId)
     {
-        if (!_taskIds.Contains(taskId))
+        if (!_relatedEntityBIds.Contains(entityBId))
         {
-            _taskIds.Add(taskId);
-            RaiseDomainEvent(new TaskAddedToProjectEvent(Id, taskId));
+            _relatedEntityBIds.Add(entityBId);
+            RaiseDomainEvent(new EntityBAddedToEntityAEvent(Id, entityBId));
         }
     }
     
-    public void CompleteProject()
+    public void CompleteEntityA()
     {
-        if (Status == ProjectStatus.Completed)
-            throw new InvalidOperationException("Project already completed");
+        if (Status == EntityAStatus.Completed)
+            throw new InvalidOperationException("EntityA already completed");
             
-        Status = ProjectStatus.Completed;
-        RaiseDomainEvent(new ProjectCompletedEvent(Id, DateTime.UtcNow));
+        Status = EntityAStatus.Completed;
+        CompletionDate = DateTime.UtcNow;
+        RaiseDomainEvent(new EntityACompletedEvent(Id, DateTime.UtcNow));
     }
 }
 
-// Project value objects
-public record ProjectId(Guid Value);
-public record ProjectStatus(string Name, int Order);
+// Domain A value objects
+public record EntityAId(Guid Value);
+public record EntityAStatus(string Name, int Order);
 ```
 
-#### Tasks Domain
+#### Domain B Example
 ```csharp
-// Task aggregate root
-public class Task
+// Domain B aggregate root
+public class EntityB
 {
-    public TaskId Id { get; private set; }
+    public EntityBId Id { get; private set; }
     public string Title { get; private set; }
     public string Description { get; private set; }
-    public TaskStatus Status { get; private set; }
+    public EntityBStatus Status { get; private set; }
     public Priority Priority { get; private set; }
-    public ProjectId? ProjectId { get; private set; }
-    public UserId AssigneeId { get; private set; }
+    public EntityAId? ParentEntityAId { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? DueDate { get; private set; }
 
     // Business logic encapsulated in entity
     public void MarkComplete() 
     { 
-        if (Status == TaskStatus.Completed)
-            throw new InvalidOperationException("Task already completed");
+        if (Status == EntityBStatus.Completed)
+            throw new InvalidOperationException("EntityB already completed");
             
-        Status = TaskStatus.Completed;
-        RaiseDomainEvent(new TaskCompletedEvent(Id, DateTime.UtcNow));
+        Status = EntityBStatus.Completed;
+        RaiseDomainEvent(new EntityBCompletedEvent(Id, DateTime.UtcNow));
     }
     
-    public void AssignToProject(ProjectId projectId)
+    public void AssignToEntityA(EntityAId entityAId)
     {
-        var oldProjectId = ProjectId;
-        ProjectId = projectId;
-        RaiseDomainEvent(new TaskProjectChangedEvent(Id, oldProjectId, projectId));
+        var oldParentId = ParentEntityAId;
+        ParentEntityAId = entityAId;
+        RaiseDomainEvent(new EntityBParentChangedEvent(Id, oldParentId, entityAId));
     }
     
     public void UpdatePriority(Priority newPriority) 
     { 
         Priority = newPriority;
-        RaiseDomainEvent(new TaskPriorityChangedEvent(Id, newPriority));
+        RaiseDomainEvent(new EntityBPriorityChangedEvent(Id, newPriority));
     }
 }
 
-// Task value objects
-public record TaskId(Guid Value);
-public record TaskStatus(string Name, int Order);
+// Domain B value objects
+public record EntityBId(Guid Value);
+public record EntityBStatus(string Name, int Order);
 public record Priority(string Name, int Level, string Color);
 ```
 
-#### Users Domain
-```csharp
-// User aggregate root
-public class User
-{
-    public UserId Id { get; private set; }
-    public string Email { get; private set; }
-    public string DisplayName { get; private set; }
-    public UserRole Role { get; private set; }
-    public DateTime CreatedAt { get; private set; }
-    public bool IsActive { get; private set; }
-    
-    public void UpdateDisplayName(string newDisplayName)
-    {
-        if (string.IsNullOrWhiteSpace(newDisplayName))
-            throw new ArgumentException("Display name cannot be empty");
-            
-        DisplayName = newDisplayName;
-        RaiseDomainEvent(new UserDisplayNameChangedEvent(Id, newDisplayName));
-    }
-    
-    public void Deactivate()
-    {
-        IsActive = false;
-        RaiseDomainEvent(new UserDeactivatedEvent(Id));
-    }
-}
-
-// User value objects
-public record UserId(Guid Value);
-public record UserRole(string Name, IReadOnlyList<Permission> Permissions);
-public record Permission(string Name, string Description);
-```
 
 #### Shared Domain Components
 ```csharp
 // Shared value objects
-public record AuditInfo(UserId CreatedBy, DateTime CreatedAt, UserId? ModifiedBy, DateTime? ModifiedAt);
+public record AuditInfo(DateTime CreatedAt, DateTime? ModifiedAt);
 
 // Domain events base
 public abstract record DomainEvent(DateTime OccurredAt) : IDomainEvent;
 
 // Cross-domain events
-public record TaskAddedToProjectEvent(ProjectId ProjectId, TaskId TaskId) : DomainEvent(DateTime.UtcNow);
-public record TaskCompletedEvent(TaskId TaskId, DateTime CompletedAt) : DomainEvent(DateTime.UtcNow);
-public record ProjectCompletedEvent(ProjectId ProjectId, DateTime CompletedAt) : DomainEvent(DateTime.UtcNow);
-public record TaskProjectChangedEvent(TaskId TaskId, ProjectId? OldProjectId, ProjectId? NewProjectId) : DomainEvent(DateTime.UtcNow);
+public record EntityBAddedToEntityAEvent(EntityAId EntityAId, EntityBId EntityBId) : DomainEvent(DateTime.UtcNow);
+public record EntityBCompletedEvent(EntityBId EntityBId, DateTime CompletedAt) : DomainEvent(DateTime.UtcNow);
+public record EntityACompletedEvent(EntityAId EntityAId, DateTime CompletedAt) : DomainEvent(DateTime.UtcNow);
+public record EntityBParentChangedEvent(EntityBId EntityBId, EntityAId? OldParentId, EntityAId? NewParentId) : DomainEvent(DateTime.UtcNow);
 ```
 
 #### Domain Services
 ```csharp
-// Project domain service
-public interface IProjectDomainService
+// Domain A domain service
+public interface IEntityADomainService
 {
-    bool CanCompleteProject(Project project, IEnumerable<Task> projectTasks);
-    Task<ProjectSummary> CalculateProjectProgress(Project project, IEnumerable<Task> projectTasks);
+    bool CanCompleteEntityA(EntityA entityA, IEnumerable<EntityB> relatedEntities);
+    Task<EntityASummary> CalculateEntityAProgress(EntityA entityA, IEnumerable<EntityB> relatedEntities);
 }
 
-// Task domain service
-public interface ITaskDomainService
+// Domain B domain service
+public interface IEntityBDomainService
 {
-    bool CanCompleteTask(Task task);
-    Task<RecurringTask> CreateRecurringTask(Task template, RecurrencePattern pattern);
-    Priority CalculateAutoPriority(Task task, Project? project);
+    bool CanCompleteEntityB(EntityB entityB);
+    Task<RecurringEntityB> CreateRecurringEntityB(EntityB template, RecurrencePattern pattern);
+    Priority CalculateAutoPriority(EntityB entityB, EntityA? parentEntity);
 }
 ```
 
@@ -298,28 +266,28 @@ public interface ITaskDomainService
 #### Namespace Organization Strategy
 ```csharp
 // Clear namespace separation enforces domain boundaries
-namespace ProjectManagement.Domain.Projects
+namespace Application.Domain.DomainA
 {
-    public class Project { /* ... */ }
-    public record ProjectId(Guid Value);
-    public interface IProjectDomainService { /* ... */ }
+    public class EntityA { /* ... */ }
+    public record EntityAId(Guid Value);
+    public interface IEntityADomainService { /* ... */ }
 }
 
-namespace ProjectManagement.Domain.Tasks
+namespace Application.Domain.DomainB
 {
-    public class Task { /* ... */ }
-    public record TaskId(Guid Value);
-    public interface ITaskDomainService { /* ... */ }
+    public class EntityB { /* ... */ }
+    public record EntityBId(Guid Value);
+    public interface IEntityBDomainService { /* ... */ }
 }
 
-namespace ProjectManagement.Domain.Shared
+namespace Application.Domain.Shared
 {
     // Only shared types that truly belong to multiple domains
     public record AuditInfo(UserId CreatedBy, DateTime CreatedAt);
     public abstract record DomainEvent(DateTime OccurredAt);
 }
 
-namespace ProjectManagement.Domain.Common
+namespace Application.Domain.Common
 {
     // Base classes and truly common infrastructure
     public abstract class Entity<TId> { /* ... */ }
@@ -333,223 +301,188 @@ namespace ProjectManagement.Domain.Common
 
 #### Domain-Specific Application Services
 
-**Projects Application Services**:
+**Domain A Application Services**:
 ```csharp
-// Project use cases
-public interface IProjectService
+// Domain A use cases
+public interface IEntityAService
 {
-    Task<IEnumerable<ProjectDto>> GetAllProjectsAsync();
-    Task<ProjectDto> GetProjectByIdAsync(ProjectId id);
-    Task<ProjectId> CreateProjectAsync(CreateProjectRequest request);
-    Task UpdateProjectAsync(ProjectId id, UpdateProjectRequest request);
-    Task DeleteProjectAsync(ProjectId id);
-    Task CompleteProjectAsync(ProjectId id);
+    Task<IEnumerable<EntityADto>> GetAllEntitiesAsync();
+    Task<EntityADto> GetEntityByIdAsync(EntityAId id);
+    Task<EntityAId> CreateEntityAsync(CreateEntityARequest request);
+    Task UpdateEntityAsync(EntityAId id, UpdateEntityARequest request);
+    Task DeleteEntityAsync(EntityAId id);
+    Task CompleteEntityAsync(EntityAId id);
 }
 
-// Project DTOs
-public record ProjectDto(
+// Domain A DTOs
+public record EntityADto(
     Guid Id,
     string Name,
     string Description,
     string Status,
-    Guid OwnerId,
-    string OwnerDisplayName,
     DateTime CreatedAt,
-    DateTime? DueDate,
-    int TaskCount,
-    int CompletedTaskCount
+    DateTime? CompletionDate,
+    int RelatedEntityBCount,
+    int CompletedEntityBCount
 );
 
-public record CreateProjectRequest(string Name, string Description, Guid OwnerId, DateTime? DueDate);
-public record UpdateProjectRequest(string Name, string Description, DateTime? DueDate);
+public record CreateEntityARequest(string Name, string Description, DateTime? CompletionDate);
+public record UpdateEntityARequest(string Name, string Description, DateTime? CompletionDate);
 ```
 
-**Tasks Application Services**:
+**Domain B Application Services**:
 ```csharp
-// Task use cases
-public interface ITaskService
+// Domain B use cases
+public interface IEntityBService
 {
-    Task<IEnumerable<TaskDto>> GetAllTasksAsync();
-    Task<IEnumerable<TaskDto>> GetTasksByProjectIdAsync(ProjectId projectId);
-    Task<TaskDto> GetTaskByIdAsync(TaskId id);
-    Task<TaskId> CreateTaskAsync(CreateTaskRequest request);
-    Task UpdateTaskAsync(TaskId id, UpdateTaskRequest request);
-    Task DeleteTaskAsync(TaskId id);
-    Task CompleteTaskAsync(TaskId id);
-    Task AssignTaskToProjectAsync(TaskId taskId, ProjectId projectId);
+    Task<IEnumerable<EntityBDto>> GetAllEntitiesAsync();
+    Task<IEnumerable<EntityBDto>> GetEntitiesByParentIdAsync(EntityAId parentId);
+    Task<EntityBDto> GetEntityByIdAsync(EntityBId id);
+    Task<EntityBId> CreateEntityAsync(CreateEntityBRequest request);
+    Task UpdateEntityAsync(EntityBId id, UpdateEntityBRequest request);
+    Task DeleteEntityAsync(EntityBId id);
+    Task CompleteEntityAsync(EntityBId id);
+    Task AssignToParentAsync(EntityBId entityBId, EntityAId parentId);
 }
 
-// Task DTOs
-public record TaskDto(
+// Domain B DTOs
+public record EntityBDto(
     Guid Id,
     string Title,
     string Description,
     string Status,
     string Priority,
-    Guid? ProjectId,
-    string? ProjectName,
-    Guid AssigneeId,
-    string AssigneeDisplayName,
+    Guid? ParentEntityAId,
+    string? ParentEntityAName,
     DateTime CreatedAt,
     DateTime? DueDate
 );
 
-public record CreateTaskRequest(string Title, string Description, Guid AssigneeId, Guid? ProjectId, string Priority, DateTime? DueDate);
-public record UpdateTaskRequest(string Title, string Description, string Priority, DateTime? DueDate);
+public record CreateEntityBRequest(string Title, string Description, Guid? ParentEntityAId, string Priority, DateTime? DueDate);
+public record UpdateEntityBRequest(string Title, string Description, string Priority, DateTime? DueDate);
 ```
 
-**Users Application Services**:
-```csharp
-// User use cases
-public interface IUserService
-{
-    Task<IEnumerable<UserDto>> GetAllUsersAsync();
-    Task<UserDto> GetUserByIdAsync(UserId id);
-    Task<UserId> CreateUserAsync(CreateUserRequest request);
-    Task UpdateUserAsync(UserId id, UpdateUserRequest request);
-    Task DeactivateUserAsync(UserId id);
-}
-
-// User DTOs
-public record UserDto(
-    Guid Id,
-    string Email,
-    string DisplayName,
-    string Role,
-    DateTime CreatedAt,
-    bool IsActive
-);
-
-public record CreateUserRequest(string Email, string DisplayName, string Role);
-public record UpdateUserRequest(string DisplayName);
-```
 
 #### Cross-Domain Coordination Services
 
 ```csharp
 // Coordination service for complex cross-domain operations
-public class ProjectTaskCoordinationService
+public class DomainADomainBCoordinationService
 {
-    private readonly IProjectService _projectService;
-    private readonly ITaskService _taskService;
-    private readonly IUserService _userService;
+    private readonly IEntityAService _entityAService;
+    private readonly IEntityBService _entityBService;
     private readonly IDomainEventPublisher _eventPublisher;
     
-    public async Task<ProjectWithTasksDto> GetProjectWithTasksAsync(ProjectId projectId)
+    public async Task<EntityAWithEntitiesBDto> GetEntityAWithEntitiesBAsync(EntityAId entityAId)
     {
-        var project = await _projectService.GetProjectByIdAsync(projectId);
-        var tasks = await _taskService.GetTasksByProjectIdAsync(projectId);
-        var owner = await _userService.GetUserByIdAsync(new UserId(project.OwnerId));
+        var entityA = await _entityAService.GetEntityByIdAsync(entityAId);
+        var entitiesB = await _entityBService.GetEntitiesByParentIdAsync(entityAId);
         
-        return new ProjectWithTasksDto(
-            project,
-            tasks.ToList(),
-            owner,
-            CalculateProgress(tasks)
+        return new EntityAWithEntitiesBDto(
+            entityA,
+            entitiesB.ToList(),
+            CalculateProgress(entitiesB)
         );
     }
     
-    public async Task<TaskId> CreateTaskInProjectAsync(ProjectId projectId, CreateTaskInProjectRequest request)
+    public async Task<EntityBId> CreateEntityBInEntityAAsync(EntityAId entityAId, CreateEntityBInEntityARequest request)
     {
-        // Validate project exists and user has permission
-        var project = await _projectService.GetProjectByIdAsync(projectId);
-        if (project == null)
-            throw new ProjectNotFoundException(projectId);
+        // Validate parent entity exists
+        var entityA = await _entityAService.GetEntityByIdAsync(entityAId);
+        if (entityA == null)
+            throw new EntityANotFoundException(entityAId);
             
-        // Create task with project assignment
-        var taskRequest = new CreateTaskRequest(
+        // Create entity B with parent assignment
+        var entityBRequest = new CreateEntityBRequest(
             request.Title,
             request.Description,
-            request.AssigneeId,
-            projectId.Value,
+            entityAId.Value,
             request.Priority,
             request.DueDate
         );
         
-        var taskId = await _taskService.CreateTaskAsync(taskRequest);
+        var entityBId = await _entityBService.CreateEntityAsync(entityBRequest);
         
         // Publish cross-domain event
-        await _eventPublisher.PublishAsync(new TaskAddedToProjectEvent(projectId, new TaskId(taskId)));
+        await _eventPublisher.PublishAsync(new EntityBAddedToEntityAEvent(entityAId, new EntityBId(entityBId)));
         
-        return taskId;
+        return entityBId;
     }
     
-    public async Task CompleteProjectWithTasksAsync(ProjectId projectId)
+    public async Task CompleteEntityAWithEntitiesBAsync(EntityAId entityAId)
     {
-        // Get all project tasks
-        var tasks = await _taskService.GetTasksByProjectIdAsync(projectId);
+        // Get all related entities B
+        var entitiesB = await _entityBService.GetEntitiesByParentIdAsync(entityAId);
         
-        // Complete all incomplete tasks
-        foreach (var task in tasks.Where(t => t.Status != "Completed"))
+        // Complete all incomplete entities B
+        foreach (var entityB in entitiesB.Where(e => e.Status != "Completed"))
         {
-            await _taskService.CompleteTaskAsync(new TaskId(task.Id));
+            await _entityBService.CompleteEntityAsync(new EntityBId(entityB.Id));
         }
         
-        // Complete the project
-        await _projectService.CompleteProjectAsync(projectId);
+        // Complete the parent entity A
+        await _entityAService.CompleteEntityAsync(entityAId);
     }
     
-    private ProjectProgress CalculateProgress(IEnumerable<TaskDto> tasks)
+    private EntityAProgress CalculateProgress(IEnumerable<EntityBDto> entitiesB)
     {
-        var taskList = tasks.ToList();
-        var totalTasks = taskList.Count;
-        var completedTasks = taskList.Count(t => t.Status == "Completed");
+        var entitiesList = entitiesB.ToList();
+        var totalEntities = entitiesList.Count;
+        var completedEntities = entitiesList.Count(e => e.Status == "Completed");
         
-        return new ProjectProgress(
-            totalTasks,
-            completedTasks,
-            totalTasks > 0 ? (double)completedTasks / totalTasks * 100 : 0
+        return new EntityAProgress(
+            totalEntities,
+            completedEntities,
+            totalEntities > 0 ? (double)completedEntities / totalEntities * 100 : 0
         );
     }
 }
 
 // Cross-domain DTOs
-public record ProjectWithTasksDto(
-    ProjectDto Project,
-    IReadOnlyList<TaskDto> Tasks,
-    UserDto Owner,
-    ProjectProgress Progress
+public record EntityAWithEntitiesBDto(
+    EntityADto EntityA,
+    IReadOnlyList<EntityBDto> EntitiesB,
+    EntityAProgress Progress
 );
 
-public record ProjectProgress(int TotalTasks, int CompletedTasks, double PercentComplete);
-public record CreateTaskInProjectRequest(string Title, string Description, Guid AssigneeId, string Priority, DateTime? DueDate);
+public record EntityAProgress(int TotalEntities, int CompletedEntities, double PercentComplete);
+public record CreateEntityBInEntityARequest(string Title, string Description, string Priority, DateTime? DueDate);
 ```
 
 #### Domain Event Handling
 
 ```csharp
 // Event handlers for cross-domain coordination
-public class ProjectTaskEventHandler : IDomainEventHandler<TaskCompletedEvent>
+public class DomainADomainBEventHandler : IDomainEventHandler<EntityBCompletedEvent>
 {
-    private readonly IProjectService _projectService;
-    private readonly ITaskService _taskService;
+    private readonly IEntityAService _entityAService;
+    private readonly IEntityBService _entityBService;
     
-    public async Task HandleAsync(TaskCompletedEvent domainEvent)
+    public async Task HandleAsync(EntityBCompletedEvent domainEvent)
     {
-        var task = await _taskService.GetTaskByIdAsync(domainEvent.TaskId);
+        var entityB = await _entityBService.GetEntityByIdAsync(domainEvent.EntityBId);
         
-        if (task.ProjectId.HasValue)
+        if (entityB.ParentEntityAId.HasValue)
         {
-            var projectId = new ProjectId(task.ProjectId.Value);
-            var projectTasks = await _taskService.GetTasksByProjectIdAsync(projectId);
+            var entityAId = new EntityAId(entityB.ParentEntityAId.Value);
+            var relatedEntitiesB = await _entityBService.GetEntitiesByParentIdAsync(entityAId);
             
-            // Auto-complete project if all tasks are done
-            if (projectTasks.All(t => t.Status == "Completed"))
+            // Auto-complete parent entity A if all related entities B are done
+            if (relatedEntitiesB.All(e => e.Status == "Completed"))
             {
-                await _projectService.CompleteProjectAsync(projectId);
+                await _entityAService.CompleteEntityAsync(entityAId);
             }
         }
     }
 }
 
-public class TaskProjectEventHandler : IDomainEventHandler<TaskProjectChangedEvent>
+public class EntityBParentEventHandler : IDomainEventHandler<EntityBParentChangedEvent>
 {
     private readonly INotificationService _notificationService;
-    private readonly IUserService _userService;
     
-    public async Task HandleAsync(TaskProjectChangedEvent domainEvent)
+    public async Task HandleAsync(EntityBParentChangedEvent domainEvent)
     {
-        // Notify relevant users about task project assignment changes
+        // Handle entity B parent assignment changes
         // This keeps domains decoupled while enabling business workflows
     }
 }
@@ -965,10 +898,6 @@ ProjectManagement.UI.Shared/
 │   ├── TaskCard.razor
 │   ├── TaskForm.razor
 │   └── TaskDetails.razor
-├── Users/
-│   ├── UserList.razor
-│   ├── UserCard.razor
-│   └── UserForm.razor
 ├── Common/
 │   ├── LoadingSpinner.razor
 │   ├── EmptyState.razor
@@ -1603,18 +1532,6 @@ public class DomainBoundaryTests
             $"Tasks domain should not depend on Projects domain. Violations: {string.Join(", ", result.FailingTypeNames)}");
     }
     
-    [Test]
-    public void Users_Domain_Should_Not_Reference_Other_Domains()
-    {
-        var result = Types.InCurrentDomain()
-            .That().ResideInNamespace("TheNextLevel.Domain.Users")
-            .Should().NotHaveDependencyOn("TheNextLevel.Domain.Projects")
-            .And().Should().NotHaveDependencyOn("TheNextLevel.Domain.Tasks")
-            .GetResult();
-            
-        Assert.That(result.IsSuccessful, Is.True, 
-            $"Users domain should not depend on other domains. Violations: {string.Join(", ", result.FailingTypeNames)}");
-    }
     
     [Test]
     public void Domain_Should_Not_Reference_Application_Layer()
@@ -2034,7 +1951,7 @@ This architecture serves as a solid foundation that can grow with your applicati
    @inject ProjectTaskCoordinationService CoordinationService
    ```
    - Valid pattern for complex operations
-   - Proper separation of concerns
+   - Proper separation of concerns between Projects and Tasks
 
 4. **Direct Service Method Calls**
    ```csharp

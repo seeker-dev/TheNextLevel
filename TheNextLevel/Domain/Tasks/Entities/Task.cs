@@ -14,7 +14,7 @@ public class Task : Entity<TaskId>
     // Private constructor for EF Core
     private Task() : base() 
     {
-        Status = TaskStatus.NotStarted;
+        Status = TaskStatus.NotCompleted;
     }
 
     public Task(TaskId id, string title, string description) 
@@ -25,7 +25,7 @@ public class Task : Entity<TaskId>
             
         Title = title.Trim();
         Description = description?.Trim() ?? string.Empty;
-        Status = TaskStatus.NotStarted;
+        Status = TaskStatus.NotCompleted;
         CreatedAt = DateTime.UtcNow;
     }
 
@@ -47,13 +47,6 @@ public class Task : Entity<TaskId>
         Description = newDescription?.Trim() ?? string.Empty;
     }
     
-    public void Start()
-    {
-        if (Status == TaskStatus.Completed)
-            throw new InvalidOperationException("Cannot start a completed task");
-            
-        Status = TaskStatus.InProgress;
-    }
     
     public void MarkComplete()
     {
@@ -68,6 +61,6 @@ public class Task : Entity<TaskId>
         if (Status != TaskStatus.Completed)
             throw new InvalidOperationException("Can only reopen completed tasks");
             
-        Status = TaskStatus.InProgress;
+        Status = TaskStatus.NotCompleted;
     }
 }

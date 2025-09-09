@@ -67,15 +67,6 @@ public class TaskService : ITaskService
         return true;
     }
     
-    public async System.Threading.Tasks.Task<bool> StartTaskAsync(TaskId id)
-    {
-        var task = await _taskRepository.GetByIdAsync(id);
-        if (task == null) return false;
-        
-        task.Start();
-        await _taskRepository.UpdateAsync(task);
-        return true;
-    }
     
     public async System.Threading.Tasks.Task<bool> ReopenTaskAsync(TaskId id)
     {

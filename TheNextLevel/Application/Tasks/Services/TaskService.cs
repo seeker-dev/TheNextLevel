@@ -1,5 +1,4 @@
 using TheNextLevel.Application.Tasks.DTOs;
-using TheNextLevel.Domain.Tasks.Entities;
 using TheNextLevel.Domain.Tasks.ValueObjects;
 using TheNextLevel.Infrastructure.Data;
 using DomainTask = TheNextLevel.Domain.Tasks.Entities.Task;

@@ -18,10 +18,6 @@
                 <textarea class="ntd-form-input ntd-form-textarea" @bind="taskDescription" placeholder="Add task description..."></textarea>
             </div>
             
-            <div class="ntd-form-group">
-                <label class="ntd-form-label">Due Date (Optional)</label>
-                <input type="date" class="ntd-form-input" @bind="taskDueDate" />
-            </div>
         </div>
     </ChildContent>
     <FooterContent>
@@ -51,7 +47,6 @@
 
 	private string taskTitle = string.Empty;
 	private string taskDescription = string.Empty;
-	private DateTime? taskDueDate;
 
 	protected override void OnParametersSet()
 	{
@@ -60,7 +55,6 @@
 			// Reset form when dialog is shown
 			taskTitle = string.Empty;
 			taskDescription = string.Empty;
-			taskDueDate = null;
 		}
 	}
 
@@ -75,8 +69,7 @@
 		{
 			var request = new CreateTaskRequest(
 				taskTitle.Trim(),
-				taskDescription?.Trim() ?? string.Empty,
-				taskDueDate
+				taskDescription?.Trim() ?? string.Empty
 			);
 
 			var taskId = await TaskService.CreateTaskAsync(request);
@@ -90,7 +83,6 @@
 			// Reset form after saving
 			taskTitle = string.Empty;
 			taskDescription = string.Empty;
-			taskDueDate = null;
 		}
 	}
 }

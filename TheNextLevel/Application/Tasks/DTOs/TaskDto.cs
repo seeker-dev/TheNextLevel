@@ -10,12 +10,10 @@ public record TaskDto(
 
 public record CreateTaskRequest(
     string Title,
-    string Description,
-    DateTime? DueDate = null
+    string Description
 );
 
 public record UpdateTaskRequest(
     string Title,
-    string Description,
-    DateTime? DueDate = null
+    string Description
 );

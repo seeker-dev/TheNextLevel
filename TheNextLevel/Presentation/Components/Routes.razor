@@ -1,4 +1,6 @@
-﻿@using TheNextLevel.Components.Common.Layout
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using TheNextLevel.Presentation.Components
 <Router AppAssembly="@typeof(MauiProgram).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />

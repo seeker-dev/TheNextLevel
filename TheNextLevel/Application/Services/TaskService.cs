@@ -1,10 +1,9 @@
-using TheNextLevel.Application.Tasks.DTOs;
-using TheNextLevel.Domain.Tasks.ValueObjects;
-using TheNextLevel.Infrastructure.Data;
-using DomainTask = TheNextLevel.Domain.Tasks.Entities.Task;
-using TaskStatus = TheNextLevel.Domain.Tasks.ValueObjects.TaskStatus;
+using TheNextLevel.Application.DTOs;
+using TheNextLevel.Application.Interfaces;
+using TheNextLevel.Core.Entities;
+using TheNextLevel.Core.Interfaces;
 
-namespace TheNextLevel.Application.Tasks.Services;
+namespace TheNextLevel.Application.Services;
 
 public class TaskService : ITaskService
 {
@@ -21,21 +20,21 @@ public class TaskService : ITaskService
         return tasks.Select(MapToDto);
     }
     
-    public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(TaskId id)
+    public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         return task != null ? MapToDto(task) : null;
     }
     
-    public async System.Threading.Tasks.Task<TaskId> CreateTaskAsync(CreateTaskRequest request)
+    public async System.Threading.Tasks.Task<Guid> CreateTaskAsync(CreateTaskRequest request)
     {
-        var task = DomainTask.Create(request.Title, request.Description);
+        var task = new Core.Entities.Task(request.Title, request.Description);
         
         await _taskRepository.AddAsync(task);
         return task.Id;
     }
     
-    public async System.Threading.Tasks.Task<bool> UpdateTaskAsync(TaskId id, UpdateTaskRequest request)
+    public async System.Threading.Tasks.Task<bool> UpdateTaskAsync(Guid id, UpdateTaskRequest request)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
@@ -47,16 +46,12 @@ public class TaskService : ITaskService
         return true;
     }
     
-    public async System.Threading.Tasks.Task<bool> DeleteTaskAsync(TaskId id)
+    public async System.Threading.Tasks.Task<bool> DeleteTaskAsync(Guid id)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
-        if (task == null) return false;
-        
-        await _taskRepository.DeleteAsync(id);
-        return true;
+        return await _taskRepository.DeleteAsync(id);
     }
     
-    public async System.Threading.Tasks.Task<bool> CompleteTaskAsync(TaskId id)
+    public async System.Threading.Tasks.Task<bool> CompleteTaskAsync(Guid id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
@@ -66,8 +61,7 @@ public class TaskService : ITaskService
         return true;
     }
     
-    
-    public async System.Threading.Tasks.Task<bool> ReopenTaskAsync(TaskId id)
+    public async System.Threading.Tasks.Task<bool> ReopenTaskAsync(Guid id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
@@ -77,21 +71,21 @@ public class TaskService : ITaskService
         return true;
     }
     
-    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(string status)
+    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(bool isCompleted)
     {
-        var tasks = await _taskRepository.GetAllAsync();
-        var taskStatus = TaskStatus.FromString(status);
-        return tasks.Where(t => t.Status == taskStatus).Select(MapToDto);
+        var tasks = await _taskRepository.GetByStatusAsync(isCompleted);
+        return tasks.Select(MapToDto);
     }
     
-    private static TaskDto MapToDto(DomainTask task)
+    private static TaskDto MapToDto(Core.Entities.Task task)
     {
         return new TaskDto(
-            task.Id.Value,
+            task.Id,
             task.Title,
             task.Description,
-            task.Status.Name,
-            task.CreatedAt
+            task.IsCompleted,
+            task.CreatedAt,
+            task.CompletedAt
         );
     }
 }

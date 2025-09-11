@@ -1,5 +1,5 @@
-﻿@using TheNextLevel.Application.Tasks.DTOs
-@using TheNextLevel.Application.Tasks.Services
+﻿@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Application.Interfaces
 @inject ITaskService TaskService
 
 <div class="task-card" style="border-left: 4px solid #6c757d">
@@ -15,7 +15,7 @@
                 <div class="task-description">@Task.Description</div>
             }
             <div class="task-meta">
-                <span class="task-status">@(Task?.Status ?? "Unknown")</span>
+                <span class="task-status">@(Task?.IsCompleted == true ? "Completed" : "Pending")</span>
             </div>
         </div>
     </div>
@@ -29,26 +29,25 @@
     [Parameter]
     public EventCallback<TaskDto> OnTaskUpdated { get; set; }
     
-    private bool IsCompleted => Task?.Status == "Completed";
+    private bool IsCompleted => Task?.IsCompleted == true;
     
     private async Task OnStatusChange(ChangeEventArgs e)
     {
         if (Task == null) return;
         
         var isChecked = (bool)(e.Value ?? false);
-        var taskId = new TheNextLevel.Domain.Tasks.ValueObjects.TaskId(Task.Id);
         
         if (isChecked && !IsCompleted)
         {
-            await TaskService.CompleteTaskAsync(taskId);
+            await TaskService.CompleteTaskAsync(Task.Id);
         }
         else if (!isChecked && IsCompleted)
         {
-            await TaskService.ReopenTaskAsync(taskId);
+            await TaskService.ReopenTaskAsync(Task.Id);
         }
         
         // Refresh task data and notify parent
-        var updatedTask = await TaskService.GetTaskByIdAsync(taskId);
+        var updatedTask = await TaskService.GetTaskByIdAsync(Task.Id);
         if (updatedTask != null)
         {
             await OnTaskUpdated.InvokeAsync(updatedTask);

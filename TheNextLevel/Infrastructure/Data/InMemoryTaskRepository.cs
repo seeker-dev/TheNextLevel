@@ -1,45 +1,53 @@
-using System.Collections.Concurrent;
-using TheNextLevel.Domain.Tasks.Entities;
-using TheNextLevel.Domain.Tasks.ValueObjects;
-using DomainTask = TheNextLevel.Domain.Tasks.Entities.Task;
+using TheNextLevel.Core.Entities;
+using TheNextLevel.Core.Interfaces;
 
 namespace TheNextLevel.Infrastructure.Data;
 
 public class InMemoryTaskRepository : ITaskRepository
 {
-    private readonly ConcurrentDictionary<TaskId, DomainTask> _tasks = new();
+    private readonly List<Core.Entities.Task> _tasks = new();
     
-    public System.Threading.Tasks.Task<IEnumerable<DomainTask>> GetAllAsync()
+    public System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetAllAsync()
     {
-        return System.Threading.Tasks.Task.FromResult(_tasks.Values.AsEnumerable());
+        return System.Threading.Tasks.Task.FromResult(_tasks.AsEnumerable());
     }
     
-    public System.Threading.Tasks.Task<DomainTask?> GetByIdAsync(TaskId id)
+    public System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(Guid id)
     {
-        _tasks.TryGetValue(id, out var task);
+        var task = _tasks.FirstOrDefault(t => t.Id == id);
         return System.Threading.Tasks.Task.FromResult(task);
     }
     
-    public System.Threading.Tasks.Task<TaskId> AddAsync(DomainTask task)
+    public System.Threading.Tasks.Task<Core.Entities.Task> AddAsync(Core.Entities.Task task)
     {
-        if (task == null) throw new ArgumentNullException(nameof(task));
-        
-        _tasks.TryAdd(task.Id, task);
-        return System.Threading.Tasks.Task.FromResult(task.Id);
+        _tasks.Add(task);
+        return System.Threading.Tasks.Task.FromResult(task);
     }
     
-    public System.Threading.Tasks.Task UpdateAsync(DomainTask task)
+    public System.Threading.Tasks.Task<Core.Entities.Task> UpdateAsync(Core.Entities.Task task)
     {
-        if (task == null) throw new ArgumentNullException(nameof(task));
-        
-        _tasks.TryRemove(task.Id, out _);
-        _tasks.TryAdd(task.Id, task);
-        return System.Threading.Tasks.Task.CompletedTask;
+        var index = _tasks.FindIndex(t => t.Id == task.Id);
+        if (index != -1)
+        {
+            _tasks[index] = task;
+        }
+        return System.Threading.Tasks.Task.FromResult(task);
     }
     
-    public System.Threading.Tasks.Task DeleteAsync(TaskId id)
+    public System.Threading.Tasks.Task<bool> DeleteAsync(Guid id)
     {
-        _tasks.TryRemove(id, out _);
-        return System.Threading.Tasks.Task.CompletedTask;
+        var task = _tasks.FirstOrDefault(t => t.Id == id);
+        if (task != null)
+        {
+            _tasks.Remove(task);
+            return System.Threading.Tasks.Task.FromResult(true);
+        }
+        return System.Threading.Tasks.Task.FromResult(false);
+    }
+    
+    public System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetByStatusAsync(bool isCompleted)
+    {
+        var filteredTasks = _tasks.Where(t => t.IsCompleted == isCompleted);
+        return System.Threading.Tasks.Task.FromResult(filteredTasks);
     }
 }

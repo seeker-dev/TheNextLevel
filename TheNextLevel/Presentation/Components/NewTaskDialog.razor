@@ -1,4 +1,4 @@
-@using TheNextLevel.Components.Common.Dialog
+@using TheNextLevel.Presentation.Components
 
 <BaseDialog TResult="TaskDto" IsVisible="IsVisible" Title="Create New Task" OnCancel="OnCancel" OnResult="OnResult">
     <ChildContent>
@@ -31,8 +31,8 @@
     </FooterContent>
 </BaseDialog>
 
-@using TheNextLevel.Application.Tasks.Services
-@using TheNextLevel.Application.Tasks.DTOs
+@using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Application.DTOs
 @inject ITaskService TaskService
 
 @code {

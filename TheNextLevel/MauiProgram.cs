@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using TheNextLevel.Application.Tasks.Services;
-using TheNextLevel.Application.Common.Services;
+using TheNextLevel.Application.Interfaces;
+using TheNextLevel.Application.Services;
+using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Infrastructure.Data;
 
 namespace TheNextLevel
@@ -21,7 +22,6 @@ namespace TheNextLevel
 
             // Register application services
             builder.Services.AddScoped<ITaskService, TaskService>();
-            builder.Services.AddSingleton<IDialogService, DialogService>();
             
             // Register infrastructure services
             builder.Services.AddSingleton<ITaskRepository, InMemoryTaskRepository>();

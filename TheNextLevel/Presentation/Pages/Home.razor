@@ -1,5 +1,4 @@
-﻿@using TheNextLevel.Presentation.Components
-@using TheNextLevel.Application.DTOs
+﻿@using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @inject ITaskService TaskService
 
@@ -29,15 +28,21 @@
             </div>
         }
         <div class="fab-container">
-            <button class="fab" @onclick="ShowNewTaskDialogHandler">+</button>
+            <button class="fab" @onclick="@(async () => await TestClick())" type="button">+</button>
         </div>
     </div>
+    
+    @* Debug: _showNewTaskDialog = @_showNewTaskDialog *@
+    <NewTaskDialog IsVisible="_showNewTaskDialog" 
+                   OnResult="OnTaskCreated" 
+                   OnCancel="OnTaskDialogCancel" />
 </main>
 
 @code
 {
     private List<TaskDto> _tasks = new List<TaskDto>();
     private bool _isLoading = true;
+    private bool _showNewTaskDialog = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -63,11 +68,30 @@
         }
     }
 
-    private async Task ShowNewTaskDialogHandler()
+    private void ShowNewTaskDialogHandler()
     {
-        // Simplified - for Clean Architecture demo
-        // TODO: Implement proper dialog system
+        Console.WriteLine("ShowNewTaskDialogHandler called");
+        _showNewTaskDialog = true;
+        StateHasChanged(); // Force UI update
+    }
+
+    private async Task TestClick()
+    {
+        Console.WriteLine("TestClick called!");
+        _showNewTaskDialog = true;
+        StateHasChanged();
+        await Task.CompletedTask;
+    }
+
+    private async Task OnTaskCreated(TaskDto newTask)
+    {
+        _showNewTaskDialog = false;
         await LoadTasks();
+    }
+
+    private void OnTaskDialogCancel()
+    {
+        _showNewTaskDialog = false;
     }
     
     private Task OnTaskUpdated(TaskDto updatedTask)

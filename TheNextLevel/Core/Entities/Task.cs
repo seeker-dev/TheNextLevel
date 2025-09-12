@@ -7,7 +7,6 @@ public class Task
     public string Description { get; set; } = string.Empty;
     public bool IsCompleted { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime? CompletedAt { get; set; }
     
     // Parameterless constructor for EF Core
     public Task() 
@@ -43,7 +42,6 @@ public class Task
         if (!IsCompleted)
         {
             IsCompleted = true;
-            CompletedAt = DateTime.UtcNow;
         }
     }
     
@@ -52,7 +50,6 @@ public class Task
         if (IsCompleted)
         {
             IsCompleted = false;
-            CompletedAt = null;
         }
     }
 }

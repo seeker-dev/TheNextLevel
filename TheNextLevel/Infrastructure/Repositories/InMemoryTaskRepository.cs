@@ -1,7 +1,7 @@
 using TheNextLevel.Core.Entities;
 using TheNextLevel.Core.Interfaces;
 
-namespace TheNextLevel.Infrastructure.Data;
+namespace TheNextLevel.Infrastructure.Repositories;
 
 public class InMemoryTaskRepository : ITaskRepository
 {

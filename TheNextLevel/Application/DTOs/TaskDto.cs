@@ -5,8 +5,7 @@ public record TaskDto(
     string Title,
     string Description,
     bool IsCompleted,
-    DateTime CreatedAt,
-    DateTime? CompletedAt
+    DateTime CreatedAt
 );
 
 public record CreateTaskRequest(string Title, string Description);

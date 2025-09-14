@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Application.Services;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Infrastructure.Data;
+using TheNextLevel.Infrastructure.Repositories;
 
 namespace TheNextLevel
 {
@@ -20,18 +22,34 @@ namespace TheNextLevel
 
             builder.Services.AddMauiBlazorWebView();
 
+            // Register database context
+            builder.Services.AddDbContext<TaskDbContext>(options =>
+            {
+                var connectionString = $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "tasks.db")}";
+                options.UseSqlite(connectionString);
+            });
+
             // Register application services
             builder.Services.AddScoped<ITaskService, TaskService>();
             
             // Register infrastructure services
-            builder.Services.AddSingleton<ITaskRepository, InMemoryTaskRepository>();
+            builder.Services.AddScoped<ITaskRepository, SqliteTaskRepository>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
-            return builder.Build();
+            // Build the app and initialize database
+            var app = builder.Build();
+            
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+                context.Database.EnsureCreated();
+            }
+
+            return app;
         }
     }
 }

@@ -2,9 +2,16 @@
 @using TheNextLevel.Application.Interfaces
 @inject ITaskService TaskService
 
-<div class="task-card @(IsCompleted ? "completed" : "")">
+<div class="task-card @(IsCompleted ? "completed" : "")" @onclick:stopPropagation="true">
     <div class="task-actions">
         <button class="btn-menu" @onclick="OnMenuClick">⋮</button>
+        @if (showMenu)
+        {
+            <div class="task-menu">
+                <button class="menu-item" @onclick="OnEditClick">Edit</button>
+                <button class="menu-item menu-item-danger" @onclick="OnDeleteClick">Delete</button>
+            </div>
+        }
     </div>
     <div class="task-checkbox-container">
         <input class="task-checkbox" type="checkbox" checked="@IsCompleted" @onchange="OnStatusChange">
@@ -28,9 +35,16 @@
     
     [Parameter]
     public EventCallback<TaskDto> OnTaskUpdated { get; set; }
-    
+
+    [Parameter]
+    public EventCallback<TaskDto> OnTaskDeleted { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskDto> OnTaskEdit { get; set; }
+
     private bool IsCompleted => Task?.IsCompleted == true;
-    
+    private bool showMenu = false;
+
     private async Task OnStatusChange(ChangeEventArgs e)
     {
         if (Task == null) return;
@@ -56,6 +70,28 @@
     
     private void OnMenuClick()
     {
-        // TODO: Implement task menu (edit, delete, etc.)
+        showMenu = !showMenu;
+    }
+
+    private async Task OnEditClick()
+    {
+        showMenu = false;
+        if (Task != null)
+        {
+            await OnTaskEdit.InvokeAsync(Task);
+        }
+    }
+
+    private async Task OnDeleteClick()
+    {
+        showMenu = false;
+        if (Task != null)
+        {
+            var success = await TaskService.DeleteTaskAsync(Task.Id);
+            if (success)
+            {
+                await OnTaskDeleted.InvokeAsync(Task);
+            }
+        }
     }
 }

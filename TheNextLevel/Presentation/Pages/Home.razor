@@ -17,7 +17,10 @@
             <div class="task-grid">
                 @foreach (var task in _tasks)
                 {
-                    <TaskCard Task="@task" OnTaskUpdated="OnTaskUpdated" />
+                    <TaskCard Task="@task"
+                              OnTaskUpdated="OnTaskUpdated"
+                              OnTaskDeleted="OnTaskDeleted"
+                              OnTaskEdit="OnTaskEdit" />
                 }
             </div>
         }
@@ -103,6 +106,21 @@
             _tasks[index] = updatedTask;
             StateHasChanged();
         }
+        return Task.CompletedTask;
+    }
+
+    private Task OnTaskDeleted(TaskDto deletedTask)
+    {
+        // Remove the task from the local list
+        _tasks.RemoveAll(t => t.Id == deletedTask.Id);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task OnTaskEdit(TaskDto taskToEdit)
+    {
+        // For now, just show a placeholder. This could open an edit dialog in the future
+        Console.WriteLine($"Edit task requested: {taskToEdit.Title}");
         return Task.CompletedTask;
     }
 }

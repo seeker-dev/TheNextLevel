@@ -50,4 +50,16 @@ public class InMemoryTaskRepository : ITaskRepository
         var filteredTasks = _tasks.Where(t => t.IsCompleted == isCompleted);
         return System.Threading.Tasks.Task.FromResult(filteredTasks);
     }
+
+    public System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(Guid projectId)
+    {
+        var filteredTasks = _tasks.Where(t => t.ProjectId == projectId);
+        return System.Threading.Tasks.Task.FromResult(filteredTasks);
+    }
+
+    public System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetUngroupedTasksAsync()
+    {
+        var ungroupedTasks = _tasks.Where(t => t.ProjectId == null);
+        return System.Threading.Tasks.Task.FromResult(ungroupedTasks);
+    }
 }

@@ -34,6 +34,7 @@ namespace TheNextLevel
             
             // Register infrastructure services
             builder.Services.AddScoped<ITaskRepository, SqliteTaskRepository>();
+            builder.Services.AddScoped<IProjectRepository, SqliteProjectRepository>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

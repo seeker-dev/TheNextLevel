@@ -56,4 +56,18 @@ public class SqliteTaskRepository : ITaskRepository
             .Where(t => t.IsCompleted == isCompleted)
             .ToListAsync();
     }
+
+    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(Guid projectId)
+    {
+        return await _context.Tasks
+            .Where(t => t.ProjectId == projectId)
+            .ToListAsync();
+    }
+
+    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetUngroupedTasksAsync()
+    {
+        return await _context.Tasks
+            .Where(t => t.ProjectId == null)
+            .ToListAsync();
+    }
 }

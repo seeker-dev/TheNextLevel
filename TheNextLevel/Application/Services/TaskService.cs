@@ -8,22 +8,29 @@ namespace TheNextLevel.Application.Services;
 public class TaskService : ITaskService
 {
     private readonly ITaskRepository _taskRepository;
-    
-    public TaskService(ITaskRepository taskRepository)
+    private readonly IProjectRepository _projectRepository;
+
+    public TaskService(ITaskRepository taskRepository, IProjectRepository projectRepository)
     {
         _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
+        _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
     }
     
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetAllTasksAsync()
     {
         var tasks = await _taskRepository.GetAllAsync();
-        return tasks.Select(MapToDto);
+        var taskDtos = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            taskDtos.Add(await MapToDtoAsync(task));
+        }
+        return taskDtos;
     }
     
     public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
-        return task != null ? MapToDto(task) : null;
+        return task != null ? await MapToDtoAsync(task) : null;
     }
     
     public async System.Threading.Tasks.Task<Guid> CreateTaskAsync(CreateTaskRequest request)
@@ -74,17 +81,71 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(bool isCompleted)
     {
         var tasks = await _taskRepository.GetByStatusAsync(isCompleted);
-        return tasks.Select(MapToDto);
+        var taskDtos = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            taskDtos.Add(await MapToDtoAsync(task));
+        }
+        return taskDtos;
     }
-    
-    private static TaskDto MapToDto(Core.Entities.Task task)
+
+    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByProjectAsync(Guid projectId)
     {
+        var tasks = await _taskRepository.GetTasksByProjectIdAsync(projectId);
+        var taskDtos = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            taskDtos.Add(await MapToDtoAsync(task));
+        }
+        return taskDtos;
+    }
+
+    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetUngroupedTasksAsync()
+    {
+        var tasks = await _taskRepository.GetUngroupedTasksAsync();
+        var taskDtos = new List<TaskDto>();
+        foreach (var task in tasks)
+        {
+            taskDtos.Add(await MapToDtoAsync(task));
+        }
+        return taskDtos;
+    }
+
+    public async System.Threading.Tasks.Task<bool> AssignTaskToProjectAsync(Guid taskId, Guid? projectId)
+    {
+        var task = await _taskRepository.GetByIdAsync(taskId);
+        if (task == null) return false;
+
+        // If assigning to a project, verify the project exists
+        if (projectId.HasValue)
+        {
+            var project = await _projectRepository.GetByIdAsync(projectId.Value);
+            if (project == null) return false;
+        }
+
+        // Update the task's project assignment
+        task.ProjectId = projectId;
+        await _taskRepository.UpdateAsync(task);
+        return true;
+    }
+
+    private async System.Threading.Tasks.Task<TaskDto> MapToDtoAsync(Core.Entities.Task task)
+    {
+        string? projectName = null;
+        if (task.ProjectId.HasValue)
+        {
+            var project = await _projectRepository.GetByIdAsync(task.ProjectId.Value);
+            projectName = project?.Name;
+        }
+
         return new TaskDto(
             task.Id,
             task.Title,
             task.Description,
             task.IsCompleted,
-            task.CreatedAt
+            task.CreatedAt,
+            task.ProjectId,
+            projectName
         );
     }
 }

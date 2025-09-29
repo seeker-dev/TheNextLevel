@@ -31,6 +31,7 @@ namespace TheNextLevel
 
             // Register application services
             builder.Services.AddScoped<ITaskService, TaskService>();
+            builder.Services.AddScoped<IProjectService, ProjectService>();
             
             // Register infrastructure services
             builder.Services.AddScoped<ITaskRepository, SqliteTaskRepository>();

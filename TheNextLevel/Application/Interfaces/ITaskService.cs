@@ -12,4 +12,7 @@ public interface ITaskService
     System.Threading.Tasks.Task<bool> CompleteTaskAsync(Guid id);
     System.Threading.Tasks.Task<bool> ReopenTaskAsync(Guid id);
     System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(bool isCompleted);
+    System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByProjectAsync(Guid projectId);
+    System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetUngroupedTasksAsync();
+    System.Threading.Tasks.Task<bool> AssignTaskToProjectAsync(Guid taskId, Guid? projectId);
 }

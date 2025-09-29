@@ -7,6 +7,10 @@ public class Task
     public string Description { get; set; } = string.Empty;
     public bool IsCompleted { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // Project relationship
+    public Guid? ProjectId { get; set; }
+    public Project? Project { get; set; }
     
     // Parameterless constructor for EF Core
     public Task() 
@@ -19,9 +23,14 @@ public class Task
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Task title cannot be empty", nameof(title));
-            
+
         Title = title.Trim();
         Description = description?.Trim() ?? string.Empty;
+    }
+
+    public Task(string title, string description, Guid? projectId) : this(title, description)
+    {
+        ProjectId = projectId;
     }
     
     public void UpdateTitle(string newTitle)

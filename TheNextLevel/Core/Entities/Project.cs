@@ -6,6 +6,9 @@ public class Project
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
+
+    // Navigation property for related tasks
+    public ICollection<Task> Tasks { get; set; } = new List<Task>();
     
     // Parameterless constructor for EF Core
     public Project() 

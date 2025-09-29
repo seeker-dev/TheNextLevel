@@ -32,6 +32,15 @@ public class AppDbContext : DbContext
 
             entity.Property(e => e.CreatedAt)
                 .IsRequired();
+
+            // Configure relationship with Project
+            entity.HasOne(e => e.Project)
+                .WithMany(p => p.Tasks)
+                .HasForeignKey(e => e.ProjectId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // Add index for performance
+            entity.HasIndex(e => e.ProjectId);
         });
 
         modelBuilder.Entity<Project>(entity =>

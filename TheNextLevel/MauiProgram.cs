@@ -23,7 +23,7 @@ namespace TheNextLevel
             builder.Services.AddMauiBlazorWebView();
 
             // Register database context
-            builder.Services.AddDbContext<TaskDbContext>(options =>
+            builder.Services.AddDbContext<AppDbContext>(options =>
             {
                 var connectionString = $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "tasks.db")}";
                 options.UseSqlite(connectionString);
@@ -45,7 +45,7 @@ namespace TheNextLevel
             
             using (var scope = app.Services.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 context.Database.EnsureCreated();
             }
 

@@ -3,13 +3,14 @@ using TheNextLevel.Core.Entities;
 
 namespace TheNextLevel.Infrastructure.Data;
 
-public class TaskDbContext : DbContext
+public class AppDbContext : DbContext
 {
-    public TaskDbContext(DbContextOptions<TaskDbContext> options) : base(options)
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
 
     public DbSet<Core.Entities.Task> Tasks { get; set; } = null!;
+    public DbSet<Project> Projects { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -18,17 +19,32 @@ public class TaskDbContext : DbContext
         modelBuilder.Entity<Core.Entities.Task>(entity =>
         {
             entity.HasKey(e => e.Id);
-            
+
             entity.Property(e => e.Title)
                 .IsRequired()
                 .HasMaxLength(200);
-                
+
             entity.Property(e => e.Description)
                 .HasMaxLength(1000);
-                
+
             entity.Property(e => e.IsCompleted)
                 .IsRequired();
-                
+
+            entity.Property(e => e.CreatedAt)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<Project>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.Name)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.Property(e => e.Description)
+                .HasMaxLength(1000);
+
             entity.Property(e => e.CreatedAt)
                 .IsRequired();
         });

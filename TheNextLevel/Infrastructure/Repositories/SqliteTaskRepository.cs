@@ -6,9 +6,9 @@ namespace TheNextLevel.Infrastructure.Repositories;
 
 public class SqliteTaskRepository : ITaskRepository
 {
-    private readonly TaskDbContext _context;
+    private readonly AppDbContext _context;
 
-    public SqliteTaskRepository(TaskDbContext context)
+    public SqliteTaskRepository(AppDbContext context)
     {
         _context = context;
     }

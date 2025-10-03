@@ -4,41 +4,7 @@
 
 @page "/"
 <main class="main-content">
-    <div class="task-section">
-        <div class="section-header">
-            <h2 class="section-title">My Tasks</h2>
-        </div>
-        @if (_isLoading)
-        {
-            <p>Loading tasks...</p>
-        }
-        else if (_tasks?.Count > 0)
-        {
-            <div class="task-grid">
-                @foreach (var task in _tasks)
-                {
-                    <TaskCard Task="@task"
-                              OnTaskUpdated="OnTaskUpdated"
-                              OnTaskDeleted="OnTaskDeleted"
-                              OnTaskEdit="OnTaskEdit" />
-                }
-            </div>
-        }
-        else
-        {
-            <div class="empty-state">
-                <p>No tasks yet. Create your first task to get started!</p>
-            </div>
-        }
-        <div class="fab-container">
-            <button class="fab" @onclick="@(async () => await TestClick())" type="button">+</button>
-        </div>
-    </div>
-    
-    @* Debug: _showNewTaskDialog = @_showNewTaskDialog *@
-    <NewTaskDialog IsVisible="_showNewTaskDialog" 
-                   OnResult="OnTaskCreated" 
-                   OnCancel="OnTaskDialogCancel" />
+
 </main>
 
 @code

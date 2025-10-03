@@ -1,34 +1,58 @@
 ﻿@using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
-@inject ITaskService TaskService
+@inject IProjectService ProjectService
 
 @page "/"
 <main class="main-content">
-
+    @if (_isLoading)
+    {
+        <p>Loading projects...</p>
+    }
+    else
+    {
+        <div class="projects-grid">
+            @foreach (var project in _projects)
+            {
+                <ProjectCard Project="project"
+                             OnEdit="OnProjectEdit"
+                             OnUpdate="OnProjectUpdated"
+                             OnDelete="OnProjectDeleted" />
+            }
+            <div class="new-project-card" @onclick="ShowNewProjectDialogHandler">
+                <span class="plus-icon">+</span>
+                <span>Create New Project</span>
+            </div>
+            @if (_showNewProjectDialog)
+            {
+                <NewProjectDialog OnProjectCreated="OnProjectCreated"
+                                  OnCancel="OnProjectDialogCancel" />
+            }
+        </div>
+    }
 </main>
 
 @code
 {
-    private List<TaskDto> _tasks = new List<TaskDto>();
+    private List<ProjectDto> _projects = new List<ProjectDto>();
     private bool _isLoading = true;
-    private bool _showNewTaskDialog = false;
+    private bool _showNewProjectDialog = false;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadTasks();
+        await LoadProjects();
     }
 
-    private async Task LoadTasks()
+    private async Task LoadProjects()
     {
         try
         {
             _isLoading = true;
-            var tasks = await TaskService.GetAllTasksAsync();
-            _tasks = tasks.ToList();
+            var projects = await ProjectService.GetAllProjectsAsync();
+            _projects = projects.ToList();
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading tasks: {ex.Message}");
+            Console.WriteLine($"Error loading projects: {ex.Message}");
         }
         finally
         {
@@ -37,56 +61,56 @@
         }
     }
 
-    private void ShowNewTaskDialogHandler()
+    private void ShowNewProjectDialogHandler()
     {
-        Console.WriteLine("ShowNewTaskDialogHandler called");
-        _showNewTaskDialog = true;
+        Console.WriteLine("ShowNewProjectDialogHandler called");
+        _showNewProjectDialog = true;
         StateHasChanged(); // Force UI update
     }
 
     private async Task TestClick()
     {
         Console.WriteLine("TestClick called!");
-        _showNewTaskDialog = true;
+        _showNewProjectDialog = true;
         StateHasChanged();
         await Task.CompletedTask;
     }
 
-    private async Task OnTaskCreated(TaskDto newTask)
+    private async Task OnProjectCreated(ProjectDto newProject)
     {
-        _showNewTaskDialog = false;
-        await LoadTasks();
+        _showNewProjectDialog = false;
+        await LoadProjects();
     }
 
-    private void OnTaskDialogCancel()
+    private void OnProjectDialogCancel()
     {
-        _showNewTaskDialog = false;
+        _showNewProjectDialog = false;
     }
-    
-    private Task OnTaskUpdated(TaskDto updatedTask)
+
+    private Task OnProjectUpdated(ProjectDto updatedProject)
     {
-        // Update the task in the local list
-        var index = _tasks.FindIndex(t => t.Id == updatedTask.Id);
+        // Update the project in the local list
+        var index = _projects.FindIndex(p => p.Id == updatedProject.Id);
         if (index >= 0)
         {
-            _tasks[index] = updatedTask;
+            _projects[index] = updatedProject;
             StateHasChanged();
         }
         return Task.CompletedTask;
     }
 
-    private Task OnTaskDeleted(TaskDto deletedTask)
+    private Task OnProjectDeleted(ProjectDto deletedProject)
     {
-        // Remove the task from the local list
-        _tasks.RemoveAll(t => t.Id == deletedTask.Id);
+        // Remove the project from the local list
+        _projects.RemoveAll(p => p.Id == deletedProject.Id);
         StateHasChanged();
         return Task.CompletedTask;
     }
 
-    private Task OnTaskEdit(TaskDto taskToEdit)
+    private Task OnProjectEdit(ProjectDto projectToEdit)
     {
         // For now, just show a placeholder. This could open an edit dialog in the future
-        Console.WriteLine($"Edit task requested: {taskToEdit.Title}");
+        Console.WriteLine($"Edit project requested: {projectToEdit.Name}");
         return Task.CompletedTask;
     }
 }

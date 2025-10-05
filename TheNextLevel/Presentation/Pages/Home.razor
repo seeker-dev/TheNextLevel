@@ -27,8 +27,13 @@
     }
 
     <div class="fab-container">
-        <button class="fab">+</button>
+        <button class="fab" @onclick="OpenNewProjectDialog">+</button>
     </div>
+
+    <NewProjectDialog
+        IsVisible="_showNewProjectDialog"
+        OnResult="HandleProjectCreated"
+        OnCancel="CloseNewProjectDialog" />
 </main>
 
 @code
@@ -80,5 +85,22 @@
         {
             StateHasChanged();
         }
+    }
+
+    private void OpenNewProjectDialog()
+    {
+        _showNewProjectDialog = true;
+    }
+
+    private void CloseNewProjectDialog()
+    {
+        _showNewProjectDialog = false;
+    }
+
+    private async Task HandleProjectCreated(ProjectDto newProject)
+    {
+        _projects.Add(newProject);
+        _showNewProjectDialog = false;
+        StateHasChanged();
     }
 }

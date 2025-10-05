@@ -1,0 +1,98 @@
+@if (IsVisible)
+{
+    <div class="npd-overlay visible" @onclick="HandleOverlayClick">
+        <div class="npd-container" @onclick:stopPropagation="true">
+            <div class="npd-header">
+                <h2 class="npd-title">Create New Project</h2>
+                <button class="npd-btn-close" @onclick="Cancel">×</button>
+            </div>
+
+            <div class="npd-body">
+                <div class="npd-form-section">
+                    <div class="npd-section-title">
+                        <span class="npd-section-icon">📁</span>
+                        Project Details
+                    </div>
+
+                    <div class="npd-form-group">
+                        <label class="npd-form-label">Name</label>
+                        <input class="npd-form-input" @bind="projectName" placeholder="Enter project name..." />
+                    </div>
+
+                    <div class="npd-form-group">
+                        <label class="npd-form-label">Description</label>
+                        <textarea class="npd-form-input npd-form-textarea" @bind="projectDescription" placeholder="Add project description..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="npd-footer">
+                <div class="npd-footer-left">
+                    <span class="npd-motivation-text">Start your journey to the next level! 🚀</span>
+                </div>
+                <div class="npd-footer-right">
+                    <button class="npd-btn npd-btn-cancel" @onclick="Cancel">Cancel</button>
+                    <button class="npd-btn npd-btn-save" @onclick="Save">Create Project</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Application.DTOs
+@inject IProjectService ProjectService
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback<ProjectDto> OnResult { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private string projectName = string.Empty;
+    private string projectDescription = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (IsVisible)
+        {
+            // Reset form when dialog is shown
+            projectName = string.Empty;
+            projectDescription = string.Empty;
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task HandleOverlayClick()
+    {
+        await Cancel();
+    }
+
+    private async Task Save()
+    {
+        if (!string.IsNullOrWhiteSpace(projectName))
+        {
+            var createdProject = await ProjectService.CreateProjectAsync(
+                projectName.Trim(),
+                projectDescription?.Trim() ?? string.Empty
+            );
+
+            if (createdProject != null)
+            {
+                await OnResult.InvokeAsync(createdProject);
+            }
+
+            // Reset form after saving
+            projectName = string.Empty;
+            projectDescription = string.Empty;
+        }
+    }
+}

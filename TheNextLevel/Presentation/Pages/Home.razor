@@ -21,7 +21,10 @@
         <div class="projects-grid">
             @foreach (var project in _projects)
             {
-                <ProjectCard Project="project" />
+                <ProjectCard
+                    Project="project"
+                    OnProjectEdit="HandleProjectEdit"
+                    OnProjectDeleted="HandleProjectDeleted" />
             }
         </div>
     }
@@ -31,9 +34,10 @@
     </div>
 
     <NewProjectDialog
-        IsVisible="_showNewProjectDialog"
-        OnResult="HandleProjectCreated"
-        OnCancel="CloseNewProjectDialog" />
+        IsVisible="_showProjectDialog"
+        ExistingProject="_editingProject"
+        OnResult="HandleProjectSaved"
+        OnCancel="CloseProjectDialog" />
 </main>
 
 @code
@@ -41,7 +45,8 @@
     private List<ProjectDto> _projects = new List<ProjectDto>();
     private List<TaskDto> _ungroupedTasks = new List<TaskDto>();
     private bool _isLoading = true;
-    private bool _showNewProjectDialog = false;
+    private bool _showProjectDialog = false;
+    private ProjectDto? _editingProject = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,18 +94,46 @@
 
     private void OpenNewProjectDialog()
     {
-        _showNewProjectDialog = true;
+        _editingProject = null;  // null = create mode
+        _showProjectDialog = true;
     }
 
-    private void CloseNewProjectDialog()
+    private void CloseProjectDialog()
     {
-        _showNewProjectDialog = false;
+        _showProjectDialog = false;
+        _editingProject = null;  // reset state
     }
 
-    private async Task HandleProjectCreated(ProjectDto newProject)
+    private async Task HandleProjectSaved(ProjectDto savedProject)
     {
-        _projects.Add(newProject);
-        _showNewProjectDialog = false;
+        if (_editingProject != null)
+        {
+            // Edit mode: update existing project in list
+            var index = _projects.FindIndex(p => p.Id == savedProject.Id);
+            if (index >= 0)
+            {
+                _projects[index] = savedProject;
+            }
+        }
+        else
+        {
+            // Create mode: add new project to list
+            _projects.Add(savedProject);
+        }
+
+        CloseProjectDialog();
+        StateHasChanged();
+    }
+
+    private void HandleProjectEdit(ProjectDto project)
+    {
+        _editingProject = project;  // not null = edit mode
+        _showProjectDialog = true;
+    }
+
+    private async Task HandleProjectDeleted(ProjectDto project)
+    {
+        _projects.Remove(project);
         StateHasChanged();
     }
 }

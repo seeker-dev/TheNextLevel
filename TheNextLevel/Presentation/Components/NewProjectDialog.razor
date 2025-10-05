@@ -3,7 +3,7 @@
     <div class="npd-overlay visible" @onclick="HandleOverlayClick">
         <div class="npd-container" @onclick:stopPropagation="true">
             <div class="npd-header">
-                <h2 class="npd-title">Create New Project</h2>
+                <h2 class="npd-title">@DialogTitle</h2>
                 <button class="npd-btn-close" @onclick="Cancel">×</button>
             </div>
 
@@ -32,7 +32,7 @@
                 </div>
                 <div class="npd-footer-right">
                     <button class="npd-btn npd-btn-cancel" @onclick="Cancel">Cancel</button>
-                    <button class="npd-btn npd-btn-save" @onclick="Save">Create Project</button>
+                    <button class="npd-btn npd-btn-save" @onclick="Save">@SaveButtonText</button>
                 </div>
             </div>
         </div>
@@ -53,16 +53,33 @@
     [Parameter]
     public EventCallback OnCancel { get; set; }
 
+    [Parameter]
+    public ProjectDto? ExistingProject { get; set; }
+
     private string projectName = string.Empty;
     private string projectDescription = string.Empty;
+
+    // Computed properties for mode-aware behavior
+    private bool IsEditMode => ExistingProject != null;
+    private string DialogTitle => IsEditMode ? "Edit Project" : "Create New Project";
+    private string SaveButtonText => IsEditMode ? "Save Changes" : "Create Project";
 
     protected override void OnParametersSet()
     {
         if (IsVisible)
         {
-            // Reset form when dialog is shown
-            projectName = string.Empty;
-            projectDescription = string.Empty;
+            if (IsEditMode && ExistingProject != null)
+            {
+                // Populate form with existing project data
+                projectName = ExistingProject.Name;
+                projectDescription = ExistingProject.Description ?? string.Empty;
+            }
+            else
+            {
+                // Reset form when creating new project
+                projectName = string.Empty;
+                projectDescription = string.Empty;
+            }
         }
     }
 
@@ -80,14 +97,29 @@
     {
         if (!string.IsNullOrWhiteSpace(projectName))
         {
-            var createdProject = await ProjectService.CreateProjectAsync(
-                projectName.Trim(),
-                projectDescription?.Trim() ?? string.Empty
-            );
+            ProjectDto? resultProject = null;
 
-            if (createdProject != null)
+            if (IsEditMode && ExistingProject != null)
             {
-                await OnResult.InvokeAsync(createdProject);
+                // Edit mode: update existing project
+                resultProject = await ProjectService.UpdateProjectAsync(
+                    ExistingProject.Id,
+                    projectName.Trim(),
+                    projectDescription?.Trim() ?? string.Empty
+                );
+            }
+            else
+            {
+                // Create mode: create new project
+                resultProject = await ProjectService.CreateProjectAsync(
+                    projectName.Trim(),
+                    projectDescription?.Trim() ?? string.Empty
+                );
+            }
+
+            if (resultProject != null)
+            {
+                await OnResult.InvokeAsync(resultProject);
             }
 
             // Reset form after saving

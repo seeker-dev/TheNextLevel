@@ -7,7 +7,16 @@
     <div class="project-header custom-bg">
         <div class="project-header-top">
             <div class="project-icon-wrapper"></div>
-            <button class="project-menu-btn" @onclick:stopPropagation="true" @onclick="() => ShowProjectMenu(Project?.Id)">⋮</button>
+            <div class="project-actions">
+                <button class="project-menu-btn" @onclick:stopPropagation="true" @onclick="ShowProjectMenu">⋮</button>
+                @if (showMenu)
+                {
+                    <div class="project-menu">
+                        <button class="menu-item" @onclick="OnEditClick">Edit</button>
+                        <button class="menu-item menu-item-danger" @onclick="OnDeleteClick">Delete</button>
+                    </div>
+                }
+            </div>
         </div>
         <div class="project-name">@Project?.Name</div>
     </div>
@@ -56,9 +65,39 @@
     [Parameter]
     public ProjectDto? Project { get; set; }
 
-    private void ShowProjectMenu(Guid? projectId)
+    [Parameter]
+    public EventCallback<ProjectDto> OnProjectEdit { get; set; }
+
+    [Parameter]
+    public EventCallback<ProjectDto> OnProjectDeleted { get; set; }
+
+    private bool showMenu = false;
+
+    private void ShowProjectMenu()
     {
-        // Logic to show project menu
+        showMenu = !showMenu;
+    }
+
+    private async Task OnEditClick()
+    {
+        showMenu = false;
+        if (Project != null)
+        {
+            await OnProjectEdit.InvokeAsync(Project);
+        }
+    }
+
+    private async Task OnDeleteClick()
+    {
+        showMenu = false;
+        if (Project != null)
+        {
+            var success = await ProjectService.DeleteProjectAsync(Project.Id);
+            if (success)
+            {
+                await OnProjectDeleted.InvokeAsync(Project);
+            }
+        }
     }
 
     private void ViewAllTasks(Guid? projectId)

@@ -1,6 +1,8 @@
 ﻿@using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Application.Services
 @inject IProjectService ProjectService
+@inject ITaskService TaskService
 
 @page "/"
 <main class="main-content">
@@ -8,45 +10,48 @@
     {
         <p>Loading projects...</p>
     }
+    else if (_projects.Count == 0)
+    {
+        <div class="empty-project">
+            <p>No projects found. Create your first project!</p>
+        </div>
+    }
     else
     {
         <div class="projects-grid">
             @foreach (var project in _projects)
             {
-                <ProjectCard Project="project"
-                             OnEdit="OnProjectEdit"
-                             OnUpdate="OnProjectUpdated"
-                             OnDelete="OnProjectDeleted" />
-            }
-            <div class="new-project-card" @onclick="ShowNewProjectDialogHandler">
-                <span class="plus-icon">+</span>
-                <span>Create New Project</span>
-            </div>
-            @if (_showNewProjectDialog)
-            {
-                <NewProjectDialog OnProjectCreated="OnProjectCreated"
-                                  OnCancel="OnProjectDialogCancel" />
+                <ProjectCard Project="project" />
             }
         </div>
     }
+
+    <div class="fab-container">
+        <button class="fab">+</button>
+    </div>
 </main>
 
 @code
 {
     private List<ProjectDto> _projects = new List<ProjectDto>();
+    private List<TaskDto> _ungroupedTasks = new List<TaskDto>();
     private bool _isLoading = true;
     private bool _showNewProjectDialog = false;
 
     protected override async Task OnInitializedAsync()
     {
+        _isLoading = true;
+
         await LoadProjects();
+        await LoadUngroupedTasks();
+        
+        _isLoading = false;
     }
 
     private async Task LoadProjects()
     {
         try
         {
-            _isLoading = true;
             var projects = await ProjectService.GetAllProjectsAsync();
             _projects = projects.ToList();
         }
@@ -56,61 +61,24 @@
         }
         finally
         {
-            _isLoading = false;
             StateHasChanged();
         }
     }
 
-    private void ShowNewProjectDialogHandler()
+    private async Task LoadUngroupedTasks()
     {
-        Console.WriteLine("ShowNewProjectDialogHandler called");
-        _showNewProjectDialog = true;
-        StateHasChanged(); // Force UI update
-    }
-
-    private async Task TestClick()
-    {
-        Console.WriteLine("TestClick called!");
-        _showNewProjectDialog = true;
-        StateHasChanged();
-        await Task.CompletedTask;
-    }
-
-    private async Task OnProjectCreated(ProjectDto newProject)
-    {
-        _showNewProjectDialog = false;
-        await LoadProjects();
-    }
-
-    private void OnProjectDialogCancel()
-    {
-        _showNewProjectDialog = false;
-    }
-
-    private Task OnProjectUpdated(ProjectDto updatedProject)
-    {
-        // Update the project in the local list
-        var index = _projects.FindIndex(p => p.Id == updatedProject.Id);
-        if (index >= 0)
+        try
         {
-            _projects[index] = updatedProject;
+            var tasks = await TaskService.GetUngroupedTasksAsync();
+            _ungroupedTasks = tasks.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading ungrouped tasks: {ex.Message}");
+        }
+        finally
+        {
             StateHasChanged();
         }
-        return Task.CompletedTask;
-    }
-
-    private Task OnProjectDeleted(ProjectDto deletedProject)
-    {
-        // Remove the project from the local list
-        _projects.RemoveAll(p => p.Id == deletedProject.Id);
-        StateHasChanged();
-        return Task.CompletedTask;
-    }
-
-    private Task OnProjectEdit(ProjectDto projectToEdit)
-    {
-        // For now, just show a placeholder. This could open an edit dialog in the future
-        Console.WriteLine($"Edit project requested: {projectToEdit.Name}");
-        return Task.CompletedTask;
     }
 }

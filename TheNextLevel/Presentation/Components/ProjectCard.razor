@@ -15,14 +15,40 @@
         <div class="project-description">@Project?.Description</div>
         <div class="project-stats">
             <span class="stat">
-                <div class="stat-value">@Project?.TaskCount</div>
+                <div class="stat-value">@Project?.Tasks.Count()</div>
                 <div class="stat-label">Tasks</div>
             </span>
             <span class="stat">
-                <div class="stat-value">@Project?.CreatedAt.ToString("MM/dd/yyyy")</div>
-                <div class="stat-label">Created</div>
+                <div class="stat-value">@Project?.Tasks.Where(t => t.IsCompleted).Count()</div>
+                <div class="stat-label">Completed</div>
             </span>
         </div>
+        
+        @if (Project?.Tasks != null && Project.Tasks.Any(t => t.IsCompleted))
+        {
+            <div class="task-preview">
+                <div class="task-preview-title">Active Tasks</div>
+                <div class="task-preview-list">
+                    @foreach (var task in Project.Tasks.Where(t => !t.IsCompleted).Take(3))
+                    {
+                        <div class="task-preview-item">
+                            <input type="checkbox" class="task-preview-checkbox" @onclick:stopPropagation="true" />
+                            <span class="task-preview-text">@task.Title</span>
+                        </div>
+                    }
+                </div>
+                <div class="task-preview-more">
+                    <button class="view-all-tasks" @onclick:stopPropagation="true" @onclick="() => ViewAllTasks(Project.Id)">View All @Project.Tasks.Count() Tasks</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="empty-project">
+                <div class="emoji">🎨</div>
+                <p>No tasks yet.</p>
+            </div>
+        }
     </div>
 </div>
 
@@ -33,5 +59,10 @@
     private void ShowProjectMenu(Guid? projectId)
     {
         // Logic to show project menu
+    }
+
+    private void ViewAllTasks(Guid? projectId)
+    {
+        // Logic to navigate to all tasks view
     }
 }

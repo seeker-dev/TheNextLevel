@@ -1,27 +1,15 @@
 ﻿<header class="header">
-    <div class="header-top">
+    <div class="header-content">
         <div class="header-left">
             <h1>My Projects</h1>
             <p class="date">@DateTime.Now.ToString("dddd, MMMM d")</p>
         </div>
-        <div class="header-actions">
-            <button class="new-project-btn" @onclick="ShowNewProjectDialog">
-                <span>+</span>
-                <span>New Project</span>
-            </button>
-        </div>        
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Search tasks and projects..." @bind="_searchQuery" @bind:event="oninput" />
+        </div>
     </div>
-    <div class="search-container">
-        <input type="text" class="search-box" placeholder="Search tasks and projects..." @bind="_searchQuery" @bind:event="oninput" />
-    </div>    
 </header>
 
 @code {
     private string _searchQuery = string.Empty;
-    
-    private void ShowNewProjectDialog()
-    {
-        Console.WriteLine("Show new project dialog");
-        // TODO: Implement new project dialog
-    }    
 }

@@ -24,6 +24,10 @@ namespace TheNextLevel
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
+            // Register repositories
+            builder.Services.AddSingleton<ITaskRepository, InMemoryTaskRepository>();
+            builder.Services.AddSingleton<IProjectRepository, InMemoryProjectRepository>();
+
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();

@@ -30,7 +30,14 @@ public class ProjectService : IProjectService
                 Name = project.Name,
                 Description = project.Description,
                 CreatedAt = project.CreatedAt,
-                TaskCount = tasks.Count()
+                Tasks = [.. tasks.Select(t => new TaskDto(
+                    t.Id,
+                    t.Title,
+                    t.Description,
+                    t.IsCompleted,
+                    t.CreatedAt,
+                    t.ProjectId
+                ))],
             });
         }
 
@@ -50,7 +57,14 @@ public class ProjectService : IProjectService
             Name = project.Name,
             Description = project.Description,
             CreatedAt = project.CreatedAt,
-            TaskCount = tasks.Count()
+            Tasks = [.. tasks.Select(t => new TaskDto(
+                t.Id,
+                t.Title,
+                t.Description,
+                t.IsCompleted,
+                t.CreatedAt,
+                t.ProjectId
+            ))],
         };
     }
 
@@ -65,7 +79,7 @@ public class ProjectService : IProjectService
             Name = createdProject.Name,
             Description = createdProject.Description,
             CreatedAt = createdProject.CreatedAt,
-            TaskCount = 0
+            Tasks = []
         };
     }
 
@@ -87,17 +101,19 @@ public class ProjectService : IProjectService
             Name = updatedProject.Name,
             Description = updatedProject.Description,
             CreatedAt = updatedProject.CreatedAt,
-            TaskCount = tasks.Count()
+            Tasks = [.. tasks.Select(t => new TaskDto(
+                t.Id,
+                t.Title,
+                t.Description,
+                t.IsCompleted,
+                t.CreatedAt,
+                t.ProjectId
+            ))],
         };
     }
 
     public async Task<bool> DeleteProjectAsync(Guid id)
     {
         return await _projectRepository.DeleteAsync(id);
-    }
-
-    public async Task<ProjectDto?> GetProjectWithTasksAsync(Guid id)
-    {
-        return await GetProjectByIdAsync(id);
     }
 }

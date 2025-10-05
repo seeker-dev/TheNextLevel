@@ -131,21 +131,13 @@ public class TaskService : ITaskService
 
     private async System.Threading.Tasks.Task<TaskDto> MapToDtoAsync(Core.Entities.Task task)
     {
-        string? projectName = null;
-        if (task.ProjectId.HasValue)
-        {
-            var project = await _projectRepository.GetByIdAsync(task.ProjectId.Value);
-            projectName = project?.Name;
-        }
-
         return new TaskDto(
             task.Id,
             task.Title,
             task.Description,
             task.IsCompleted,
             task.CreatedAt,
-            task.ProjectId,
-            projectName
+            task.ProjectId
         );
     }
 }

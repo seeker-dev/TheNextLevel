@@ -1,0 +1,37 @@
+@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Application.Interfaces
+
+@inject IProjectService ProjectService
+
+<div class="project-card">
+    <div class="project-header custom-bg">
+        <div class="project-header-top">
+            <div class="project-icon-wrapper"></div>
+            <button class="project-menu-btn" @onclick:stopPropagation="true" @onclick="() => ShowProjectMenu(Project?.Id)">⋮</button>
+        </div>
+        <div class="project-name">@Project?.Name</div>
+    </div>
+    <div class="project-body">
+        <div class="project-description">@Project?.Description</div>
+        <div class="project-stats">
+            <span class="stat">
+                <div class="stat-value">@Project?.TaskCount</div>
+                <div class="stat-label">Tasks</div>
+            </span>
+            <span class="stat">
+                <div class="stat-value">@Project?.CreatedAt.ToString("MM/dd/yyyy")</div>
+                <div class="stat-label">Created</div>
+            </span>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ProjectDto? Project { get; set; }
+
+    private void ShowProjectMenu(Guid? projectId)
+    {
+        // Logic to show project menu
+    }
+}

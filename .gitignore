@@ -401,3 +401,6 @@ FodyWeavers.xsd
 
 # Claude Code
 .claude/
+
+# App configuration with secrets
+appsettings.json

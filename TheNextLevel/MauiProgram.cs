@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Application.Services;
 using TheNextLevel.Core.Interfaces;
-using TheNextLevel.Infrastructure.Repositories;
+using TheNextLevel.Infrastructure.Data;
+using TheNextLevel.Infrastructure.Repositories.Sqlite;
 
 namespace TheNextLevel
 {
@@ -20,20 +22,36 @@ namespace TheNextLevel
 
             builder.Services.AddMauiBlazorWebView();
 
+            // Register database context
+            builder.Services.AddDbContext<AppDbContext>(options =>
+            {
+                var connectionString = $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}";
+                options.UseSqlite(connectionString);
+            });
+
             // Register application services
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
             // Register repositories
-            builder.Services.AddSingleton<ITaskRepository, InMemoryTaskRepository>();
-            builder.Services.AddSingleton<IProjectRepository, InMemoryProjectRepository>();
+            builder.Services.AddScoped<ITaskRepository, SqliteTaskRepository>();
+            builder.Services.AddScoped<IProjectRepository, SqliteProjectRepository>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
 #endif
 
-            return builder.Build();
+            // Build the app and apply migrations
+            var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                context.Database.Migrate();
+            }
+
+            return app;
         }
     }
 }

@@ -1,0 +1,176 @@
+@page "/settings"
+@using TheNextLevel.Application.Interfaces
+@inject ISecureConfigurationService ConfigService
+@inject NavigationManager Navigation
+
+<div class="settings-container">
+    <div class="settings-header">
+        <button class="back-button" @onclick="NavigateToHome" title="Back to Projects">
+            ← Back
+        </button>
+        <h2>Database Settings</h2>
+    </div>
+
+    <div class="form-group">
+        <label for="provider">Database Provider:</label>
+        <select id="provider" @bind="selectedProvider" class="form-control">
+            <option value="SQLite">SQLite (Local)</option>
+            <option value="SqlServer">Azure SQL Server</option>
+        </select>
+    </div>
+
+    @if (selectedProvider == "SqlServer")
+    {
+        <div class="form-group">
+            <label for="connectionString">Azure SQL Connection String:</label>
+            <textarea id="connectionString"
+                      @bind="connectionString"
+                      class="form-control connection-string-input"
+                      placeholder="Server=tcp:your-server.database.windows.net,1433;Initial Catalog=YourDB;User ID=username;Password=password;Encrypt=True;"
+                      rows="4"></textarea>
+            <small class="form-text">Your connection string is encrypted and stored securely in platform-specific storage.</small>
+        </div>
+    }
+    else
+    {
+        <div class="form-group">
+            <label for="sqliteConnection">SQLite Database:</label>
+            <input id="sqliteConnection"
+                   type="text"
+                   @bind="connectionString"
+                   class="form-control"
+                   placeholder="Data Source=thenextlevel.db" />
+            <small class="form-text">Stored in app data directory.</small>
+        </div>
+    }
+
+    <div class="button-group">
+        <button class="btn btn-primary" @onclick="TestConnection" disabled="@isTesting">
+            @if (isTesting)
+            {
+                <span>Testing...</span>
+            }
+            else
+            {
+                <span>Test Connection</span>
+            }
+        </button>
+
+        <button class="btn btn-success" @onclick="SaveSettings" disabled="@isSaving">
+            @if (isSaving)
+            {
+                <span>Saving...</span>
+            }
+            else
+            {
+                <span>Save Settings</span>
+            }
+        </button>
+
+        <button class="btn btn-danger" @onclick="ClearSettings">
+            Clear All Settings
+        </button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="alert @statusClass">
+            @statusMessage
+        </div>
+    }
+</div>
+
+@code {
+    private string selectedProvider = "SQLite";
+    private string connectionString = "";
+    private bool isTesting = false;
+    private bool isSaving = false;
+    private string statusMessage = "";
+    private string statusClass = "";
+
+    private void NavigateToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        selectedProvider = await ConfigService.GetDatabaseProviderAsync();
+        var storedConnection = await ConfigService.GetConnectionStringAsync(selectedProvider);
+        connectionString = storedConnection ?? (selectedProvider == "SQLite"
+            ? "Data Source=thenextlevel.db"
+            : "");
+    }
+
+    private async Task TestConnection()
+    {
+        isTesting = true;
+        statusMessage = "";
+
+        try
+        {
+            var (isValid, errorMessage) = await ConfigService.TestConnectionAsync(selectedProvider, connectionString);
+
+            if (isValid)
+            {
+                statusMessage = "✓ Connection successful!";
+                statusClass = "alert-success";
+            }
+            else
+            {
+                statusMessage = $"✗ Connection failed: {errorMessage}";
+                statusClass = "alert-danger";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"✗ Error: {ex.Message}";
+            statusClass = "alert-danger";
+        }
+        finally
+        {
+            isTesting = false;
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        isSaving = true;
+        statusMessage = "";
+
+        try
+        {
+            await ConfigService.SetDatabaseProviderAsync(selectedProvider);
+            await ConfigService.SetConnectionStringAsync(selectedProvider, connectionString);
+
+            statusMessage = "✓ Settings saved successfully! Please restart the app for changes to take effect.";
+            statusClass = "alert-success";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"✗ Error saving settings: {ex.Message}";
+            statusClass = "alert-danger";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task ClearSettings()
+    {
+        try
+        {
+            await ConfigService.ClearAllAsync();
+            selectedProvider = "SQLite";
+            connectionString = "Data Source=thenextlevel.db";
+            statusMessage = "✓ All settings cleared. Please restart the app.";
+            statusClass = "alert-warning";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"✗ Error clearing settings: {ex.Message}";
+            statusClass = "alert-danger";
+        }
+    }
+}

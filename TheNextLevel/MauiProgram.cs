@@ -26,10 +26,11 @@ namespace TheNextLevel
 
             builder.Services.AddMauiBlazorWebView();
 
-            // Load configuration from embedded resource
-            var configuration = LoadConfiguration();
-            var databaseSettings = new DatabaseSettings();
-            configuration.GetSection("DatabaseSettings").Bind(databaseSettings);
+            // Register secure configuration service
+            builder.Services.AddSingleton<ISecureConfigurationService, SecureConfigurationService>();
+
+            // Load database settings with migration from appsettings.json to secure storage
+            var databaseSettings = LoadDatabaseSettingsAsync().GetAwaiter().GetResult();
 
             // Register database context based on provider
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -80,6 +81,50 @@ namespace TheNextLevel
             }
 
             return app;
+        }
+
+        private static async Task<DatabaseSettings> LoadDatabaseSettingsAsync()
+        {
+            var configService = new SecureConfigurationService();
+
+            // Try to load from secure storage first
+            var provider = await configService.GetDatabaseProviderAsync();
+            var connectionString = await configService.GetConnectionStringAsync(provider);
+
+            // If not found in secure storage, fall back to appsettings.json (migration scenario)
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                var configuration = LoadConfiguration();
+                var settings = new DatabaseSettings();
+                configuration.GetSection("DatabaseSettings").Bind(settings);
+
+                // Migrate to secure storage
+                await configService.SetDatabaseProviderAsync(settings.Provider);
+
+                if (settings.Provider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+                {
+                    await configService.SetConnectionStringAsync("SqlServer", settings.ConnectionStrings.SqlServer);
+                    connectionString = settings.ConnectionStrings.SqlServer;
+                }
+                else
+                {
+                    await configService.SetConnectionStringAsync("SQLite", settings.ConnectionStrings.SQLite);
+                    connectionString = settings.ConnectionStrings.SQLite;
+                }
+
+                provider = settings.Provider;
+            }
+
+            // Return settings loaded from secure storage
+            return new DatabaseSettings
+            {
+                Provider = provider,
+                ConnectionStrings = new ConnectionStrings
+                {
+                    SQLite = provider.Equals("SQLite", StringComparison.OrdinalIgnoreCase) ? connectionString : "Data Source=thenextlevel.db",
+                    SqlServer = provider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase) ? connectionString : ""
+                }
+            };
         }
 
         private static IConfiguration LoadConfiguration()

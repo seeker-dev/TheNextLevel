@@ -77,7 +77,38 @@ namespace TheNextLevel
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                context.Database.Migrate();
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"Attempting migration with connection string: {context.Database.GetConnectionString()}");
+                    context.Database.Migrate();
+                    System.Diagnostics.Debug.WriteLine("Migration completed successfully!");
+                }
+                catch (Exception ex)
+                {
+                    // Log the full error for debugging
+                    System.Diagnostics.Debug.WriteLine($"Migration failed: {ex}");
+
+                    // Show error to user
+                    System.Diagnostics.Debug.WriteLine($"MIGRATION ERROR: {ex.Message}");
+                    if (ex.InnerException != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                    }
+
+                    // If migration fails (e.g., Azure DB unavailable), fall back to SQLite
+                    System.Diagnostics.Debug.WriteLine("Falling back to SQLite...");
+
+                    // Reconfigure to use SQLite
+                    var sqliteConnectionString = $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}";
+                    var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+                    optionsBuilder.UseSqlite(sqliteConnectionString);
+
+                    using var fallbackContext = new AppDbContext(optionsBuilder.Options);
+                    fallbackContext.Database.Migrate();
+
+                    // Note: User will need to manually switch back to SQLite in Settings
+                    // We can't update secure storage here due to async/sync context issues
+                }
             }
 
             return app;

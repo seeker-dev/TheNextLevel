@@ -25,6 +25,7 @@ public class AppDbContext : DbContext
                 .HasMaxLength(200);
 
             entity.Property(e => e.Description)
+                .IsRequired()
                 .HasMaxLength(1000);
 
             entity.Property(e => e.IsCompleted)
@@ -52,6 +53,7 @@ public class AppDbContext : DbContext
                 .HasMaxLength(200);
 
             entity.Property(e => e.Description)
+                .IsRequired()
                 .HasMaxLength(1000);
 
             entity.Property(e => e.CreatedAt)

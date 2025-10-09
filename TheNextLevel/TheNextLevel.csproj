@@ -77,8 +77,4 @@
       <Folder Include="Controllers\" />
     </ItemGroup>
 
-    <ItemGroup>
-      <EmbeddedResource Include="appsettings.json" />
-    </ItemGroup>
-
 </Project>

@@ -10,18 +10,10 @@
             <div class="search-container">
                 <input type="text" class="search-box" placeholder="Search tasks and projects..." @bind="_searchQuery" @bind:event="oninput" />
             </div>
-            <button class="settings-button" @onclick="NavigateToSettings" title="Settings">
-                ⚙️
-            </button>
         </div>
     </div>
 </header>
 
 @code {
     private string _searchQuery = string.Empty;
-
-    private void NavigateToSettings()
-    {
-        Navigation.NavigateTo("/settings");
-    }
 }

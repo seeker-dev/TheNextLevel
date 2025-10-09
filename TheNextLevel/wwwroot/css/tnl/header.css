@@ -77,26 +77,6 @@
     max-width: 400px;
 }
 
-.settings-button {
-    background: rgba(139, 69, 19, 0.2);
-    border: 1px solid rgba(139, 69, 19, 0.3);
-    border-radius: 8px;
-    padding: 10px 16px;
-    color: #f5f5f5;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.settings-button:hover {
-    background: rgba(139, 69, 19, 0.4);
-    border-color: #8B0000;
-    transform: translateY(-1px);
-}
-
 .search-box {
     background: rgba(139, 69, 19, 0.2);
     border: 1px solid rgba(139, 69, 19, 0.3);

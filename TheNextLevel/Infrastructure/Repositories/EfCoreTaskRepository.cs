@@ -2,13 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Infrastructure.Data;
 
-namespace TheNextLevel.Infrastructure.Repositories.SqlServer;
+namespace TheNextLevel.Infrastructure.Repositories;
 
-public class SqlServerTaskRepository : ITaskRepository
+public class EfCoreTaskRepository : ITaskRepository
 {
     private readonly AppDbContext _context;
 
-    public SqlServerTaskRepository(AppDbContext context)
+    public EfCoreTaskRepository(AppDbContext context)
     {
         _context = context;
     }

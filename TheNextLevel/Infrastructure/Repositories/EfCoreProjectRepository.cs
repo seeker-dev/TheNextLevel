@@ -3,13 +3,13 @@ using TheNextLevel.Core.Entities;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Infrastructure.Data;
 
-namespace TheNextLevel.Infrastructure.Repositories.SqlServer;
+namespace TheNextLevel.Infrastructure.Repositories;
 
-public class SqlServerProjectRepository : IProjectRepository
+public class EfCoreProjectRepository : IProjectRepository
 {
     private readonly AppDbContext _context;
 
-    public SqlServerProjectRepository(AppDbContext context)
+    public EfCoreProjectRepository(AppDbContext context)
     {
         _context = context;
     }

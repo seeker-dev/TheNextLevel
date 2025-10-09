@@ -1,10 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Application.Services;
+using TheNextLevel.Core.Enums;
 using TheNextLevel.Core.Interfaces;
+using TheNextLevel.Infrastructure.Configuration;
 using TheNextLevel.Infrastructure.Data;
-using TheNextLevel.Infrastructure.Repositories.Sqlite;
+using TheNextLevel.Infrastructure.Repositories;
 
 namespace TheNextLevel
 {
@@ -22,11 +25,35 @@ namespace TheNextLevel
 
             builder.Services.AddMauiBlazorWebView();
 
-            // Register database context with SQLite
-            var connectionString = $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}";
+            // Load configuration from appsettings.json
+            var config = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .Build();
+
+            var dbConfig = config.GetSection("Database").Get<DatabaseConfiguration>()
+                ?? new DatabaseConfiguration
+                {
+                    Provider = DatabaseProvider.SQLite,
+                    ConnectionString = $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}"
+                };
+
+            // Register database context based on configuration
             builder.Services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseSqlite(connectionString);
+                switch (dbConfig.Provider)
+                {
+                    case DatabaseProvider.SqlServer:
+                        options.UseSqlServer(dbConfig.ConnectionString);
+                        break;
+                    case DatabaseProvider.SQLite:
+                    default:
+                        var connString = string.IsNullOrEmpty(dbConfig.ConnectionString)
+                            ? $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}"
+                            : dbConfig.ConnectionString;
+                        options.UseSqlite(connString);
+                        break;
+                }
             });
 
             // Register application services
@@ -34,8 +61,8 @@ namespace TheNextLevel
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
             // Register repositories
-            builder.Services.AddScoped<ITaskRepository, SqliteTaskRepository>();
-            builder.Services.AddScoped<IProjectRepository, SqliteProjectRepository>();
+            builder.Services.AddScoped<ITaskRepository, EfCoreTaskRepository>();
+            builder.Services.AddScoped<IProjectRepository, EfCoreProjectRepository>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

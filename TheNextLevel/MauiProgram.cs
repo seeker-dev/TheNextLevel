@@ -39,22 +39,22 @@ namespace TheNextLevel
                 };
 
             // Register database context based on configuration
-            builder.Services.AddDbContext<AppDbContext>(options =>
+            switch (dbConfig.Provider)
             {
-                switch (dbConfig.Provider)
-                {
-                    case DatabaseProvider.SqlServer:
-                        options.UseSqlServer(dbConfig.ConnectionString);
-                        break;
-                    case DatabaseProvider.SQLite:
-                    default:
-                        var connString = string.IsNullOrEmpty(dbConfig.ConnectionString)
-                            ? $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}"
-                            : dbConfig.ConnectionString;
-                        options.UseSqlite(connString);
-                        break;
-                }
-            });
+                case DatabaseProvider.SqlServer:
+                    builder.Services.AddDbContext<AppDbContext, SqlServerDbContext>(options =>
+                        options.UseSqlServer(dbConfig.ConnectionString));
+                    break;
+
+                case DatabaseProvider.SQLite:
+                default:
+                    var connString = string.IsNullOrEmpty(dbConfig.ConnectionString)
+                        ? $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}"
+                        : dbConfig.ConnectionString;
+                    builder.Services.AddDbContext<AppDbContext, SqliteDbContext>(options =>
+                        options.UseSqlite(connString));
+                    break;
+            }
 
             // Register application services
             builder.Services.AddScoped<ITaskService, TaskService>();

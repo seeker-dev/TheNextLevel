@@ -3,9 +3,9 @@ using TheNextLevel.Core.Entities;
 
 namespace TheNextLevel.Infrastructure.Data;
 
-public class AppDbContext : DbContext
+public abstract class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    protected AppDbContext(DbContextOptions options) : base(options)
     {
     }
 

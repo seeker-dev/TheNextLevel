@@ -6,7 +6,6 @@ public class Task
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsCompleted { get; set; }
-    public DateTime CreatedAt { get; set; }
 
     // Project relationship
     public int? ProjectId { get; set; }
@@ -15,7 +14,6 @@ public class Task
     // Parameterless constructor for EF Core
     public Task()
     {
-        CreatedAt = DateTime.UtcNow;
     }
 
     public Task(string title, string description) : this()

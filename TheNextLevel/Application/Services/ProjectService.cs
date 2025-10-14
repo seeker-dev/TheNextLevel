@@ -29,13 +29,11 @@ public class ProjectService : IProjectService
                 Id = project.Id,
                 Name = project.Name,
                 Description = project.Description,
-                CreatedAt = project.CreatedAt,
                 Tasks = [.. tasks.Select(t => new TaskDto(
                     t.Id,
                     t.Title,
                     t.Description,
                     t.IsCompleted,
-                    t.CreatedAt,
                     t.ProjectId
                 ))],
             });
@@ -56,13 +54,11 @@ public class ProjectService : IProjectService
             Id = project.Id,
             Name = project.Name,
             Description = project.Description,
-            CreatedAt = project.CreatedAt,
             Tasks = [.. tasks.Select(t => new TaskDto(
                 t.Id,
                 t.Title,
                 t.Description,
                 t.IsCompleted,
-                t.CreatedAt,
                 t.ProjectId
             ))],
         };
@@ -78,7 +74,6 @@ public class ProjectService : IProjectService
             Id = createdProject.Id,
             Name = createdProject.Name,
             Description = createdProject.Description,
-            CreatedAt = createdProject.CreatedAt,
             Tasks = []
         };
     }
@@ -100,13 +95,11 @@ public class ProjectService : IProjectService
             Id = updatedProject.Id,
             Name = updatedProject.Name,
             Description = updatedProject.Description,
-            CreatedAt = updatedProject.CreatedAt,
             Tasks = [.. tasks.Select(t => new TaskDto(
                 t.Id,
                 t.Title,
                 t.Description,
                 t.IsCompleted,
-                t.CreatedAt,
                 t.ProjectId
             ))],
         };

@@ -5,7 +5,6 @@ public record TaskDto(
     string Title,
     string Description,
     bool IsCompleted,
-    DateTime CreatedAt,
     int? ProjectId = null
 );
 

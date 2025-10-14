@@ -19,7 +19,7 @@ public class TursoProjectRepository : IProjectRepository
     public async Task<IEnumerable<Project>> GetAllAsync()
     {
         var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description, CreatedAt FROM Projects");
+            "SELECT Id, Name, Description FROM Projects");
 
         var projects = MapToProjects(response).ToList();
 
@@ -36,7 +36,7 @@ public class TursoProjectRepository : IProjectRepository
     public async Task<Project?> GetByIdAsync(int id)
     {
         var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description, CreatedAt FROM Projects WHERE Id = ?",
+            "SELECT Id, Name, Description FROM Projects WHERE Id = ?",
             id);
 
         var project = MapToProjects(response).FirstOrDefault();
@@ -54,10 +54,9 @@ public class TursoProjectRepository : IProjectRepository
     public async Task<Project> AddAsync(Project project)
     {
         await _client.ExecuteAsync(
-            "INSERT INTO Projects (Name, Description, CreatedAt) VALUES (?, ?, ?)",
+            "INSERT INTO Projects (Name, Description) VALUES (?, ?)",
             project.Name,
-            project.Description ?? string.Empty,
-            project.CreatedAt.ToString("o"));
+            project.Description ?? string.Empty);
 
         return project;
     }
@@ -96,8 +95,7 @@ public class TursoProjectRepository : IProjectRepository
             {
                 Id = int.Parse(GetColumnValue(row, columns, "Id")),
                 Name = GetColumnValue(row, columns, "Name"),
-                Description = GetColumnValue(row, columns, "Description"),
-                CreatedAt = DateTime.Parse(GetColumnValue(row, columns, "CreatedAt"))
+                Description = GetColumnValue(row, columns, "Description")
             };
             projects.Add(project);
         }

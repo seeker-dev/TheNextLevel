@@ -5,7 +5,6 @@ public class Project
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public DateTime CreatedAt { get; set; }
 
     // Navigation property for related tasks
     public ICollection<Task> Tasks { get; set; } = new List<Task>();
@@ -13,7 +12,6 @@ public class Project
     // Parameterless constructor for EF Core
     public Project()
     {
-        CreatedAt = DateTime.UtcNow;
     }
 
     public Project(string name, string description) : this()

@@ -136,7 +136,6 @@ public class TaskService : ITaskService
             task.Title,
             task.Description,
             task.IsCompleted,
-            task.CreatedAt,
             task.ProjectId
         );
     }

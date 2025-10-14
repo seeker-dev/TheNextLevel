@@ -31,30 +31,45 @@ namespace TheNextLevel
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .Build();
 
-            var dbConfig = config.GetSection("Database").Get<DatabaseConfiguration>()
+            var databaseMode = config.GetValue<string>("DatabaseMode") ?? "EFCore";
+
+            if (databaseMode == "EFCore")
+            {
+                var dbConfig = config.GetSection("Database").Get<DatabaseConfiguration>()
                 ?? new DatabaseConfiguration
                 {
                     Provider = DatabaseProvider.SQLite,
                     ConnectionString = $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}"
                 };
 
-            // Register database context based on configuration
-            switch (dbConfig.Provider)
-            {
-                case DatabaseProvider.SqlServer:
-                    builder.Services.AddDbContext<AppDbContext, SqlServerDbContext>(options =>
-                        options.UseSqlServer(dbConfig.ConnectionString));
-                    break;
+                // Register database context based on configuration
+                switch (dbConfig.Provider)
+                {
+                    case DatabaseProvider.SqlServer:
+                        builder.Services.AddDbContext<AppDbContext, SqlServerDbContext>(options =>
+                            options.UseSqlServer(dbConfig.ConnectionString));
+                        break;
 
-                case DatabaseProvider.SQLite:
-                default:
-                    var connString = string.IsNullOrEmpty(dbConfig.ConnectionString)
-                        ? $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}"
-                        : dbConfig.ConnectionString;
-                    builder.Services.AddDbContext<AppDbContext, SqliteDbContext>(options =>
-                        options.UseSqlite(connString));
-                    break;
+                    case DatabaseProvider.SQLite:
+                    default:
+                        var connString = string.IsNullOrEmpty(dbConfig.ConnectionString)
+                            ? $"Data Source={Path.Combine(FileSystem.AppDataDirectory, "thenextlevel.db")}"
+                            : dbConfig.ConnectionString;
+                        builder.Services.AddDbContext<AppDbContext, SqliteDbContext>(options =>
+                            options.UseSqlite(connString));
+                        break;
+                }
             }
+            else if (databaseMode == "Turso")
+            {
+                // TODO: Implement Turso mode
+                throw new NotImplementedException("Turso database mode is not yet implemented.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Unsupported DatabaseMode: {databaseMode}");
+            }
+            
 
             // Register application services
             builder.Services.AddScoped<ITaskService, TaskService>();

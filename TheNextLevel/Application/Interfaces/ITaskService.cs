@@ -5,14 +5,14 @@ namespace TheNextLevel.Application.Interfaces;
 public interface ITaskService
 {
     System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetAllTasksAsync();
-    System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid id);
-    System.Threading.Tasks.Task<Guid> CreateTaskAsync(CreateTaskRequest request);
-    System.Threading.Tasks.Task<bool> UpdateTaskAsync(Guid id, UpdateTaskRequest request);
-    System.Threading.Tasks.Task<bool> DeleteTaskAsync(Guid id);
-    System.Threading.Tasks.Task<bool> CompleteTaskAsync(Guid id);
-    System.Threading.Tasks.Task<bool> ReopenTaskAsync(Guid id);
+    System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(int id);
+    System.Threading.Tasks.Task<int> CreateTaskAsync(CreateTaskRequest request);
+    System.Threading.Tasks.Task<bool> UpdateTaskAsync(int id, UpdateTaskRequest request);
+    System.Threading.Tasks.Task<bool> DeleteTaskAsync(int id);
+    System.Threading.Tasks.Task<bool> CompleteTaskAsync(int id);
+    System.Threading.Tasks.Task<bool> ReopenTaskAsync(int id);
     System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(bool isCompleted);
-    System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByProjectAsync(Guid projectId);
+    System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByProjectAsync(int projectId);
     System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetUngroupedTasksAsync();
-    System.Threading.Tasks.Task<bool> AssignTaskToProjectAsync(Guid taskId, Guid? projectId);
+    System.Threading.Tasks.Task<bool> AssignTaskToProjectAsync(int taskId, int? projectId);
 }

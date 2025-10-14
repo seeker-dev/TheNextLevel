@@ -2,21 +2,18 @@ namespace TheNextLevel.Core.Entities;
 
 public class Task
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsCompleted { get; set; }
-    public DateTime CreatedAt { get; set; }
 
     // Project relationship
-    public Guid? ProjectId { get; set; }
+    public int? ProjectId { get; set; }
     public Project? Project { get; set; }
-    
+
     // Parameterless constructor for EF Core
-    public Task() 
+    public Task()
     {
-        Id = Guid.NewGuid();
-        CreatedAt = DateTime.UtcNow;
     }
 
     public Task(string title, string description) : this()
@@ -28,7 +25,7 @@ public class Task
         Description = description?.Trim() ?? string.Empty;
     }
 
-    public Task(string title, string description, Guid? projectId) : this(title, description)
+    public Task(string title, string description, int? projectId) : this(title, description)
     {
         ProjectId = projectId;
     }

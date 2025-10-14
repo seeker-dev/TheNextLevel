@@ -18,7 +18,7 @@ public class EfCoreTaskRepository : ITaskRepository
         return await _context.Tasks.ToListAsync();
     }
 
-    public async System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(Guid id)
+    public async System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(int id)
     {
         return await _context.Tasks.FindAsync(id);
     }
@@ -37,7 +37,7 @@ public class EfCoreTaskRepository : ITaskRepository
         return task;
     }
 
-    public async System.Threading.Tasks.Task<bool> DeleteAsync(Guid id)
+    public async System.Threading.Tasks.Task<bool> DeleteAsync(int id)
     {
         var task = await _context.Tasks.FindAsync(id);
         if (task == null)
@@ -57,7 +57,7 @@ public class EfCoreTaskRepository : ITaskRepository
             .ToListAsync();
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(Guid projectId)
+    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(int projectId)
     {
         return await _context.Tasks
             .Where(t => t.ProjectId == projectId)

@@ -62,8 +62,19 @@ namespace TheNextLevel
             }
             else if (databaseMode == "Turso")
             {
-                // TODO: Implement Turso mode
-                throw new NotImplementedException("Turso database mode is not yet implemented.");
+                var tursoConfig = config.GetSection("Turso").Get<TursoConfiguration>()
+                    ?? throw new InvalidOperationException("Turso configuration is missing in appsettings.json");
+
+                // Validate Turso configuration
+                if (string.IsNullOrEmpty(tursoConfig.DatabaseUrl))
+                    throw new InvalidOperationException("Turso DatabaseUrl is required");
+
+                if (string.IsNullOrEmpty(tursoConfig.AuthToken))
+                    throw new InvalidOperationException("Turso AuthToken is required");
+
+                // Register Turso client as singleton
+                builder.Services.AddSingleton(tursoConfig);
+                builder.Services.AddSingleton<TursoClient>();
             }
             else
             {
@@ -75,22 +86,34 @@ namespace TheNextLevel
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<IProjectService, ProjectService>();
 
-            // Register repositories
-            builder.Services.AddScoped<ITaskRepository, EfCoreTaskRepository>();
-            builder.Services.AddScoped<IProjectRepository, EfCoreProjectRepository>();
+            // Register repositories based on database mode
+            if (databaseMode == "Turso")
+            {
+                builder.Services.AddScoped<ITaskRepository, TursoTaskRepository>();
+                builder.Services.AddScoped<IProjectRepository, TursoProjectRepository>();
+            }
+            else
+            {
+                // EFCore mode
+                builder.Services.AddScoped<ITaskRepository, EfCoreTaskRepository>();
+                builder.Services.AddScoped<IProjectRepository, EfCoreProjectRepository>();
+            }
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();
             builder.Logging.AddDebug();
 #endif
 
-            // Build the app and apply migrations
+            // Build the app and apply migrations (only for EFCore mode)
             var app = builder.Build();
 
-            using (var scope = app.Services.CreateScope())
+            if (databaseMode == "EFCore")
             {
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                context.Database.Migrate();
+                using (var scope = app.Services.CreateScope())
+                {
+                    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    context.Database.Migrate();
+                }
             }
 
             return app;

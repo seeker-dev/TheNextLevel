@@ -31,9 +31,6 @@ public abstract class AppDbContext : DbContext
             entity.Property(e => e.IsCompleted)
                 .IsRequired();
 
-            entity.Property(e => e.CreatedAt)
-                .IsRequired();
-
             // Configure relationship with Project
             entity.HasOne(e => e.Project)
                 .WithMany(p => p.Tasks)
@@ -55,9 +52,6 @@ public abstract class AppDbContext : DbContext
             entity.Property(e => e.Description)
                 .IsRequired()
                 .HasMaxLength(1000);
-
-            entity.Property(e => e.CreatedAt)
-                .IsRequired();
         });
     }
 }

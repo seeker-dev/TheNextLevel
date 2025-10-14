@@ -29,13 +29,11 @@ public class ProjectService : IProjectService
                 Id = project.Id,
                 Name = project.Name,
                 Description = project.Description,
-                CreatedAt = project.CreatedAt,
                 Tasks = [.. tasks.Select(t => new TaskDto(
                     t.Id,
                     t.Title,
                     t.Description,
                     t.IsCompleted,
-                    t.CreatedAt,
                     t.ProjectId
                 ))],
             });
@@ -44,7 +42,7 @@ public class ProjectService : IProjectService
         return projectDtos;
     }
 
-    public async Task<ProjectDto?> GetProjectByIdAsync(Guid id)
+    public async Task<ProjectDto?> GetProjectByIdAsync(int id)
     {
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null)
@@ -56,13 +54,11 @@ public class ProjectService : IProjectService
             Id = project.Id,
             Name = project.Name,
             Description = project.Description,
-            CreatedAt = project.CreatedAt,
             Tasks = [.. tasks.Select(t => new TaskDto(
                 t.Id,
                 t.Title,
                 t.Description,
                 t.IsCompleted,
-                t.CreatedAt,
                 t.ProjectId
             ))],
         };
@@ -78,12 +74,11 @@ public class ProjectService : IProjectService
             Id = createdProject.Id,
             Name = createdProject.Name,
             Description = createdProject.Description,
-            CreatedAt = createdProject.CreatedAt,
             Tasks = []
         };
     }
 
-    public async Task<ProjectDto?> UpdateProjectAsync(Guid id, string name, string description)
+    public async Task<ProjectDto?> UpdateProjectAsync(int id, string name, string description)
     {
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null)
@@ -100,19 +95,17 @@ public class ProjectService : IProjectService
             Id = updatedProject.Id,
             Name = updatedProject.Name,
             Description = updatedProject.Description,
-            CreatedAt = updatedProject.CreatedAt,
             Tasks = [.. tasks.Select(t => new TaskDto(
                 t.Id,
                 t.Title,
                 t.Description,
                 t.IsCompleted,
-                t.CreatedAt,
                 t.ProjectId
             ))],
         };
     }
 
-    public async Task<bool> DeleteProjectAsync(Guid id)
+    public async Task<bool> DeleteProjectAsync(int id)
     {
         return await _projectRepository.DeleteAsync(id);
     }

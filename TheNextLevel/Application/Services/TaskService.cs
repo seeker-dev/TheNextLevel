@@ -27,57 +27,57 @@ public class TaskService : ITaskService
         return taskDtos;
     }
     
-    public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(Guid id)
+    public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         return task != null ? await MapToDtoAsync(task) : null;
     }
-    
-    public async System.Threading.Tasks.Task<Guid> CreateTaskAsync(CreateTaskRequest request)
+
+    public async System.Threading.Tasks.Task<int> CreateTaskAsync(CreateTaskRequest request)
     {
         var task = new Core.Entities.Task(request.Title, request.Description);
-        
+
         await _taskRepository.AddAsync(task);
         return task.Id;
     }
-    
-    public async System.Threading.Tasks.Task<bool> UpdateTaskAsync(Guid id, UpdateTaskRequest request)
+
+    public async System.Threading.Tasks.Task<bool> UpdateTaskAsync(int id, UpdateTaskRequest request)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
-        
+
         task.UpdateTitle(request.Title);
         task.UpdateDescription(request.Description);
-        
+
         await _taskRepository.UpdateAsync(task);
         return true;
     }
-    
-    public async System.Threading.Tasks.Task<bool> DeleteTaskAsync(Guid id)
+
+    public async System.Threading.Tasks.Task<bool> DeleteTaskAsync(int id)
     {
         return await _taskRepository.DeleteAsync(id);
     }
-    
-    public async System.Threading.Tasks.Task<bool> CompleteTaskAsync(Guid id)
+
+    public async System.Threading.Tasks.Task<bool> CompleteTaskAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
-        
+
         task.MarkComplete();
         await _taskRepository.UpdateAsync(task);
         return true;
     }
-    
-    public async System.Threading.Tasks.Task<bool> ReopenTaskAsync(Guid id)
+
+    public async System.Threading.Tasks.Task<bool> ReopenTaskAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
-        
+
         task.Reopen();
         await _taskRepository.UpdateAsync(task);
         return true;
     }
-    
+
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(bool isCompleted)
     {
         var tasks = await _taskRepository.GetByStatusAsync(isCompleted);
@@ -89,7 +89,7 @@ public class TaskService : ITaskService
         return taskDtos;
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByProjectAsync(Guid projectId)
+    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByProjectAsync(int projectId)
     {
         var tasks = await _taskRepository.GetTasksByProjectIdAsync(projectId);
         var taskDtos = new List<TaskDto>();
@@ -111,7 +111,7 @@ public class TaskService : ITaskService
         return taskDtos;
     }
 
-    public async System.Threading.Tasks.Task<bool> AssignTaskToProjectAsync(Guid taskId, Guid? projectId)
+    public async System.Threading.Tasks.Task<bool> AssignTaskToProjectAsync(int taskId, int? projectId)
     {
         var task = await _taskRepository.GetByIdAsync(taskId);
         if (task == null) return false;
@@ -136,7 +136,6 @@ public class TaskService : ITaskService
             task.Title,
             task.Description,
             task.IsCompleted,
-            task.CreatedAt,
             task.ProjectId
         );
     }

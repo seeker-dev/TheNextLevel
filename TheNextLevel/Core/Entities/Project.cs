@@ -2,18 +2,17 @@ namespace TheNextLevel.Core.Entities;
 
 public class Project
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
 
     // Navigation property for related tasks
     public ICollection<Task> Tasks { get; set; } = new List<Task>();
-    
+
     // Parameterless constructor for EF Core
-    public Project() 
+    public Project()
     {
-        Id = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;
     }
 

@@ -11,18 +11,18 @@ public class InMemoryProjectRepository : IProjectRepository
         return System.Threading.Tasks.Task.FromResult(_projects.AsEnumerable());
     }
     
-    public System.Threading.Tasks.Task<Core.Entities.Project?> GetByIdAsync(Guid id)
+    public System.Threading.Tasks.Task<Core.Entities.Project?> GetByIdAsync(int id)
     {
         var project = _projects.FirstOrDefault(p => p.Id == id);
         return System.Threading.Tasks.Task.FromResult(project);
     }
-    
+
     public System.Threading.Tasks.Task<Core.Entities.Project> AddAsync(Core.Entities.Project project)
     {
         _projects.Add(project);
         return System.Threading.Tasks.Task.FromResult(project);
     }
-    
+
     public System.Threading.Tasks.Task<Core.Entities.Project> UpdateAsync(Core.Entities.Project project)
     {
         var index = _projects.FindIndex(p => p.Id == project.Id);
@@ -32,8 +32,8 @@ public class InMemoryProjectRepository : IProjectRepository
         }
         return System.Threading.Tasks.Task.FromResult(project);
     }
-    
-    public System.Threading.Tasks.Task<bool> DeleteAsync(Guid id)
+
+    public System.Threading.Tasks.Task<bool> DeleteAsync(int id)
     {
         var project = _projects.FirstOrDefault(p => p.Id == id);
         if (project != null)

@@ -12,18 +12,18 @@ public class InMemoryTaskRepository : ITaskRepository
         return System.Threading.Tasks.Task.FromResult(_tasks.AsEnumerable());
     }
     
-    public System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(Guid id)
+    public System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(int id)
     {
         var task = _tasks.FirstOrDefault(t => t.Id == id);
         return System.Threading.Tasks.Task.FromResult(task);
     }
-    
+
     public System.Threading.Tasks.Task<Core.Entities.Task> AddAsync(Core.Entities.Task task)
     {
         _tasks.Add(task);
         return System.Threading.Tasks.Task.FromResult(task);
     }
-    
+
     public System.Threading.Tasks.Task<Core.Entities.Task> UpdateAsync(Core.Entities.Task task)
     {
         var index = _tasks.FindIndex(t => t.Id == task.Id);
@@ -33,8 +33,8 @@ public class InMemoryTaskRepository : ITaskRepository
         }
         return System.Threading.Tasks.Task.FromResult(task);
     }
-    
-    public System.Threading.Tasks.Task<bool> DeleteAsync(Guid id)
+
+    public System.Threading.Tasks.Task<bool> DeleteAsync(int id)
     {
         var task = _tasks.FirstOrDefault(t => t.Id == id);
         if (task != null)
@@ -44,14 +44,14 @@ public class InMemoryTaskRepository : ITaskRepository
         }
         return System.Threading.Tasks.Task.FromResult(false);
     }
-    
+
     public System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetByStatusAsync(bool isCompleted)
     {
         var filteredTasks = _tasks.Where(t => t.IsCompleted == isCompleted);
         return System.Threading.Tasks.Task.FromResult(filteredTasks);
     }
 
-    public System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(Guid projectId)
+    public System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(int projectId)
     {
         var filteredTasks = _tasks.Where(t => t.ProjectId == projectId);
         return System.Threading.Tasks.Task.FromResult(filteredTasks);

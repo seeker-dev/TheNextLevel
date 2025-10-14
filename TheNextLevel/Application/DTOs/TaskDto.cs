@@ -1,12 +1,12 @@
 namespace TheNextLevel.Application.DTOs;
 
 public record TaskDto(
-    Guid Id,
+    int Id,
     string Title,
     string Description,
     bool IsCompleted,
     DateTime CreatedAt,
-    Guid? ProjectId = null
+    int? ProjectId = null
 );
 
 public record CreateTaskRequest(string Title, string Description);

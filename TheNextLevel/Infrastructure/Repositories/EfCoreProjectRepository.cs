@@ -21,7 +21,7 @@ public class EfCoreProjectRepository : IProjectRepository
             .ToListAsync();
     }
 
-    public async Task<Project?> GetByIdAsync(Guid id)
+    public async Task<Project?> GetByIdAsync(int id)
     {
         return await _context.Projects
             .Include(p => p.Tasks)
@@ -42,7 +42,7 @@ public class EfCoreProjectRepository : IProjectRepository
         return project;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var project = await _context.Projects.FindAsync(id);
         if (project == null)

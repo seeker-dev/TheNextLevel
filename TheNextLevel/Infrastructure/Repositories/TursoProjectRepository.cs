@@ -33,11 +33,11 @@ public class TursoProjectRepository : IProjectRepository
         return projects;
     }
 
-    public async Task<Project?> GetByIdAsync(Guid id)
+    public async Task<Project?> GetByIdAsync(int id)
     {
         var response = await _client.QueryAsync(
             "SELECT Id, Name, Description, CreatedAt FROM Projects WHERE Id = ?",
-            id.ToString());
+            id);
 
         var project = MapToProjects(response).FirstOrDefault();
 
@@ -54,8 +54,7 @@ public class TursoProjectRepository : IProjectRepository
     public async Task<Project> AddAsync(Project project)
     {
         await _client.ExecuteAsync(
-            "INSERT INTO Projects (Id, Name, Description, CreatedAt) VALUES (?, ?, ?, ?)",
-            project.Id.ToString(),
+            "INSERT INTO Projects (Name, Description, CreatedAt) VALUES (?, ?, ?)",
             project.Name,
             project.Description ?? string.Empty,
             project.CreatedAt.ToString("o"));
@@ -69,16 +68,16 @@ public class TursoProjectRepository : IProjectRepository
             "UPDATE Projects SET Name = ?, Description = ? WHERE Id = ?",
             project.Name,
             project.Description ?? string.Empty,
-            project.Id.ToString());
+            project.Id);
 
         return project;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var response = await _client.ExecuteAsync(
             "DELETE FROM Projects WHERE Id = ?",
-            id.ToString());
+            id);
 
         return response.Results?.AffectedRowCount > 0;
     }
@@ -95,7 +94,7 @@ public class TursoProjectRepository : IProjectRepository
         {
             var project = new Project
             {
-                Id = Guid.Parse(GetColumnValue(row, columns, "Id")),
+                Id = int.Parse(GetColumnValue(row, columns, "Id")),
                 Name = GetColumnValue(row, columns, "Name"),
                 Description = GetColumnValue(row, columns, "Description"),
                 CreatedAt = DateTime.Parse(GetColumnValue(row, columns, "CreatedAt"))

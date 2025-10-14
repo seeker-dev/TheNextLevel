@@ -19,11 +19,11 @@ public class TursoTaskRepository : ITaskRepository
         return MapToTasks(response);
     }
 
-    public async System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(Guid id)
+    public async System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(int id)
     {
         var response = await _client.QueryAsync(
             "SELECT Id, Title, Description, IsCompleted, CreatedAt, ProjectId FROM Tasks WHERE Id = ?",
-            id.ToString());
+            id);
 
         var tasks = MapToTasks(response);
         return tasks.FirstOrDefault();
@@ -32,13 +32,12 @@ public class TursoTaskRepository : ITaskRepository
     public async System.Threading.Tasks.Task<Core.Entities.Task> AddAsync(Core.Entities.Task task)
     {
         await _client.ExecuteAsync(
-            "INSERT INTO Tasks (Id, Title, Description, IsCompleted, CreatedAt, ProjectId) VALUES (?, ?, ?, ?, ?, ?)",
-            task.Id.ToString(),
+            "INSERT INTO Tasks (Title, Description, IsCompleted, CreatedAt, ProjectId) VALUES (?, ?, ?, ?, ?)",
             task.Title,
             task.Description,
             task.IsCompleted ? 1 : 0,
             task.CreatedAt.ToString("o"),
-            task.ProjectId?.ToString() ?? (object)DBNull.Value);
+            task.ProjectId.HasValue ? (object)task.ProjectId.Value : DBNull.Value);
 
         return task;
     }
@@ -50,17 +49,17 @@ public class TursoTaskRepository : ITaskRepository
             task.Title,
             task.Description,
             task.IsCompleted ? 1 : 0,
-            task.ProjectId?.ToString() ?? (object)DBNull.Value,
-            task.Id.ToString());
+            task.ProjectId.HasValue ? (object)task.ProjectId.Value : DBNull.Value,
+            task.Id);
 
         return task;
     }
 
-    public async System.Threading.Tasks.Task<bool> DeleteAsync(Guid id)
+    public async System.Threading.Tasks.Task<bool> DeleteAsync(int id)
     {
         var response = await _client.ExecuteAsync(
             "DELETE FROM Tasks WHERE Id = ?",
-            id.ToString());
+            id);
 
         return response.Results?.AffectedRowCount > 0;
     }
@@ -74,11 +73,11 @@ public class TursoTaskRepository : ITaskRepository
         return MapToTasks(response);
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(Guid projectId)
+    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(int projectId)
     {
         var response = await _client.QueryAsync(
             "SELECT Id, Title, Description, IsCompleted, CreatedAt, ProjectId FROM Tasks WHERE ProjectId = ?",
-            projectId.ToString());
+            projectId);
 
         return MapToTasks(response);
     }
@@ -103,12 +102,12 @@ public class TursoTaskRepository : ITaskRepository
         {
             var task = new Core.Entities.Task
             {
-                Id = Guid.Parse(GetColumnValue(row, columns, "Id")),
+                Id = int.Parse(GetColumnValue(row, columns, "Id")),
                 Title = GetColumnValue(row, columns, "Title"),
                 Description = GetColumnValue(row, columns, "Description"),
                 IsCompleted = GetColumnValue(row, columns, "IsCompleted") == "1",
                 CreatedAt = DateTime.Parse(GetColumnValue(row, columns, "CreatedAt")),
-                ProjectId = ParseNullableGuid(GetColumnValue(row, columns, "ProjectId"))
+                ProjectId = ParseNullableInt(GetColumnValue(row, columns, "ProjectId"))
             };
             tasks.Add(task);
         }
@@ -136,11 +135,11 @@ public class TursoTaskRepository : ITaskRepository
         return element.ToString();
     }
 
-    private Guid? ParseNullableGuid(string value)
+    private int? ParseNullableInt(string value)
     {
         if (string.IsNullOrEmpty(value))
             return null;
 
-        return Guid.TryParse(value, out var guid) ? guid : null;
+        return int.TryParse(value, out var result) ? result : null;
     }
 }

@@ -2,18 +2,46 @@
 
 <header class="header">
     <div class="header-content">
-        <div class="header-left">
-            <h1>My Projects</h1>
-            <p class="date">@DateTime.Now.ToString("dddd, MMMM d")</p>
+        <div class="header-brand">
+            <h1 class="app-title" @onclick="@(() => Navigation.NavigateTo("/"))">The Next Level</h1>
         </div>
-        <div class="header-right">
-            <div class="search-container">
-                <input type="text" class="search-box" placeholder="Search tasks and projects..." @bind="_searchQuery" @bind:event="oninput" />
-            </div>
-        </div>
+        
+        <nav class="header-nav">
+            <a href="/" class="nav-link @GetActiveClass("/")">Projects</a>
+            <a href="/tasks" class="nav-link @GetActiveClass("/tasks")">Tasks</a>
+        </nav>
+        
+        <button class="menu-toggle" @onclick="ToggleMobileMenu">
+            <span class="menu-icon"></span>
+        </button>
     </div>
+    
+    @if (_showMobileMenu)
+    {
+        <div class="mobile-menu">
+            <a href="/" class="mobile-nav-link @GetActiveClass("/")" @onclick="CloseMobileMenu">Projects</a>
+            <a href="/tasks" class="mobile-nav-link @GetActiveClass("/tasks")" @onclick="CloseMobileMenu">Tasks</a>
+        </div>
+    }
 </header>
 
 @code {
-    private string _searchQuery = string.Empty;
+    private bool _showMobileMenu = false;
+
+    private string GetActiveClass(string path)
+    {
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+        return currentPath == path ? "active" : "";
+    }
+
+    private void ToggleMobileMenu()
+    {
+        _showMobileMenu = !_showMobileMenu;
+    }
+
+    private void CloseMobileMenu()
+    {
+        _showMobileMenu = false;
+    }
+
 }

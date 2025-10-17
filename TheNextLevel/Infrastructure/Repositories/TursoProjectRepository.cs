@@ -1,4 +1,5 @@
 using System.Text.Json;
+using TheNextLevel.Application.DTOs;
 using TheNextLevel.Core.Entities;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Infrastructure.Data;
@@ -112,6 +113,26 @@ public class TursoProjectRepository : IProjectRepository
             id);
 
         return response.Results?.AffectedRowCount > 0;
+    }
+
+    public async Task<PagedResult<Project>> GetPagedAsync(int skip, int take)
+    {
+        // Get total count
+        var totalCount = await GetTotalProjectsCountAsync();
+
+        // Get paged data
+        var response = await _client.QueryAsync(
+            "SELECT Id, Name, Description FROM Projects LIMIT ? OFFSET ?",
+            take,
+            skip);
+
+        var items = MapToProjects(response);
+
+        return new PagedResult<Project>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 
     private IEnumerable<Project> MapToProjects(TursoResponse response)

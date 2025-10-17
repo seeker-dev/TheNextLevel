@@ -137,4 +137,34 @@ public class ProjectService : IProjectService
     {
         return await _projectRepository.DeleteAsync(id);
     }
+
+    public async Task<PagedResult<ProjectDto>> GetProjectsPagedAsync(int skip, int take)
+    {
+        var pagedResult = await _projectRepository.GetPagedAsync(skip, take);
+
+        var projectDtos = new List<ProjectDto>();
+        foreach (var project in pagedResult.Items)
+        {
+            var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
+            projectDtos.Add(new ProjectDto
+            {
+                Id = project.Id,
+                Name = project.Name,
+                Description = project.Description,
+                Tasks = [.. tasks.Select(t => new TaskDto(
+                    t.Id,
+                    t.Title,
+                    t.Description,
+                    t.IsCompleted,
+                    t.ProjectId
+                ))],
+            });
+        }
+
+        return new PagedResult<ProjectDto>
+        {
+            Items = projectDtos,
+            TotalCount = pagedResult.TotalCount
+        };
+    }
 }

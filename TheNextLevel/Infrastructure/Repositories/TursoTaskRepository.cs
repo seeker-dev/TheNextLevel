@@ -1,4 +1,5 @@
 using System.Text.Json;
+using TheNextLevel.Application.DTOs;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Infrastructure.Data;
 
@@ -87,6 +88,37 @@ public class TursoTaskRepository : ITaskRepository
             "SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IS NULL");
 
         return MapToTasks(response);
+    }
+
+    public async System.Threading.Tasks.Task<PagedResult<Core.Entities.Task>> GetPagedAsync(int skip, int take, bool? isCompleted = null)
+    {
+        var whereClause = isCompleted.HasValue
+            ? $"WHERE IsCompleted = {(isCompleted.Value ? 1 : 0)}"
+            : "";
+
+        // Get total count
+        var countResponse = await _client.QueryAsync($"SELECT COUNT(*) as Count FROM Tasks {whereClause}");
+        var totalCount = 0;
+
+        if (countResponse.Results?.Rows != null && countResponse.Results.Rows.Length > 0)
+        {
+            var countValue = countResponse.Results.Rows[0][0];
+            totalCount = countValue.ValueKind == JsonValueKind.Number
+                ? countValue.GetInt32()
+                : 0;
+        }
+
+        // Get paged data
+        var dataResponse = await _client.QueryAsync(
+            $"SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks {whereClause} LIMIT {take} OFFSET {skip}");
+
+        var items = MapToTasks(dataResponse);
+
+        return new PagedResult<Core.Entities.Task>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 
     private IEnumerable<Core.Entities.Task> MapToTasks(TursoResponse response)

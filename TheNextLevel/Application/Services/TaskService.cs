@@ -129,6 +129,23 @@ public class TaskService : ITaskService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<PagedResult<TaskDto>> GetTasksPagedAsync(int skip, int take, bool? isCompleted = null)
+    {
+        var pagedResult = await _taskRepository.GetPagedAsync(skip, take, isCompleted);
+
+        var taskDtos = new List<TaskDto>();
+        foreach (var task in pagedResult.Items)
+        {
+            taskDtos.Add(await MapToDtoAsync(task));
+        }
+
+        return new PagedResult<TaskDto>
+        {
+            Items = taskDtos,
+            TotalCount = pagedResult.TotalCount
+        };
+    }
+
     private async System.Threading.Tasks.Task<TaskDto> MapToDtoAsync(Core.Entities.Task task)
     {
         return new TaskDto(

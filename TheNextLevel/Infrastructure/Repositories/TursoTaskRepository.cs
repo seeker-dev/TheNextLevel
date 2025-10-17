@@ -90,14 +90,12 @@ public class TursoTaskRepository : ITaskRepository
         return MapToTasks(response);
     }
 
-    public async System.Threading.Tasks.Task<PagedResult<Core.Entities.Task>> GetPagedAsync(int skip, int take, bool? isCompleted = null)
+    public async System.Threading.Tasks.Task<PagedResult<Core.Entities.Task>> GetPagedAsync(int skip, int take, bool isCompleted = false)
     {
-        var whereClause = isCompleted.HasValue
-            ? $"WHERE IsCompleted = {(isCompleted.Value ? 1 : 0)}"
-            : "";
-
         // Get total count
-        var countResponse = await _client.QueryAsync($"SELECT COUNT(*) as Count FROM Tasks {whereClause}");
+        var countResponse = await _client.QueryAsync(
+            "SELECT COUNT(*) as Count FROM Tasks WHERE IsCompleted = ?",
+            isCompleted ? 1 : 0);
         var totalCount = 0;
 
         if (countResponse.Results?.Rows != null && countResponse.Results.Rows.Length > 0)
@@ -110,7 +108,10 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get paged data
         var dataResponse = await _client.QueryAsync(
-            $"SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks {whereClause} LIMIT {take} OFFSET {skip}");
+            "SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? LIMIT ? OFFSET ?",
+            isCompleted ? 1 : 0,
+            take,
+            skip);
 
         var items = MapToTasks(dataResponse);
 

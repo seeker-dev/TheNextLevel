@@ -129,7 +129,7 @@ public class TaskService : ITaskService
         return true;
     }
 
-    public async System.Threading.Tasks.Task<PagedResult<TaskDto>> GetTasksPagedAsync(int skip, int take, bool? isCompleted = null)
+    public async System.Threading.Tasks.Task<PagedResult<TaskDto>> GetTasksPagedAsync(int skip, int take, bool isCompleted = false)
     {
         var pagedResult = await _taskRepository.GetPagedAsync(skip, take, isCompleted);
 

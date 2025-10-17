@@ -13,5 +13,5 @@ public interface ITaskRepository
     System.Threading.Tasks.Task<IEnumerable<Entities.Task>> GetByStatusAsync(bool isCompleted);
     System.Threading.Tasks.Task<IEnumerable<Entities.Task>> GetTasksByProjectIdAsync(int projectId);
     System.Threading.Tasks.Task<IEnumerable<Entities.Task>> GetUngroupedTasksAsync();
-    System.Threading.Tasks.Task<PagedResult<Entities.Task>> GetPagedAsync(int skip, int take, bool? isCompleted = null);
+    System.Threading.Tasks.Task<PagedResult<Entities.Task>> GetPagedAsync(int skip, int take, bool isCompleted = false);
 }

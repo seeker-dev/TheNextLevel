@@ -109,14 +109,14 @@
         }
     }
 
-    private async void ShowPending()
+    private async Task ShowPending()
     {
         _showCompleted = false;
         _totalCount = _pendingCount;
         await RefreshList();
     }
 
-    private async void ShowCompleted()
+    private async Task ShowCompleted()
     {
         _showCompleted = true;
         _totalCount = _completedCount;

@@ -95,8 +95,8 @@ namespace TheNextLevel
             else
             {
                 // EFCore mode
-                builder.Services.AddScoped<ITaskRepository, EfCoreTaskRepository>();
-                builder.Services.AddScoped<IProjectRepository, EfCoreProjectRepository>();
+                //builder.Services.AddScoped<ITaskRepository, EfCoreTaskRepository>();
+                //builder.Services.AddScoped<IProjectRepository, EfCoreProjectRepository>();
             }
 
 #if DEBUG

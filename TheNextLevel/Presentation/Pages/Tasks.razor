@@ -1,0 +1,152 @@
+@page "/tasks"
+@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Application.Interfaces
+@inject ITaskService TaskService
+@inject IProjectService ProjectService
+
+<main class="main-content">
+    <div class="page-header">
+        <h2 class="page-title">All Tasks</h2>
+        <div class="filter-controls">
+            <button class="filter-btn @(_showCompleted ? "" : "active")" @onclick="ShowPending">
+                Pending (@_pendingCount)
+            </button>
+            <button class="filter-btn @(_showCompleted ? "active" : "")" @onclick="ShowCompleted">
+                Completed (@_completedCount)
+            </button>
+        </div>
+    </div>
+    @if (_isLoading)
+    {
+        <div class="loading-state">
+            <p>Loading tasks...</p>
+        </div>
+    }
+    else if (_filteredTasks.Count == 0)
+    {
+        <div class="empty-state">
+            @if (_showCompleted)
+            {
+                <div class="empty-icon">✓</div>
+                <p class="empty-title">No completed tasks yet</p>
+                <p class="empty-subtitle">Tasks you complete will appear here</p>
+            }
+            else
+            {
+                <div class="empty-icon">🎯</div>
+                <p class="empty-title">No pending tasks</p>
+                <p class="empty-subtitle">You're all caught up! Time to add something new?</p>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="task-grid">
+            <Virtualize Items="_filteredTasks" Context="task">
+                <TaskCard
+                    Task="task"
+                    OnTaskUpdated="HandleTaskUpdated"
+                    OnTaskDeleted="HandleTaskDeleted"
+                    OnTaskEdit="HandleTaskEdit" />
+            </Virtualize>
+        </div>
+    }
+
+    <div class="fab-container">
+        <button class="fab" @onclick="OpenNewTaskDialog" title="Create new task">+</button>
+    </div>
+
+    <NewTaskDialog
+        IsVisible="_showTaskDialog"
+        OnResult="HandleTaskSaved"
+        OnCancel="CloseTaskDialog" />
+</main>
+@code {
+    private List<TaskDto> _allTasks = new();
+    private List<TaskDto> _filteredTasks = new();
+    private bool _isLoading = true;
+    private bool _showCompleted = false;
+    private bool _showTaskDialog = false;
+    private int _pendingCount = 0;
+    private int _completedCount = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasks();
+    }
+
+    private async Task LoadTasks()
+    {
+        _isLoading = true;
+        _allTasks = (await TaskService.GetAllTasksAsync()).ToList();
+        UpdateCounts();
+        FilterTasks();
+        _isLoading = false;
+    }
+
+    private void UpdateCounts()
+    {
+        _pendingCount = _allTasks.Count(t => !t.IsCompleted);
+        _completedCount = _allTasks.Count(t => t.IsCompleted);
+    }
+
+    private void FilterTasks()
+    {
+        _filteredTasks = _allTasks
+            .Where(t => t.IsCompleted == _showCompleted)
+            .OrderBy(t => t.Title)
+            .ToList();
+    }
+
+    private void ShowPending()
+    {
+        _showCompleted = false;
+        FilterTasks();
+    }
+
+    private void ShowCompleted()
+    {
+        _showCompleted = true;
+        FilterTasks();
+    }
+
+    private void OpenNewTaskDialog()
+    {
+        _showTaskDialog = true;
+    }
+
+    private void CloseTaskDialog()
+    {
+        _showTaskDialog = false;
+    }
+
+    private async Task HandleTaskSaved(TaskDto newTask)
+    {
+        _showTaskDialog = false;
+        await LoadTasks();
+    }
+
+    private async Task HandleTaskUpdated(TaskDto updatedTask)
+    {
+        var index = _allTasks.FindIndex(t => t.Id == updatedTask.Id);
+        if (index >= 0)
+        {
+            _allTasks[index] = updatedTask;
+            UpdateCounts();
+            FilterTasks();
+        }
+    }
+
+    private async Task HandleTaskDeleted(TaskDto deletedTask)
+    {
+        _allTasks.RemoveAll(t => t.Id == deletedTask.Id);
+        UpdateCounts();
+        FilterTasks();
+    }
+
+    private void HandleTaskEdit(TaskDto task)
+    {
+        // TODO: Implement edit dialog
+        // For now, we'll need to create an EditTaskDialog component
+    }
+}

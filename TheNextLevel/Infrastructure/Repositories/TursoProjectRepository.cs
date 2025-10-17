@@ -16,7 +16,7 @@ public class TursoProjectRepository : IProjectRepository
         _taskRepository = taskRepository;
     }
 
-    public async Task<IEnumerable<Project>> GetAllAsync()
+    public async Task<IEnumerable<Project>> GetAllAsync(bool includeTasks = false)
     {
         var response = await _client.QueryAsync(
             "SELECT Id, Name, Description FROM Projects");
@@ -24,13 +24,26 @@ public class TursoProjectRepository : IProjectRepository
         var projects = MapToProjects(response).ToList();
 
         // Load tasks for each project
-        foreach (var project in projects)
+        if (includeTasks)
         {
-            var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
-            project.Tasks = tasks.ToList();
+            foreach (var project in projects)
+            {
+                var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
+                project.Tasks = tasks.ToList();
+            }
         }
 
         return projects;
+    }
+    
+    public async Task<int> GetTotalProjectsCountAsync()
+    {
+        var response = await _client.QueryAsync(
+            "SELECT COUNT(*) as TotalCount FROM Projects");
+        if (response.Results?.Rows == null || response.Results.Rows.Length == 0)
+            return 0;
+
+        return int.Parse(GetColumnValue(response.Results.Rows[0], response.Results.Columns, "TotalCount"));
     }
 
     public async Task<Project?> GetByIdAsync(int id)
@@ -49,6 +62,26 @@ public class TursoProjectRepository : IProjectRepository
         }
 
         return project;
+    }
+
+    public async Task<IEnumerable<Project>> GetAsync(int startIndex, int count, bool includeTasks = false)
+    {
+        var response = await _client.QueryAsync(
+            "SELECT Id, Name, Description FROM Projects LIMIT ? OFFSET ?",
+            count,
+            startIndex);
+
+        var projects = MapToProjects(response).ToList();
+        if (!includeTasks) return projects;
+
+        // Load tasks for each project
+        foreach (var project in projects)
+        {
+            var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
+            project.Tasks = tasks.ToList();
+        }
+
+        return projects;
     }
 
     public async Task<Project> AddAsync(Project project)

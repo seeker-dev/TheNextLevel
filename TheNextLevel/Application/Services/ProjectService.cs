@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Components.Web.Virtualization;
 using TheNextLevel.Application.DTOs;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Core.Entities;
@@ -16,9 +17,9 @@ public class ProjectService : IProjectService
         _taskRepository = taskRepository;
     }
 
-    public async Task<IEnumerable<ProjectDto>> GetAllProjectsAsync()
+    public async Task<IEnumerable<ProjectDto>> GetAllProjectsAsync(bool includeTasks = false)
     {
-        var projects = await _projectRepository.GetAllAsync();
+        var projects = await _projectRepository.GetAllAsync(includeTasks);
         var projectDtos = new List<ProjectDto>();
 
         foreach (var project in projects)
@@ -40,6 +41,33 @@ public class ProjectService : IProjectService
         }
 
         return projectDtos;
+    }
+
+    private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjects(ItemsProviderRequest request)
+    {
+        var projects = await _projectRepository.GetAsync(request.StartIndex, request.Count);
+        var totalProjects = await _projectRepository.GetTotalProjectsCountAsync();
+
+        var projectDtos = new List<ProjectDto>();
+        foreach (var project in projects)
+        {
+            var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
+            projectDtos.Add(new ProjectDto
+            {
+                Id = project.Id,
+                Name = project.Name,
+                Description = project.Description,
+                Tasks = [.. tasks.Select(t => new TaskDto(
+                    t.Id,
+                    t.Title,
+                    t.Description,
+                    t.IsCompleted,
+                    t.ProjectId
+                ))],
+            });
+        }
+
+        return new ItemsProviderResult<ProjectDto>(projectDtos, totalProjects);
     }
 
     public async Task<ProjectDto?> GetProjectByIdAsync(int id)

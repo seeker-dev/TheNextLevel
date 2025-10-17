@@ -1,4 +1,5 @@
-﻿@inject NavigationManager Navigation
+﻿@implements IDisposable
+@inject NavigationManager Navigation
 
 <header class="header">
     <div class="header-content">
@@ -28,6 +29,16 @@
 @code {
     private bool _showMobileMenu = false;
 
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
     private string GetActiveClass(string path)
     {
         var currentPath = new Uri(Navigation.Uri).AbsolutePath;
@@ -42,6 +53,11 @@
     private void CloseMobileMenu()
     {
         _showMobileMenu = false;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 
 }

@@ -19,13 +19,12 @@
     else
     {
         <div class="projects-grid">
-            @foreach (var project in _projects)
-            {
+            <Virtualize Items="_projects" Context="project">
                 <ProjectCard
                     Project="project"
                     OnProjectEdit="HandleProjectEdit"
                     OnProjectDeleted="HandleProjectDeleted" />
-            }
+            </Virtualize>
         </div>
     }
 
@@ -62,7 +61,7 @@
     {
         try
         {
-            var projects = await ProjectService.GetAllProjectsAsync();
+            var projects = await ProjectService.GetAllProjectsAsync(true);
             _projects = projects.ToList();
         }
         catch (Exception ex)

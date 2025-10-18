@@ -17,16 +17,6 @@ public class TursoProjectRepository : IProjectRepository
         _taskRepository = taskRepository;
     }
 
-    public async Task<IEnumerable<Project>> GetAllAsync(bool includeTasks = false)
-    {
-        var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description FROM Projects");
-
-        var projects = MapToProjects(response).ToList();
-
-        return projects;
-    }
-    
     public async Task<int> GetTotalProjectsCountAsync()
     {
         var response = await _client.QueryAsync(
@@ -45,19 +35,14 @@ public class TursoProjectRepository : IProjectRepository
 
         var project = MapToProjects(response).FirstOrDefault();
 
+        if (project != null)
+        {
+            // Load tasks for this project
+            var tasks = await _taskRepository.GetTasksByProjectIdsAsync(new[] { project.Id });
+            project.Tasks = tasks.ToList();
+        }
+
         return project;
-    }
-
-    public async Task<IEnumerable<Project>> GetAsync(int startIndex, int count, bool includeTasks = false)
-    {
-        var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description FROM Projects LIMIT ? OFFSET ?",
-            count,
-            startIndex);
-
-        var projects = MapToProjects(response).ToList();
-
-        return projects;
     }
 
     public async Task<Project> AddAsync(Project project)
@@ -101,8 +86,29 @@ public class TursoProjectRepository : IProjectRepository
             take,
             skip);
 
-        // TODO: Include tasks if needed
-        var items = MapToProjects(response);
+        var items = MapToProjects(response).ToList();
+
+        if (items.Any())
+        {
+            // Batch load tasks for all projects
+            var projectIds = items.Select(p => p.Id).ToList();
+            var tasks = await _taskRepository.GetTasksByProjectIdsAsync(projectIds);
+
+            // Group tasks by project (filter out tasks with null ProjectId)
+            var tasksByProject = tasks
+                .Where(t => t.ProjectId.HasValue)
+                .GroupBy(t => t.ProjectId!.Value)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Assign tasks to projects
+            foreach (var project in items)
+            {
+                if (tasksByProject.TryGetValue(project.Id, out var projectTasks))
+                {
+                    project.Tasks = projectTasks;
+                }
+            }
+        }
 
         return new PagedResult<Project>
         {

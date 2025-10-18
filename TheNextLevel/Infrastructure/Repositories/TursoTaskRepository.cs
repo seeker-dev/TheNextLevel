@@ -122,6 +122,23 @@ public class TursoTaskRepository : ITaskRepository
         };
     }
 
+    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdsAsync(IEnumerable<int> projectIds)
+    {
+        var projectIdList = projectIds.ToList();
+
+        if (!projectIdList.Any())
+            return Enumerable.Empty<Core.Entities.Task>();
+
+        // Build dynamic query with placeholders for IN clause
+        var placeholders = string.Join(",", projectIdList.Select(_ => "?"));
+        var query = $"SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IN ({placeholders})";
+
+        // Execute query with project IDs as parameters
+        var response = await _client.QueryAsync(query, projectIdList.Cast<object>().ToArray());
+
+        return MapToTasks(response);
+    }
+
     private IEnumerable<Core.Entities.Task> MapToTasks(TursoResponse response)
     {
         if (response.Results?.Rows == null)

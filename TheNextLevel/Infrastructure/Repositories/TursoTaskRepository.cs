@@ -108,7 +108,7 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get paged data
         var dataResponse = await _client.QueryAsync(
-            "SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? LIMIT ? OFFSET ?",
+            "SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? ORDER BY Title desc LIMIT ? OFFSET ?",
             isCompleted ? 1 : 0,
             take,
             skip);

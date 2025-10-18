@@ -24,16 +24,6 @@ public class TursoProjectRepository : IProjectRepository
 
         var projects = MapToProjects(response).ToList();
 
-        // Load tasks for each project
-        if (includeTasks)
-        {
-            foreach (var project in projects)
-            {
-                var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
-                project.Tasks = tasks.ToList();
-            }
-        }
-
         return projects;
     }
     
@@ -55,13 +45,6 @@ public class TursoProjectRepository : IProjectRepository
 
         var project = MapToProjects(response).FirstOrDefault();
 
-        if (project != null)
-        {
-            // Load tasks for this project
-            var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
-            project.Tasks = tasks.ToList();
-        }
-
         return project;
     }
 
@@ -73,14 +56,6 @@ public class TursoProjectRepository : IProjectRepository
             startIndex);
 
         var projects = MapToProjects(response).ToList();
-        if (!includeTasks) return projects;
-
-        // Load tasks for each project
-        foreach (var project in projects)
-        {
-            var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
-            project.Tasks = tasks.ToList();
-        }
 
         return projects;
     }
@@ -122,7 +97,7 @@ public class TursoProjectRepository : IProjectRepository
 
         // Get paged data
         var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description FROM Projects LIMIT ? OFFSET ?",
+            "SELECT Id, Name, Description FROM Projects ORDER BY Name desc LIMIT ? OFFSET ?",
             take,
             skip);
 

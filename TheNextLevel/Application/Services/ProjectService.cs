@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Components.Web.Virtualization;
 using TheNextLevel.Application.DTOs;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Core.Entities;
@@ -17,78 +16,17 @@ public class ProjectService : IProjectService
         _taskRepository = taskRepository;
     }
 
-    public async Task<IEnumerable<ProjectDto>> GetAllProjectsAsync(bool includeTasks = false)
-    {
-        var projects = await _projectRepository.GetAllAsync(includeTasks);
-        var projectDtos = new List<ProjectDto>();
-
-        foreach (var project in projects)
-        {
-            var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
-            projectDtos.Add(new ProjectDto
-            {
-                Id = project.Id,
-                Name = project.Name,
-                Description = project.Description,
-                Tasks = [.. tasks.Select(t => new TaskDto(
-                    t.Id,
-                    t.Title,
-                    t.Description,
-                    t.IsCompleted,
-                    t.ProjectId
-                ))],
-            });
-        }
-
-        return projectDtos;
-    }
-
-    private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjects(ItemsProviderRequest request)
-    {
-        var projects = await _projectRepository.GetAsync(request.StartIndex, request.Count);
-        var totalProjects = await _projectRepository.GetTotalProjectsCountAsync();
-
-        var projectDtos = new List<ProjectDto>();
-        foreach (var project in projects)
-        {
-            var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
-            projectDtos.Add(new ProjectDto
-            {
-                Id = project.Id,
-                Name = project.Name,
-                Description = project.Description,
-                Tasks = [.. tasks.Select(t => new TaskDto(
-                    t.Id,
-                    t.Title,
-                    t.Description,
-                    t.IsCompleted,
-                    t.ProjectId
-                ))],
-            });
-        }
-
-        return new ItemsProviderResult<ProjectDto>(projectDtos, totalProjects);
-    }
-
     public async Task<ProjectDto?> GetProjectByIdAsync(int id)
     {
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null)
             return null;
 
-        var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
         return new ProjectDto
         {
             Id = project.Id,
             Name = project.Name,
-            Description = project.Description,
-            Tasks = [.. tasks.Select(t => new TaskDto(
-                t.Id,
-                t.Title,
-                t.Description,
-                t.IsCompleted,
-                t.ProjectId
-            ))],
+            Description = project.Description
         };
     }
 
@@ -116,20 +54,12 @@ public class ProjectService : IProjectService
         project.UpdateDescription(description);
 
         var updatedProject = await _projectRepository.UpdateAsync(project);
-        var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
 
         return new ProjectDto
         {
             Id = updatedProject.Id,
             Name = updatedProject.Name,
-            Description = updatedProject.Description,
-            Tasks = [.. tasks.Select(t => new TaskDto(
-                t.Id,
-                t.Title,
-                t.Description,
-                t.IsCompleted,
-                t.ProjectId
-            ))],
+            Description = updatedProject.Description
         };
     }
 
@@ -145,19 +75,11 @@ public class ProjectService : IProjectService
         var projectDtos = new List<ProjectDto>();
         foreach (var project in pagedResult.Items)
         {
-            var tasks = await _taskRepository.GetTasksByProjectIdAsync(project.Id);
             projectDtos.Add(new ProjectDto
             {
                 Id = project.Id,
                 Name = project.Name,
-                Description = project.Description,
-                Tasks = [.. tasks.Select(t => new TaskDto(
-                    t.Id,
-                    t.Title,
-                    t.Description,
-                    t.IsCompleted,
-                    t.ProjectId
-                ))],
+                Description = project.Description
             });
         }
 

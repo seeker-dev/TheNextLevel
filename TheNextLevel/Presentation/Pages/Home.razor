@@ -57,8 +57,7 @@
     private async Task LoadTotalCount()
     {
         _isLoading = true;
-        var allProjects = await ProjectService.GetAllProjectsAsync(false);
-        _totalCount = allProjects.Count();
+        // TODO: Make optimized function for getting total count of projects
         _isLoading = false;
     }
 

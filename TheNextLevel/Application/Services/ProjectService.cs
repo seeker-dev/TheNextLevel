@@ -8,12 +8,10 @@ namespace TheNextLevel.Application.Services;
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
-    private readonly ITaskRepository _taskRepository;
 
-    public ProjectService(IProjectRepository projectRepository, ITaskRepository taskRepository)
+    public ProjectService(IProjectRepository projectRepository)
     {
         _projectRepository = projectRepository;
-        _taskRepository = taskRepository;
     }
 
     public async Task<ProjectDto?> GetProjectByIdAsync(int id)
@@ -22,12 +20,12 @@ public class ProjectService : IProjectService
         if (project == null)
             return null;
 
-        return new ProjectDto
-        {
-            Id = project.Id,
-            Name = project.Name,
-            Description = project.Description
-        };
+        return new ProjectDto(
+            project.Id,
+            project.Name,
+            project.Description ?? string.Empty,
+            project.Tasks
+        );
     }
 
     public async Task<ProjectDto> CreateProjectAsync(string name, string description)
@@ -35,13 +33,12 @@ public class ProjectService : IProjectService
         var project = new Project(name, description);
         var createdProject = await _projectRepository.AddAsync(project);
 
-        return new ProjectDto
-        {
-            Id = createdProject.Id,
-            Name = createdProject.Name,
-            Description = createdProject.Description,
-            Tasks = []
-        };
+        return new ProjectDto(
+            createdProject.Id,
+            createdProject.Name,
+            createdProject.Description ?? string.Empty,
+            []
+        );
     }
 
     public async Task<ProjectDto?> UpdateProjectAsync(int id, string name, string description)
@@ -55,12 +52,12 @@ public class ProjectService : IProjectService
 
         var updatedProject = await _projectRepository.UpdateAsync(project);
 
-        return new ProjectDto
-        {
-            Id = updatedProject.Id,
-            Name = updatedProject.Name,
-            Description = updatedProject.Description
-        };
+        return new ProjectDto(
+            updatedProject.Id,
+            updatedProject.Name,
+            updatedProject.Description ?? string.Empty,
+            updatedProject.Tasks
+        );
     }
 
     public async Task<bool> DeleteProjectAsync(int id)
@@ -75,12 +72,12 @@ public class ProjectService : IProjectService
         var projectDtos = new List<ProjectDto>();
         foreach (var project in pagedResult.Items)
         {
-            projectDtos.Add(new ProjectDto
-            {
-                Id = project.Id,
-                Name = project.Name,
-                Description = project.Description
-            });
+            projectDtos.Add(new ProjectDto(
+                project.Id,
+                project.Name,
+                project.Description ?? string.Empty,
+                project.Tasks
+            ));
         }
 
         return new PagedResult<ProjectDto>

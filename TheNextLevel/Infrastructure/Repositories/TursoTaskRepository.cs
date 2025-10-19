@@ -16,14 +16,14 @@ public class TursoTaskRepository : ITaskRepository
 
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetAllAsync()
     {
-        var response = await _client.QueryAsync("SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks");
+        var response = await _client.QueryAsync("SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks");
         return MapToTasks(response);
     }
 
     public async System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(int id)
     {
         var response = await _client.QueryAsync(
-            "SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE Id = ?",
+            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE Id = ?",
             id);
 
         var tasks = MapToTasks(response);
@@ -33,8 +33,8 @@ public class TursoTaskRepository : ITaskRepository
     public async System.Threading.Tasks.Task<Core.Entities.Task> AddAsync(Core.Entities.Task task)
     {
         await _client.ExecuteAsync(
-            "INSERT INTO Tasks (Title, Description, IsCompleted, ProjectId) VALUES (?, ?, ?, ?)",
-            task.Title,
+            "INSERT INTO Tasks (Name, Description, IsCompleted, ProjectId) VALUES (?, ?, ?, ?)",
+            task.Name,
             task.Description,
             task.IsCompleted ? 1 : 0,
             task.ProjectId.HasValue ? (object)task.ProjectId.Value : DBNull.Value);
@@ -45,8 +45,8 @@ public class TursoTaskRepository : ITaskRepository
     public async System.Threading.Tasks.Task<Core.Entities.Task> UpdateAsync(Core.Entities.Task task)
     {
         await _client.ExecuteAsync(
-            "UPDATE Tasks SET Title = ?, Description = ?, IsCompleted = ?, ProjectId = ? WHERE Id = ?",
-            task.Title,
+            "UPDATE Tasks SET Name = ?, Description = ?, IsCompleted = ?, ProjectId = ? WHERE Id = ?",
+            task.Name,
             task.Description,
             task.IsCompleted ? 1 : 0,
             task.ProjectId.HasValue ? (object)task.ProjectId.Value : DBNull.Value,
@@ -67,7 +67,7 @@ public class TursoTaskRepository : ITaskRepository
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetByStatusAsync(bool isCompleted)
     {
         var response = await _client.QueryAsync(
-            "SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ?",
+            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ?",
             isCompleted ? 1 : 0);
 
         return MapToTasks(response);
@@ -76,7 +76,7 @@ public class TursoTaskRepository : ITaskRepository
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(int projectId)
     {
         var response = await _client.QueryAsync(
-            "SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId = ?",
+            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId = ?",
             projectId);
 
         return MapToTasks(response);
@@ -85,7 +85,7 @@ public class TursoTaskRepository : ITaskRepository
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetUngroupedTasksAsync()
     {
         var response = await _client.QueryAsync(
-            "SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IS NULL");
+            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IS NULL");
 
         return MapToTasks(response);
     }
@@ -108,7 +108,7 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get paged data
         var dataResponse = await _client.QueryAsync(
-            "SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? ORDER BY Title desc LIMIT ? OFFSET ?",
+            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? ORDER BY Name desc LIMIT ? OFFSET ?",
             isCompleted ? 1 : 0,
             take,
             skip);
@@ -131,7 +131,7 @@ public class TursoTaskRepository : ITaskRepository
 
         // Build dynamic query with placeholders for IN clause
         var placeholders = string.Join(",", projectIdList.Select(_ => "?"));
-        var query = $"SELECT Id, Title, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IN ({placeholders})";
+        var query = $"SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IN ({placeholders})";
 
         // Execute query with project IDs as parameters
         var response = await _client.QueryAsync(query, projectIdList.Cast<object>().ToArray());
@@ -152,7 +152,7 @@ public class TursoTaskRepository : ITaskRepository
             var task = new Core.Entities.Task
             {
                 Id = int.Parse(GetColumnValue(row, columns, "Id")),
-                Title = GetColumnValue(row, columns, "Title"),
+                Name = GetColumnValue(row, columns, "Name"),
                 Description = GetColumnValue(row, columns, "Description"),
                 IsCompleted = GetColumnValue(row, columns, "IsCompleted") == "1",
                 ProjectId = ParseNullableInt(GetColumnValue(row, columns, "ProjectId"))

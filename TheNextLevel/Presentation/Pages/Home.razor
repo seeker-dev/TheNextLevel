@@ -15,7 +15,7 @@
     }
     else
     {
-        <div class="projects-grid">
+        <div class="projects-grid" style="overflow-y:scroll" tabindex="-1">
             <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
                 <ItemContent>
                     <ProjectCard

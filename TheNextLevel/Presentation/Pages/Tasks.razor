@@ -78,10 +78,7 @@
     private async Task LoadCounts()
     {
         _isLoading = true;
-        var allTasks = await TaskService.GetAllTasksAsync();
-        _pendingCount = allTasks.Count(t => !t.IsCompleted);
-        _completedCount = allTasks.Count(t => t.IsCompleted);
-        _totalCount = _showCompleted ? _completedCount : _pendingCount;
+        // TODO: Make optimized function for getting total count of tasks
         _isLoading = false;
     }
 

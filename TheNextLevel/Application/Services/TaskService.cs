@@ -1,6 +1,5 @@
 using TheNextLevel.Application.DTOs;
 using TheNextLevel.Application.Interfaces;
-using TheNextLevel.Core.Entities;
 using TheNextLevel.Core.Interfaces;
 
 namespace TheNextLevel.Application.Services;
@@ -35,7 +34,7 @@ public class TaskService : ITaskService
 
     public async System.Threading.Tasks.Task<int> CreateTaskAsync(CreateTaskRequest request)
     {
-        var task = new Core.Entities.Task(request.Title, request.Description);
+        var task = new Core.Entities.Task(request.Name, request.Description);
 
         await _taskRepository.AddAsync(task);
         return task.Id;
@@ -46,7 +45,7 @@ public class TaskService : ITaskService
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
 
-        task.UpdateTitle(request.Title);
+        task.UpdateName(request.Name);
         task.UpdateDescription(request.Description);
 
         await _taskRepository.UpdateAsync(task);
@@ -129,11 +128,28 @@ public class TaskService : ITaskService
         return true;
     }
 
+    public async System.Threading.Tasks.Task<PagedResult<TaskDto>> GetTasksPagedAsync(int skip, int take, bool isCompleted = false)
+    {
+        var pagedResult = await _taskRepository.GetPagedAsync(skip, take, isCompleted);
+
+        var taskDtos = new List<TaskDto>();
+        foreach (var task in pagedResult.Items)
+        {
+            taskDtos.Add(await MapToDtoAsync(task));
+        }
+
+        return new PagedResult<TaskDto>
+        {
+            Items = taskDtos,
+            TotalCount = pagedResult.TotalCount
+        };
+    }
+
     private async System.Threading.Tasks.Task<TaskDto> MapToDtoAsync(Core.Entities.Task task)
     {
         return new TaskDto(
             task.Id,
-            task.Title,
+            task.Name,
             task.Description,
             task.IsCompleted,
             task.ProjectId

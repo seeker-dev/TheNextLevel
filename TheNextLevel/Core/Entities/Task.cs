@@ -3,7 +3,7 @@ namespace TheNextLevel.Core.Entities;
 public class Task
 {
     public int Id { get; set; }
-    public string Title { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsCompleted { get; set; }
 
@@ -16,26 +16,26 @@ public class Task
     {
     }
 
-    public Task(string title, string description) : this()
+    public Task(string name, string description) : this()
     {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Task title cannot be empty", nameof(title));
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Task name cannot be empty", nameof(name));
 
-        Title = title.Trim();
+        Name = name.Trim();
         Description = description?.Trim() ?? string.Empty;
     }
 
-    public Task(string title, string description, int? projectId) : this(title, description)
+    public Task(string name, string description, int? projectId) : this(name, description)
     {
         ProjectId = projectId;
     }
-    
-    public void UpdateTitle(string newTitle)
+
+    public void UpdateName(string newName)
     {
-        if (string.IsNullOrWhiteSpace(newTitle))
-            throw new ArgumentException("Task title cannot be empty", nameof(newTitle));
-            
-        Title = newTitle.Trim();
+        if (string.IsNullOrWhiteSpace(newName))
+            throw new ArgumentException("Task name cannot be empty", nameof(newName));
+
+        Name = newName.Trim();
     }
     
     public void UpdateDescription(string newDescription)

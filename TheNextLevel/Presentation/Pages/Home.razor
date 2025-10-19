@@ -1,4 +1,5 @@
-﻿@using TheNextLevel.Application.DTOs
+﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Application.Services
 @inject IProjectService ProjectService
@@ -6,11 +7,7 @@
 
 @page "/"
 <main class="main-content">
-    @if (_isLoading)
-    {
-        <p>Loading projects...</p>
-    }
-    else if (_projects.Count == 0)
+    @if (_totalCount == 0 && !_isLoading)
     {
         <div class="empty-project">
             <p>No projects found. Create your first project!</p>
@@ -18,12 +15,17 @@
     }
     else
     {
-        <div class="projects-grid">
-            <Virtualize Items="_projects" Context="project">
-                <ProjectCard
-                    Project="project"
-                    OnProjectEdit="HandleProjectEdit"
-                    OnProjectDeleted="HandleProjectDeleted" />
+        <div class="projects-grid" style="overflow-y:scroll" tabindex="-1">
+            <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
+                <ItemContent>
+                    <ProjectCard
+                        Project="project"
+                        OnProjectEdit="HandleProjectEdit"
+                        OnProjectDeleted="HandleProjectDeleted" />
+                </ItemContent>
+                <Placeholder>
+                    <div class="loading-card">Loading...</div>
+                </Placeholder>
             </Virtualize>
         </div>
     }
@@ -41,54 +43,54 @@
 
 @code
 {
-    private List<ProjectDto> _projects = new List<ProjectDto>();
-    private List<TaskDto> _ungroupedTasks = new List<TaskDto>();
-    private bool _isLoading = true;
+    private Virtualize<ProjectDto>? _virtualizeComponent;
+    private bool _isLoading = false;
     private bool _showProjectDialog = false;
     private ProjectDto? _editingProject = null;
+    private int _totalCount = 0;
 
     protected override async Task OnInitializedAsync()
     {
-        _isLoading = true;
+        await LoadTotalCount();
+    }
 
-        await LoadProjects();
-        await LoadUngroupedTasks();
-        
+    private async Task LoadTotalCount()
+    {
+        _isLoading = true;
+        // TODO: Make optimized function for getting total count of projects
         _isLoading = false;
     }
 
-    private async Task LoadProjects()
+    private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjectsProvider(ItemsProviderRequest request)
     {
         try
         {
-            var projects = await ProjectService.GetAllProjectsAsync(true);
-            _projects = projects.ToList();
+            var pagedResult = await ProjectService.GetProjectsPagedAsync(
+                skip: request.StartIndex,
+                take: request.Count);
+
+            _totalCount = pagedResult.TotalCount;
+
+            return new ItemsProviderResult<ProjectDto>(
+                pagedResult.Items,
+                pagedResult.TotalCount);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading projects: {ex.Message}");
-        }
-        finally
-        {
-            StateHasChanged();
+            return new ItemsProviderResult<ProjectDto>(
+                Array.Empty<ProjectDto>(),
+                0);
         }
     }
 
-    private async Task LoadUngroupedTasks()
+    private async Task RefreshList()
     {
-        try
+        if (_virtualizeComponent != null)
         {
-            var tasks = await TaskService.GetUngroupedTasksAsync();
-            _ungroupedTasks = tasks.ToList();
+            await _virtualizeComponent.RefreshDataAsync();
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading ungrouped tasks: {ex.Message}");
-        }
-        finally
-        {
-            StateHasChanged();
-        }
+        StateHasChanged();
     }
 
     private void OpenNewProjectDialog()
@@ -105,34 +107,21 @@
 
     private async Task HandleProjectSaved(ProjectDto savedProject)
     {
-        if (_editingProject != null)
-        {
-            // Edit mode: update existing project in list
-            var index = _projects.FindIndex(p => p.Id == savedProject.Id);
-            if (index >= 0)
-            {
-                _projects[index] = savedProject;
-            }
-        }
-        else
-        {
-            // Create mode: add new project to list
-            _projects.Add(savedProject);
-        }
-
         CloseProjectDialog();
-        StateHasChanged();
+        await LoadTotalCount();
+        await RefreshList();
     }
 
     private void HandleProjectEdit(ProjectDto project)
     {
+        // TODO: invesigating if this is actually working 
         _editingProject = project;  // not null = edit mode
         _showProjectDialog = true;
     }
 
     private async Task HandleProjectDeleted(ProjectDto project)
     {
-        _projects.Remove(project);
-        StateHasChanged();
+        await LoadTotalCount();
+        await RefreshList();
     }
 }

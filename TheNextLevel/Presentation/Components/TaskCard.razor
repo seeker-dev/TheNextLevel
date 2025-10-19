@@ -16,7 +16,7 @@
     <div class="task-checkbox-container">
         <input class="task-checkbox" type="checkbox" checked="@IsCompleted" @onchange="OnStatusChange">
         <div class="task-details">
-            <div class="task-title @(IsCompleted ? "completed" : "")">@(Task?.Title ?? "Untitled")</div>
+            <div class="task-title @(IsCompleted ? "completed" : "")">@(Task?.Name ?? "Untitled")</div>
             @if (!string.IsNullOrEmpty(Task?.Description))
             {
                 <div class="task-description">@Task.Description</div>

@@ -2,6 +2,7 @@ using TheNextLevel.Application.DTOs;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Core.Entities;
 using TheNextLevel.Core.Interfaces;
+using TheNextLevel.Shared.DTOs;
 
 namespace TheNextLevel.Application.Services;
 

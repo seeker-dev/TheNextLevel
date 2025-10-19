@@ -1,4 +1,5 @@
 using TheNextLevel.Application.DTOs;
+using TheNextLevel.Shared.DTOs;
 
 namespace TheNextLevel.Application.Interfaces;
 

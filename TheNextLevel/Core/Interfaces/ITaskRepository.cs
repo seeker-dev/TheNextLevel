@@ -1,5 +1,4 @@
-using TheNextLevel.Application.DTOs;
-using TheNextLevel.Core.Entities;
+using TheNextLevel.Shared.DTOs;
 
 namespace TheNextLevel.Core.Interfaces;
 

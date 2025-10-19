@@ -1,5 +1,5 @@
 using System.Text.Json;
-using TheNextLevel.Application.DTOs;
+using TheNextLevel.Shared.DTOs;
 using TheNextLevel.Core.Entities;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Infrastructure.Data;

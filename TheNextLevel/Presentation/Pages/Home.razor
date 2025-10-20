@@ -7,28 +7,24 @@
 
 @page "/"
 <main class="main-content">
-    @if (_totalCount == 0 && !_isLoading)
-    {
-        <div class="empty-project">
-            <p>No projects found. Create your first project!</p>
-        </div>
-    }
-    else
-    {
-        <div class="projects-grid" style="overflow-y:scroll" tabindex="-1">
-            <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
-                <ItemContent>
-                    <ProjectCard
-                        Project="project"
-                        OnProjectEdit="HandleProjectEdit"
-                        OnProjectDeleted="HandleProjectDeleted" />
-                </ItemContent>
-                <Placeholder>
-                    <div class="loading-card">Loading...</div>
-                </Placeholder>
-            </Virtualize>
-        </div>
-    }
+    <div class="@(_totalCount > 0 ? "projects-grid" : "")" style="@(_totalCount > 0 ? "overflow-y:scroll" : "")" tabindex="-1">
+        <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
+            <ItemContent>
+                <ProjectCard
+                    Project="project"
+                    OnProjectEdit="HandleProjectEdit"
+                    OnProjectDeleted="HandleProjectDeleted" />
+            </ItemContent>
+            <Placeholder>
+                <div class="loading-card">Loading...</div>
+            </Placeholder>
+            <EmptyContent>
+                <div class="empty-project">
+                    <p>No projects found. Create your first project!</p>
+                </div>
+            </EmptyContent>
+        </Virtualize>
+    </div>
 
     <div class="fab-container">
         <button class="fab" @onclick="OpenNewProjectDialog">+</button>
@@ -51,14 +47,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadTotalCount();
-    }
-
-    private async Task LoadTotalCount()
-    {
-        _isLoading = true;
-        // TODO: Make optimized function for getting total count of projects
-        _isLoading = false;
+        
     }
 
     private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjectsProvider(ItemsProviderRequest request)
@@ -108,7 +97,6 @@
     private async Task HandleProjectSaved(ProjectDto savedProject)
     {
         CloseProjectDialog();
-        await LoadTotalCount();
         await RefreshList();
     }
 
@@ -121,7 +109,6 @@
 
     private async Task HandleProjectDeleted(ProjectDto project)
     {
-        await LoadTotalCount();
         await RefreshList();
     }
 }

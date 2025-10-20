@@ -17,40 +17,37 @@
             </button>
         </div>
     </div>
-    @if (_totalCount == 0 && !_isLoading)
-    {
-        <div class="empty-state">
-            @if (_showCompleted)
-            {
-                <div class="empty-icon">✓</div>
-                <p class="empty-title">No completed tasks yet</p>
-                <p class="empty-subtitle">Tasks you complete will appear here</p>
-            }
-            else
-            {
-                <div class="empty-icon">🎯</div>
-                <p class="empty-title">No pending tasks</p>
-                <p class="empty-subtitle">You're all caught up! Time to add something new?</p>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="task-grid" style="overflow-y:scroll" tabindex="-1">
-            <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
-                <ItemContent>
-                    <TaskCard
-                        Task="task"
-                        OnTaskUpdated="HandleTaskUpdated"
-                        OnTaskDeleted="HandleTaskDeleted"
-                        OnTaskEdit="HandleTaskEdit" />
-                </ItemContent>
-                <Placeholder>
-                    <div class="loading-card">Loading...</div>
-                </Placeholder>
-            </Virtualize>
-        </div>
-    }
+
+    <div class="@(_totalCount > 0 ? "task-grid" : "")" style="@(_totalCount > 0 ? "overflow-y:scroll" : "")" tabindex="-1">
+        <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
+            <ItemContent>
+                <TaskCard
+                    Task="task"
+                    OnTaskUpdated="HandleTaskUpdated"
+                    OnTaskDeleted="HandleTaskDeleted"
+                    OnTaskEdit="HandleTaskEdit" />
+            </ItemContent>
+            <Placeholder>
+                <div class="loading-card">Loading...</div>
+            </Placeholder>
+            <EmptyContent>
+                <div class="empty-state">
+                    @if (_showCompleted)
+                    {
+                        <div class="empty-icon">✓</div>
+                        <p class="empty-title">No completed tasks yet</p>
+                        <p class="empty-subtitle">Tasks you complete will appear here</p>
+                    }
+                    else
+                    {
+                        <div class="empty-icon">🎯</div>
+                        <p class="empty-title">No pending tasks</p>
+                        <p class="empty-subtitle">You're all caught up! Time to add something new?</p>
+                    }
+                </div>
+            </EmptyContent>
+        </Virtualize>
+    </div>
 
     <div class="fab-container">
         <button class="fab" @onclick="OpenNewTaskDialog" title="Create new task">+</button>
@@ -72,14 +69,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCounts();
-    }
-
-    private async Task LoadCounts()
-    {
-        _isLoading = true;
-        // TODO: Make optimized function for getting total count of tasks
-        _isLoading = false;
+        
     }
 
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadTasksProvider(ItemsProviderRequest request)
@@ -142,19 +132,16 @@
     private async Task HandleTaskSaved(TaskDto newTask)
     {
         _showTaskDialog = false;
-        await LoadCounts();
         await RefreshList();
     }
 
     private async Task HandleTaskUpdated(TaskDto updatedTask)
     {
-        await LoadCounts();
         await RefreshList();
     }
 
     private async Task HandleTaskDeleted(TaskDto deletedTask)
     {
-        await LoadCounts();
         await RefreshList();
     }
 

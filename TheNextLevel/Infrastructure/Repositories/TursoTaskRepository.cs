@@ -8,23 +8,29 @@ namespace TheNextLevel.Infrastructure.Repositories;
 public class TursoTaskRepository : ITaskRepository
 {
     private readonly TursoClient _client;
+    private readonly IAccountContext _accountContext;
 
-    public TursoTaskRepository(TursoClient client)
+    public TursoTaskRepository(TursoClient client, IAccountContext accountContext)
     {
         _client = client;
+        _accountContext = accountContext;
     }
 
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetAllAsync()
     {
-        var response = await _client.QueryAsync("SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks");
+        var accountId = _accountContext.GetCurrentAccountId();
+        var response = await _client.QueryAsync(
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE AccountId = ?",
+            accountId);
         return MapToTasks(response);
     }
 
     public async System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(int id)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE Id = ?",
-            id);
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE Id = ? AND AccountId = ?",
+            id, accountId);
 
         var tasks = MapToTasks(response);
         return tasks.FirstOrDefault();
@@ -32,8 +38,10 @@ public class TursoTaskRepository : ITaskRepository
 
     public async System.Threading.Tasks.Task<Core.Entities.Task> AddAsync(Core.Entities.Task task)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         await _client.ExecuteAsync(
-            "INSERT INTO Tasks (Name, Description, IsCompleted, ProjectId) VALUES (?, ?, ?, ?)",
+            "INSERT INTO Tasks (AccountId, Name, Description, IsCompleted, ProjectId) VALUES (?, ?, ?, ?, ?)",
+            accountId,
             task.Name,
             task.Description,
             task.IsCompleted ? 1 : 0,
@@ -44,13 +52,15 @@ public class TursoTaskRepository : ITaskRepository
 
     public async System.Threading.Tasks.Task<Core.Entities.Task> UpdateAsync(Core.Entities.Task task)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         await _client.ExecuteAsync(
-            "UPDATE Tasks SET Name = ?, Description = ?, IsCompleted = ?, ProjectId = ? WHERE Id = ?",
+            "UPDATE Tasks SET Name = ?, Description = ?, IsCompleted = ?, ProjectId = ? WHERE Id = ? AND AccountId = ?",
             task.Name,
             task.Description,
             task.IsCompleted ? 1 : 0,
             task.ProjectId.HasValue ? (object)task.ProjectId.Value : DBNull.Value,
-            task.Id);
+            task.Id,
+            accountId);
 
         return task;
     }
@@ -66,36 +76,42 @@ public class TursoTaskRepository : ITaskRepository
 
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetByStatusAsync(bool isCompleted)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ?",
-            isCompleted ? 1 : 0);
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? AND AccountId = ?",
+            isCompleted ? 1 : 0, accountId);
 
         return MapToTasks(response);
     }
 
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(int projectId)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId = ?",
-            projectId);
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId = ? AND AccountId = ?",
+            projectId, accountId);
 
         return MapToTasks(response);
     }
 
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetUngroupedTasksAsync()
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IS NULL");
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IS NULL AND AccountId = ?",
+            accountId);
 
         return MapToTasks(response);
     }
 
     public async System.Threading.Tasks.Task<PagedResult<Core.Entities.Task>> GetPagedAsync(int skip, int take, bool isCompleted = false)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
+
         // Get total count
         var countResponse = await _client.QueryAsync(
-            "SELECT COUNT(*) as Count FROM Tasks WHERE IsCompleted = ?",
-            isCompleted ? 1 : 0);
+            "SELECT COUNT(*) as Count FROM Tasks WHERE IsCompleted = ? AND AccountId = ?",
+            isCompleted ? 1 : 0, accountId);
         var totalCount = 0;
 
         if (countResponse.Results?.Rows != null && countResponse.Results.Rows.Length > 0)
@@ -108,8 +124,9 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get paged data
         var dataResponse = await _client.QueryAsync(
-            "SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? ORDER BY Name desc LIMIT ? OFFSET ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? AND AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?",
             isCompleted ? 1 : 0,
+            accountId,
             take,
             skip);
 
@@ -124,6 +141,7 @@ public class TursoTaskRepository : ITaskRepository
 
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdsAsync(IEnumerable<int> projectIds)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         var projectIdList = projectIds.ToList();
 
         if (!projectIdList.Any())
@@ -131,10 +149,12 @@ public class TursoTaskRepository : ITaskRepository
 
         // Build dynamic query with placeholders for IN clause
         var placeholders = string.Join(",", projectIdList.Select(_ => "?"));
-        var query = $"SELECT Id, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IN ({placeholders})";
+        var query = $"SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IN ({placeholders}) AND AccountId = ?";
 
         // Execute query with project IDs as parameters
-        var response = await _client.QueryAsync(query, projectIdList.Cast<object>().ToArray());
+        var parameters = projectIdList.Cast<object>().ToList();
+        parameters.Add(accountId);
+        var response = await _client.QueryAsync(query, parameters.ToArray());
 
         return MapToTasks(response);
     }
@@ -152,6 +172,7 @@ public class TursoTaskRepository : ITaskRepository
             var task = new Core.Entities.Task
             {
                 Id = int.Parse(GetColumnValue(row, columns, "Id")),
+                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
                 Name = GetColumnValue(row, columns, "Name"),
                 Description = GetColumnValue(row, columns, "Description"),
                 IsCompleted = GetColumnValue(row, columns, "IsCompleted") == "1",

@@ -9,11 +9,13 @@ public class TaskService : ITaskService
 {
     private readonly ITaskRepository _taskRepository;
     private readonly IProjectRepository _projectRepository;
+    private readonly IAccountContext _accountContext;
 
-    public TaskService(ITaskRepository taskRepository, IProjectRepository projectRepository)
+    public TaskService(ITaskRepository taskRepository, IProjectRepository projectRepository, IAccountContext accountContext)
     {
         _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
         _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
+        _accountContext = accountContext ?? throw new ArgumentNullException(nameof(accountContext));
     }
     
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetAllTasksAsync()
@@ -36,6 +38,7 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<int> CreateTaskAsync(CreateTaskRequest request)
     {
         var task = new Core.Entities.Task(request.Name, request.Description);
+        task.AccountId = _accountContext.GetCurrentAccountId();
 
         await _taskRepository.AddAsync(task);
         return task.Id;
@@ -150,6 +153,7 @@ public class TaskService : ITaskService
     {
         return new TaskDto(
             task.Id,
+            task.AccountId,
             task.Name,
             task.Description,
             task.IsCompleted,

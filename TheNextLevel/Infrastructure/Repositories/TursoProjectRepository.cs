@@ -10,17 +10,21 @@ public class TursoProjectRepository : IProjectRepository
 {
     private readonly TursoClient _client;
     private readonly ITaskRepository _taskRepository;
+    private readonly IAccountContext _accountContext;
 
-    public TursoProjectRepository(TursoClient client, ITaskRepository taskRepository)
+    public TursoProjectRepository(TursoClient client, ITaskRepository taskRepository, IAccountContext accountContext)
     {
         _client = client;
         _taskRepository = taskRepository;
+        _accountContext = accountContext;
     }
 
     public async Task<int> GetTotalProjectsCountAsync()
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT COUNT(*) as TotalCount FROM Projects");
+            "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ?",
+            accountId);
         if (response.Results?.Rows == null || response.Results.Rows.Length == 0)
             return 0;
 
@@ -29,9 +33,10 @@ public class TursoProjectRepository : IProjectRepository
 
     public async Task<Project?> GetByIdAsync(int id)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description FROM Projects WHERE Id = ?",
-            id);
+            "SELECT Id, AccountId, Name, Description FROM Projects WHERE Id = ? AND AccountId = ?",
+            id, accountId);
 
         var project = MapToProjects(response).FirstOrDefault();
 
@@ -47,8 +52,10 @@ public class TursoProjectRepository : IProjectRepository
 
     public async Task<Project> AddAsync(Project project)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         await _client.ExecuteAsync(
-            "INSERT INTO Projects (Name, Description) VALUES (?, ?)",
+            "INSERT INTO Projects (AccountId, Name, Description) VALUES (?, ?, ?)",
+            accountId,
             project.Name,
             project.Description ?? string.Empty);
 
@@ -57,11 +64,13 @@ public class TursoProjectRepository : IProjectRepository
 
     public async Task<Project> UpdateAsync(Project project)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         await _client.ExecuteAsync(
-            "UPDATE Projects SET Name = ?, Description = ? WHERE Id = ?",
+            "UPDATE Projects SET Name = ?, Description = ? WHERE Id = ? AND AccountId = ?",
             project.Name,
             project.Description ?? string.Empty,
-            project.Id);
+            project.Id,
+            accountId);
 
         return project;
     }
@@ -77,12 +86,15 @@ public class TursoProjectRepository : IProjectRepository
 
     public async Task<PagedResult<Project>> GetPagedAsync(int skip, int take)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
+
         // Get total count
         var totalCount = await GetTotalProjectsCountAsync();
 
         // Get paged data
         var response = await _client.QueryAsync(
-            "SELECT Id, Name, Description FROM Projects ORDER BY Name desc LIMIT ? OFFSET ?",
+            "SELECT Id, AccountId, Name, Description FROM Projects WHERE AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?",
+            accountId,
             take,
             skip);
 
@@ -130,6 +142,7 @@ public class TursoProjectRepository : IProjectRepository
             var project = new Project
             {
                 Id = int.Parse(GetColumnValue(row, columns, "Id")),
+                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
                 Name = GetColumnValue(row, columns, "Name"),
                 Description = GetColumnValue(row, columns, "Description")
             };

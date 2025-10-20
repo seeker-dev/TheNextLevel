@@ -9,10 +9,12 @@ namespace TheNextLevel.Application.Services;
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly IAccountContext _accountContext;
 
-    public ProjectService(IProjectRepository projectRepository)
+    public ProjectService(IProjectRepository projectRepository, IAccountContext accountContext)
     {
         _projectRepository = projectRepository;
+        _accountContext = accountContext ?? throw new ArgumentNullException(nameof(accountContext));
     }
 
     public async Task<ProjectDto?> GetProjectByIdAsync(int id)
@@ -23,6 +25,7 @@ public class ProjectService : IProjectService
 
         return new ProjectDto(
             project.Id,
+            project.AccountId,
             project.Name,
             project.Description ?? string.Empty,
             project.Tasks
@@ -32,10 +35,13 @@ public class ProjectService : IProjectService
     public async Task<ProjectDto> CreateProjectAsync(string name, string description)
     {
         var project = new Project(name, description);
+        project.AccountId = _accountContext.GetCurrentAccountId();
+
         var createdProject = await _projectRepository.AddAsync(project);
 
         return new ProjectDto(
             createdProject.Id,
+            createdProject.AccountId,
             createdProject.Name,
             createdProject.Description ?? string.Empty,
             []
@@ -55,6 +61,7 @@ public class ProjectService : IProjectService
 
         return new ProjectDto(
             updatedProject.Id,
+            updatedProject.AccountId,
             updatedProject.Name,
             updatedProject.Description ?? string.Empty,
             updatedProject.Tasks
@@ -75,6 +82,7 @@ public class ProjectService : IProjectService
         {
             projectDtos.Add(new ProjectDto(
                 project.Id,
+                project.AccountId,
                 project.Name,
                 project.Description ?? string.Empty,
                 project.Tasks

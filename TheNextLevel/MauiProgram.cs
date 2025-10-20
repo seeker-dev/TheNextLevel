@@ -6,6 +6,7 @@ using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Infrastructure.Configuration;
 using TheNextLevel.Infrastructure.Data;
 using TheNextLevel.Infrastructure.Repositories;
+using TheNextLevel.Infrastructure.Services;
 
 namespace TheNextLevel
 {
@@ -42,7 +43,10 @@ namespace TheNextLevel
             // Register Turso client as singleton
             builder.Services.AddSingleton(tursoConfig);
             builder.Services.AddSingleton<TursoClient>();
-            
+
+            // Register account context
+            builder.Services.AddSingleton<IAccountContext, AccountContext>();
+
             // Register application services
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<IProjectService, ProjectService>();

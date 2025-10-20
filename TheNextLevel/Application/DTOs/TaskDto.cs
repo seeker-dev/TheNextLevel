@@ -2,6 +2,7 @@ namespace TheNextLevel.Application.DTOs;
 
 public record TaskDto(
     int Id,
+    int AccountId,
     string Name,
     string Description,
     bool IsCompleted,

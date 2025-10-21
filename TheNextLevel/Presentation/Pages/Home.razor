@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.AspNetCore.Components.Web.Virtualization
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Application.Services
@@ -7,7 +7,7 @@
 
 @page "/"
 <main class="main-content">
-    <div class="@(_totalCount > 0 ? "projects-grid" : "")" style="@(_totalCount > 0 ? "overflow-y:scroll" : "")" tabindex="-1">
+    <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
             <ItemContent>
                 <ProjectCard
@@ -54,11 +54,17 @@
     {
         try
         {
+            _isLoading = true;
+
             var pagedResult = await ProjectService.GetProjectsPagedAsync(
                 skip: request.StartIndex,
                 take: request.Count);
 
             _totalCount = pagedResult.TotalCount;
+
+            _isLoading = false;
+
+            StateHasChanged();
 
             return new ItemsProviderResult<ProjectDto>(
                 pagedResult.Items,
@@ -102,7 +108,6 @@
 
     private void HandleProjectEdit(ProjectDto project)
     {
-        // TODO: invesigating if this is actually working 
         _editingProject = project;  // not null = edit mode
         _showProjectDialog = true;
     }

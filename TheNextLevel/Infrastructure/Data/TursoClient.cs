@@ -191,23 +191,94 @@ public class TursoResponse
     [JsonPropertyName("type")]
     public string Type { get; set; } = string.Empty;
 
-    [JsonPropertyName("results")]
-    public TursoQueryResults? Results { get; set; }
+    [JsonPropertyName("result")]
+    public TursoQueryResults? Result { get; set; }
 }
 
 public class TursoQueryResults
 {
-    [JsonPropertyName("columns")]
-    public string[] Columns { get; set; } = Array.Empty<string>();
+    [JsonPropertyName("cols")]
+    public TursoColumn[] Cols { get; set; } = Array.Empty<TursoColumn>();
 
     [JsonPropertyName("rows")]
-    public JsonElement[][] Rows { get; set; } = Array.Empty<JsonElement[]>();
+    public TursoValue[][] Rows { get; set; } = Array.Empty<TursoValue[]>();
 
     [JsonPropertyName("affected_row_count")]
     public int AffectedRowCount { get; set; }
 
     [JsonPropertyName("last_insert_rowid")]
     public string? LastInsertRowId { get; set; }
+}
+
+public class TursoColumn
+{
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
+
+    [JsonPropertyName("decltype")]
+    public string? DeclType { get; set; }
+}
+
+public class TursoValue
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = string.Empty;
+
+    [JsonPropertyName("value")]
+    public JsonElement? Value { get; set; }
+
+    [JsonPropertyName("base64")]
+    public string? Base64 { get; set; }
+
+    public string GetStringValue()
+    {
+        if (Type == "null")
+            return string.Empty;
+
+        if (Type == "text" || Type == "integer")
+            return Value?.GetString() ?? string.Empty;
+
+        if (Type == "float")
+            return Value?.GetDouble().ToString() ?? string.Empty;
+
+        if (Type == "blob")
+            return Base64 ?? string.Empty;
+
+        return string.Empty;
+    }
+
+    public int GetInt32Value()
+    {
+        if (Type == "integer")
+        {
+            var strValue = Value?.GetString() ?? "0";
+            return int.TryParse(strValue, out var result) ? result : 0;
+        }
+
+        if (Type == "float")
+            return (int)(Value?.GetDouble() ?? 0);
+
+        return 0;
+    }
+
+    public bool GetBoolValue()
+    {
+        if (Type == "integer")
+        {
+            var strValue = Value?.GetString() ?? "0";
+            return strValue == "1";
+        }
+
+        return false;
+    }
+
+    public int? GetNullableInt32Value()
+    {
+        if (Type == "null")
+            return null;
+
+        return GetInt32Value();
+    }
 }
 
 public class TursoError

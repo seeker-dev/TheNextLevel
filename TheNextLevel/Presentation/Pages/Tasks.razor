@@ -56,7 +56,8 @@
     <NewTaskDialog
         IsVisible="_showTaskDialog"
         OnResult="HandleTaskSaved"
-        OnCancel="CloseTaskDialog" />
+        OnCancel="CloseTaskDialog"
+        ExistingTask="_editingTask" />
 </main>
 @code {
     private Virtualize<TaskDto>? _virtualizeComponent;
@@ -66,6 +67,7 @@
     private int _pendingCount = 0;
     private int _completedCount = 0;
     private int _totalCount = 0;
+    private TaskDto? _editingTask = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,11 +128,13 @@
 
     private void OpenNewTaskDialog()
     {
+        _editingTask = null;
         _showTaskDialog = true;
     }
 
     private void CloseTaskDialog()
     {
+        _editingTask = null;
         _showTaskDialog = false;
     }
 
@@ -152,7 +156,7 @@
 
     private void HandleTaskEdit(TaskDto task)
     {
-        // TODO: Implement edit dialog
-        // For now, we'll need to create an EditTaskDialog component
+        _editingTask = task;
+        _showTaskDialog = true;
     }
 }

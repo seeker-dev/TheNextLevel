@@ -54,11 +54,17 @@ public class TursoProjectRepository : IProjectRepository
     public async Task<Project> AddAsync(Project project)
     {
         var accountId = _accountContext.GetCurrentAccountId();
-        await _client.ExecuteAsync(
+        var response = await _client.ExecuteAsync(
             "INSERT INTO Projects (AccountId, Name, Description) VALUES (?, ?, ?)",
             accountId,
             project.Name,
             project.Description ?? string.Empty);
+
+        // Set the database-generated ID
+        if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var id))
+        {
+            project.Id = id;
+        }
 
         return project;
     }

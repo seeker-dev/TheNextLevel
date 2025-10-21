@@ -39,13 +39,19 @@ public class TursoTaskRepository : ITaskRepository
     public async System.Threading.Tasks.Task<Core.Entities.Task> AddAsync(Core.Entities.Task task)
     {
         var accountId = _accountContext.GetCurrentAccountId();
-        await _client.ExecuteAsync(
+        var response = await _client.ExecuteAsync(
             "INSERT INTO Tasks (AccountId, Name, Description, IsCompleted, ProjectId) VALUES (?, ?, ?, ?, ?)",
             accountId,
             task.Name,
             task.Description,
             task.IsCompleted ? 1 : 0,
-            task.ProjectId.HasValue ? (object)task.ProjectId.Value : DBNull.Value);
+            task.ProjectId.HasValue ? (object)task.ProjectId.Value : null);
+
+        // Set the database-generated ID
+        if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var id))
+        {
+            task.Id = id;
+        }
 
         return task;
     }

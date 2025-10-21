@@ -64,7 +64,7 @@ public class TursoTaskRepository : ITaskRepository
             task.Name,
             task.Description,
             task.IsCompleted ? 1 : 0,
-            task.ProjectId.HasValue ? (object)task.ProjectId.Value : DBNull.Value,
+            task.ProjectId.HasValue ? (object)task.ProjectId.Value : null,
             task.Id,
             accountId);
 

@@ -4,7 +4,7 @@
     <div class="ntd-overlay visible" @onclick="HandleOverlayClick">
         <div class="ntd-container" @onclick:stopPropagation="true">
             <div class="ntd-header">
-                <h2 class="ntd-title">Create New Task</h2>
+                <h2 class="ntd-title">@DialogTitle</h2>
                 <button class="ntd-btn-close" @onclick="Cancel">×</button>
             </div>
             
@@ -33,7 +33,7 @@
                 </div>
                 <div class="ntd-footer-right">
                     <button class="ntd-btn ntd-btn-cancel" @onclick="Cancel">Cancel</button>
-                    <button class="ntd-btn ntd-btn-save" @onclick="Save">Save Task</button>
+                    <button class="ntd-btn ntd-btn-save" @onclick="Save">@SaveButtonText</button>
                 </div>
             </div>
         </div>
@@ -54,16 +54,33 @@
 	[Parameter]
 	public EventCallback OnCancel { get; set; }
 
+	[Parameter]
+	public TaskDto? ExistingTask { get; set; }
+
 	private string taskTitle = string.Empty;
 	private string taskDescription = string.Empty;
+
+	// Computed properties for mode-aware behavior
+	private bool IsEditMode => ExistingTask != null;
+	private string DialogTitle => IsEditMode ? "Edit Task" : "Create New Task";
+	private string SaveButtonText => IsEditMode ? "Save Changes" : "Save Task";
 
 	protected override void OnParametersSet()
 	{
 		if (IsVisible)
 		{
-			// Reset form when dialog is shown
-			taskTitle = string.Empty;
-			taskDescription = string.Empty;
+			if (IsEditMode && ExistingTask != null)
+			{
+				// Populate form with existing task data
+				taskTitle = ExistingTask.Name;
+				taskDescription = ExistingTask.Description ?? string.Empty;
+			}
+			else
+			{
+				// Reset form when creating new task
+				taskTitle = string.Empty;
+				taskDescription = string.Empty;
+			}
 		}
 	}
 
@@ -81,17 +98,33 @@
 	{
 		if (!string.IsNullOrWhiteSpace(taskTitle))
 		{
-			var request = new CreateTaskRequest(
-				taskTitle.Trim(),
-				taskDescription?.Trim() ?? string.Empty
-			);
+			TaskDto? resultTask = null;
 
-			var taskId = await TaskService.CreateTaskAsync(request);
-			var createdTask = await TaskService.GetTaskByIdAsync(taskId);
-			
-			if (createdTask != null)
+			if (IsEditMode && ExistingTask != null)
 			{
-				await OnResult.InvokeAsync(createdTask);
+				// Edit mode: update existing task
+				var updateRequest = new UpdateTaskRequest(
+					taskTitle.Trim(),
+					taskDescription?.Trim() ?? string.Empty
+				);
+				await TaskService.UpdateTaskAsync(ExistingTask.Id, updateRequest);
+				resultTask = await TaskService.GetTaskByIdAsync(ExistingTask.Id);
+			}
+			else
+			{
+				// Create mode: create new task
+				var createRequest = new CreateTaskRequest(
+					taskTitle.Trim(),
+					taskDescription?.Trim() ?? string.Empty
+				);
+
+				var taskId = await TaskService.CreateTaskAsync(createRequest);
+				resultTask = await TaskService.GetTaskByIdAsync(taskId);
+			}
+
+			if (resultTask != null)
+			{
+				await OnResult.InvokeAsync(resultTask);
 			}
 
 			// Reset form after saving

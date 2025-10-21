@@ -25,10 +25,11 @@ public class TursoProjectRepository : IProjectRepository
         var response = await _client.QueryAsync(
             "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ?",
             accountId);
-        if (response.Results?.Rows == null || response.Results.Rows.Length == 0)
+        if (response.Result?.Rows == null || response.Result.Rows.Length == 0)
             return 0;
 
-        return int.Parse(GetColumnValue(response.Results.Rows[0], response.Results.Columns, "TotalCount"));
+        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+        return int.Parse(GetColumnValue(response.Result.Rows[0], columns, "TotalCount"));
     }
 
     public async Task<Project?> GetByIdAsync(int id)
@@ -81,7 +82,7 @@ public class TursoProjectRepository : IProjectRepository
             "DELETE FROM Projects WHERE Id = ?",
             id);
 
-        return response.Results?.AffectedRowCount > 0;
+        return response.Result?.AffectedRowCount > 0;
     }
 
     public async Task<PagedResult<Project>> GetPagedAsync(int skip, int take)
@@ -131,13 +132,13 @@ public class TursoProjectRepository : IProjectRepository
 
     private IEnumerable<Project> MapToProjects(TursoResponse response)
     {
-        if (response.Results?.Rows == null)
+        if (response.Result?.Rows == null)
             return Enumerable.Empty<Project>();
 
         var projects = new List<Project>();
-        var columns = response.Results.Columns;
+        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
 
-        foreach (var row in response.Results.Rows)
+        foreach (var row in response.Result.Rows)
         {
             var project = new Project
             {
@@ -152,23 +153,12 @@ public class TursoProjectRepository : IProjectRepository
         return projects;
     }
 
-    private string GetColumnValue(JsonElement[] row, string[] columns, string columnName)
+    private string GetColumnValue(TursoValue[] row, string[] columns, string columnName)
     {
         var index = Array.IndexOf(columns, columnName);
         if (index < 0 || index >= row.Length)
             return string.Empty;
 
-        var element = row[index];
-
-        if (element.ValueKind == JsonValueKind.Null)
-            return string.Empty;
-
-        if (element.ValueKind == JsonValueKind.String)
-            return element.GetString() ?? string.Empty;
-
-        if (element.ValueKind == JsonValueKind.Number)
-            return element.GetInt32().ToString();
-
-        return element.ToString();
+        return row[index].GetStringValue();
     }
 }

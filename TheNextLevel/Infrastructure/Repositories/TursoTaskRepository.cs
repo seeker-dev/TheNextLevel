@@ -71,7 +71,7 @@ public class TursoTaskRepository : ITaskRepository
             "DELETE FROM Tasks WHERE Id = ?",
             id);
 
-        return response.Results?.AffectedRowCount > 0;
+        return response.Result?.AffectedRowCount > 0;
     }
 
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetByStatusAsync(bool isCompleted)
@@ -114,12 +114,10 @@ public class TursoTaskRepository : ITaskRepository
             isCompleted ? 1 : 0, accountId);
         var totalCount = 0;
 
-        if (countResponse.Results?.Rows != null && countResponse.Results.Rows.Length > 0)
+        if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
         {
-            var countValue = countResponse.Results.Rows[0][0];
-            totalCount = countValue.ValueKind == JsonValueKind.Number
-                ? countValue.GetInt32()
-                : 0;
+            var countValue = countResponse.Result.Rows[0][0];
+            totalCount = countValue.GetInt32Value();
         }
 
         // Get paged data
@@ -161,13 +159,13 @@ public class TursoTaskRepository : ITaskRepository
 
     private IEnumerable<Core.Entities.Task> MapToTasks(TursoResponse response)
     {
-        if (response.Results?.Rows == null)
+        if (response.Result?.Rows == null)
             return Enumerable.Empty<Core.Entities.Task>();
 
         var tasks = new List<Core.Entities.Task>();
-        var columns = response.Results.Columns;
+        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
 
-        foreach (var row in response.Results.Rows)
+        foreach (var row in response.Result.Rows)
         {
             var task = new Core.Entities.Task
             {
@@ -184,24 +182,13 @@ public class TursoTaskRepository : ITaskRepository
         return tasks;
     }
 
-    private string GetColumnValue(JsonElement[] row, string[] columns, string columnName)
+    private string GetColumnValue(TursoValue[] row, string[] columns, string columnName)
     {
         var index = Array.IndexOf(columns, columnName);
         if (index < 0 || index >= row.Length)
             return string.Empty;
 
-        var element = row[index];
-
-        if (element.ValueKind == JsonValueKind.Null)
-            return string.Empty;
-
-        if (element.ValueKind == JsonValueKind.String)
-            return element.GetString() ?? string.Empty;
-
-        if (element.ValueKind == JsonValueKind.Number)
-            return element.GetInt32().ToString();
-
-        return element.ToString();
+        return row[index].GetStringValue();
     }
 
     private int? ParseNullableInt(string value)

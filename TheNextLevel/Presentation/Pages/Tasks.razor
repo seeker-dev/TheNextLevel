@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <div class="@(_totalCount > 0 ? "task-grid" : "")" style="@(_totalCount > 0 ? "overflow-y:scroll" : "")" tabindex="-1">
+    <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
             <ItemContent>
                 <TaskCard
@@ -76,12 +76,17 @@
     {
         try
         {
+            _isLoading = true;
+
             var pagedResult = await TaskService.GetTasksPagedAsync(
                 skip: request.StartIndex,
                 take: request.Count,
                 isCompleted: _showCompleted);
 
             _totalCount = pagedResult.TotalCount;
+            
+            _isLoading = false;
+            StateHasChanged();
 
             return new ItemsProviderResult<TaskDto>(
                 pagedResult.Items,

@@ -1,0 +1,240 @@
+@page "/projects/{Id:int}"
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Application.Interfaces
+@inject IProjectService ProjectService
+@inject ITaskService TaskService
+@inject NavigationManager Navigation
+
+<main class="main-content">
+    @if (_isLoading)
+    {
+        <div class="loading-state">Loading project...</div>
+    }
+    else if (_project != null)
+    {
+        <div class="project-details-header custom-bg">
+            <button class="back-button" @onclick="NavigateBack">←</button>
+            <h1 class="project-details-title">@_project.Name</h1>
+        </div>
+
+        <div class="project-details-content">
+            <div class="project-details-left">
+                <div class="details-section">
+                    <h3 class="section-title">Description</h3>
+                    <p class="project-description-text">@_project.Description</p>
+                </div>
+
+                <div class="details-section">
+                    <h3 class="section-title">Statistics</h3>
+                    <div class="project-stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">@_project.Tasks.Count()</div>
+                            <div class="stat-label">Total Tasks</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">@_project.Tasks.Count(t => t.IsCompleted)</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">@_project.Tasks.Count(t => !t.IsCompleted)</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="project-details-right">
+                <h3 class="section-title">Tasks</h3>
+                <div class="@(_totalTaskCount > 0 ? "task-grid" : "")" tabindex="-1">
+                    <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
+                        <ItemContent>
+                            <TaskCard
+                                Task="task"
+                                OnTaskUpdated="HandleTaskUpdated"
+                                OnTaskDeleted="HandleTaskDeleted"
+                                OnTaskEdit="HandleTaskEdit"
+                                OnTaskAssignToProject="HandleTaskAssignToProject" />
+                        </ItemContent>
+                        <Placeholder>
+                            <div class="loading-card">Loading...</div>
+                        </Placeholder>
+                        <EmptyContent>
+                            <div class="empty-state">
+                                <div class="empty-icon">📝</div>
+                                <p class="empty-title">No tasks in this project</p>
+                                <p class="empty-subtitle">Click the + button to create your first task</p>
+                            </div>
+                        </EmptyContent>
+                    </Virtualize>
+                </div>
+            </div>
+        </div>
+
+        <div class="fab-container">
+            <button class="fab" @onclick="OpenNewTaskDialog" title="Create new task">+</button>
+        </div>
+
+        <NewTaskDialog
+            IsVisible="_showTaskDialog"
+            OnResult="HandleTaskSaved"
+            OnCancel="CloseTaskDialog"
+            ExistingTask="_editingTask" />
+
+        <AssignTaskToProjectDialog
+            IsVisible="_showAssignDialog"
+            OnResult="HandleTaskAssigned"
+            OnCancel="CloseAssignDialog"
+            Task="_assigningTask" />
+    }
+</main>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ProjectDto? _project;
+    private Virtualize<TaskDto>? _virtualizeComponent;
+    private bool _isLoading = true;
+    private bool _showTaskDialog = false;
+    private bool _showAssignDialog = false;
+    private int _totalTaskCount = 0;
+    private TaskDto? _editingTask = null;
+    private TaskDto? _assigningTask = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProject();
+    }
+
+    private async Task LoadProject()
+    {
+        try
+        {
+            _isLoading = true;
+            _project = await ProjectService.GetProjectByIdAsync(Id);
+
+            if (_project == null)
+            {
+                // Project not found, redirect to home
+                Navigation.NavigateTo("/");
+                return;
+            }
+
+            _isLoading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading project: {ex.Message}");
+            // Redirect to home on error
+            Navigation.NavigateTo("/");
+        }
+    }
+
+    private async ValueTask<ItemsProviderResult<TaskDto>> LoadTasksProvider(ItemsProviderRequest request)
+    {
+        try
+        {
+            var tasks = await TaskService.GetTasksByProjectAsync(Id);
+            _totalTaskCount = tasks.Count();
+
+            // Handle pagination for virtualization
+            var paginatedTasks = tasks
+                .Skip(request.StartIndex)
+                .Take(request.Count)
+                .ToList();
+
+            StateHasChanged();
+
+            return new ItemsProviderResult<TaskDto>(
+                paginatedTasks,
+                _totalTaskCount);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tasks: {ex.Message}");
+            return new ItemsProviderResult<TaskDto>(
+                Array.Empty<TaskDto>(),
+                0);
+        }
+    }
+
+    private async Task RefreshList()
+    {
+        if (_virtualizeComponent != null)
+        {
+            await _virtualizeComponent.RefreshDataAsync();
+        }
+
+        // Also reload the project to update statistics
+        await LoadProject();
+        StateHasChanged();
+    }
+
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void OpenNewTaskDialog()
+    {
+        _editingTask = null;
+        _showTaskDialog = true;
+    }
+
+    private void CloseTaskDialog()
+    {
+        _editingTask = null;
+        _showTaskDialog = false;
+    }
+
+    private async Task HandleTaskSaved(TaskDto newTask)
+    {
+        _showTaskDialog = false;
+
+        // Auto-assign the newly created task to this project
+        if (newTask != null && newTask.ProjectId != Id)
+        {
+            await TaskService.AssignTaskToProjectAsync(newTask.Id, Id);
+        }
+
+        await RefreshList();
+    }
+
+    private async Task HandleTaskUpdated(TaskDto updatedTask)
+    {
+        await RefreshList();
+    }
+
+    private async Task HandleTaskDeleted(TaskDto deletedTask)
+    {
+        await RefreshList();
+    }
+
+    private void HandleTaskEdit(TaskDto task)
+    {
+        _editingTask = task;
+        _showTaskDialog = true;
+    }
+
+    private void HandleTaskAssignToProject(TaskDto task)
+    {
+        _assigningTask = task;
+        _showAssignDialog = true;
+    }
+
+    private void CloseAssignDialog()
+    {
+        _assigningTask = null;
+        _showAssignDialog = false;
+    }
+
+    private async Task HandleTaskAssigned()
+    {
+        _showAssignDialog = false;
+        _assigningTask = null;
+        // Task was reassigned away from this project, so refresh the list
+        await RefreshList();
+    }
+}

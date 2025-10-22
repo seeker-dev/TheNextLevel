@@ -2,6 +2,7 @@
 @using TheNextLevel.Application.Interfaces
 
 @inject IProjectService ProjectService
+@inject NavigationManager Navigation
 
 <div class="project-card">
     <div class="project-header custom-bg">
@@ -33,7 +34,7 @@
             </span>
         </div>
         
-        @if (Project?.Tasks != null && Project.Tasks.Any(t => t.IsCompleted))
+        @if (Project?.Tasks != null && Project.Tasks.Any())
         {
             <div class="task-preview">
                 <div class="task-preview-title">Active Tasks</div>
@@ -47,7 +48,7 @@
                     }
                 </div>
                 <div class="task-preview-more">
-                    <button class="view-all-tasks" @onclick:stopPropagation="true" @onclick="() => ViewAllTasks(Project.Id)">View All @Project.Tasks.Count() Tasks</button>
+                    <button class="view-all-tasks" @onclick:stopPropagation="true" @onclick="() => ViewAllTasks(Project.Id)">See details</button>
                 </div>
             </div>
         }
@@ -102,6 +103,9 @@
 
     private void ViewAllTasks(int? projectId)
     {
-        // Logic to navigate to all tasks view
+        if (projectId.HasValue)
+        {
+            Navigation.NavigateTo($"/projects/{projectId.Value}");
+        }
     }
 }

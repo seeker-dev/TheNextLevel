@@ -1,0 +1,135 @@
+@if (IsVisible)
+{
+    <div class="atpd-overlay visible" @onclick="HandleOverlayClick">
+        <div class="atpd-container" @onclick:stopPropagation="true">
+            <div class="atpd-header">
+                <h2 class="atpd-title">Assign to Project</h2>
+                <button class="atpd-btn-close" @onclick="Cancel">×</button>
+            </div>
+
+            <div class="atpd-body">
+                <div class="atpd-form-section">
+                    <div class="atpd-section-title">
+                        <span class="atpd-section-icon">📁</span>
+                        Select Project
+                    </div>
+
+                    @if (isLoading)
+                    {
+                        <div class="atpd-loading">Loading projects...</div>
+                    }
+                    else if (projects == null || !projects.Any())
+                    {
+                        <div class="atpd-empty-state">No projects available. Create a project first.</div>
+                    }
+                    else
+                    {
+                        <div class="atpd-project-list">
+                            @foreach (var project in projects)
+                            {
+                                <div class="atpd-project-item @(selectedProjectId == project.Id ? "selected" : "")"
+                                     @onclick="() => SelectProject(project.Id)">
+                                    <span class="atpd-project-name">@project.Name</span>
+                                    @if (selectedProjectId == project.Id)
+                                    {
+                                        <span class="atpd-check-icon">✓</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="atpd-footer">
+                <div class="atpd-footer-left">
+                    <button class="atpd-btn atpd-btn-unassign" @onclick="Unassign">Unassign</button>
+                </div>
+                <div class="atpd-footer-right">
+                    <button class="atpd-btn atpd-btn-cancel" @onclick="Cancel">Cancel</button>
+                    <button class="atpd-btn atpd-btn-save" @onclick="Save">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Application.DTOs
+@inject ITaskService TaskService
+@inject IProjectService ProjectService
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback OnResult { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public TaskDto? Task { get; set; }
+
+    private List<ProjectDto>? projects;
+    private int? selectedProjectId;
+    private bool isLoading = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsVisible && Task != null)
+        {
+            await LoadProjects();
+            selectedProjectId = Task.ProjectId;
+        }
+    }
+
+    private async Task LoadProjects()
+    {
+        isLoading = true;
+        try
+        {
+            // Load all projects - using a large number to get all projects
+            var projectsList = await ProjectService.GetProjectsPagedAsync(0, 1000);
+            projects = projectsList.Items.ToList();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void SelectProject(int projectId)
+    {
+        selectedProjectId = projectId;
+    }
+
+    private async Task Unassign()
+    {
+        if (Task != null)
+        {
+            await TaskService.AssignTaskToProjectAsync(Task.Id, null);
+            await OnResult.InvokeAsync();
+        }
+    }
+
+    private async Task Save()
+    {
+        if (Task != null && selectedProjectId.HasValue)
+        {
+            await TaskService.AssignTaskToProjectAsync(Task.Id, selectedProjectId.Value);
+            await OnResult.InvokeAsync();
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    private async Task HandleOverlayClick()
+    {
+        await Cancel();
+    }
+}

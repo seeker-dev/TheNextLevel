@@ -9,6 +9,7 @@
         {
             <div class="task-menu">
                 <button class="menu-item" @onclick="OnEditClick">Edit</button>
+                <button class="menu-item" @onclick="OnAssignToProjectClick">Assign to Project</button>
                 <button class="menu-item menu-item-danger" @onclick="OnDeleteClick">Delete</button>
             </div>
         }
@@ -41,6 +42,9 @@
 
     [Parameter]
     public EventCallback<TaskDto> OnTaskEdit { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskDto> OnTaskAssignToProject { get; set; }
 
     private bool IsCompleted => Task?.IsCompleted == true;
     private bool showMenu = false;
@@ -79,6 +83,15 @@
         if (Task != null)
         {
             await OnTaskEdit.InvokeAsync(Task);
+        }
+    }
+
+    private async Task OnAssignToProjectClick()
+    {
+        showMenu = false;
+        if (Task != null)
+        {
+            await OnTaskAssignToProject.InvokeAsync(Task);
         }
     }
 

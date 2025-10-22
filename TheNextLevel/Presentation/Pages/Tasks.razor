@@ -25,7 +25,8 @@
                     Task="task"
                     OnTaskUpdated="HandleTaskUpdated"
                     OnTaskDeleted="HandleTaskDeleted"
-                    OnTaskEdit="HandleTaskEdit" />
+                    OnTaskEdit="HandleTaskEdit"
+                    OnTaskAssignToProject="HandleTaskAssignToProject" />
             </ItemContent>
             <Placeholder>
                 <div class="loading-card">Loading...</div>
@@ -58,16 +59,24 @@
         OnResult="HandleTaskSaved"
         OnCancel="CloseTaskDialog"
         ExistingTask="_editingTask" />
+
+    <AssignTaskToProjectDialog
+        IsVisible="_showAssignDialog"
+        OnResult="HandleTaskAssigned"
+        OnCancel="CloseAssignDialog"
+        Task="_assigningTask" />
 </main>
 @code {
     private Virtualize<TaskDto>? _virtualizeComponent;
     private bool _isLoading = false;
     private bool _showCompleted = false;
     private bool _showTaskDialog = false;
+    private bool _showAssignDialog = false;
     private int _pendingCount = 0;
     private int _completedCount = 0;
     private int _totalCount = 0;
     private TaskDto? _editingTask = null;
+    private TaskDto? _assigningTask = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,5 +167,24 @@
     {
         _editingTask = task;
         _showTaskDialog = true;
+    }
+
+    private void HandleTaskAssignToProject(TaskDto task)
+    {
+        _assigningTask = task;
+        _showAssignDialog = true;
+    }
+
+    private void CloseAssignDialog()
+    {
+        _assigningTask = null;
+        _showAssignDialog = false;
+    }
+
+    private async Task HandleTaskAssigned()
+    {
+        _showAssignDialog = false;
+        _assigningTask = null;
+        await RefreshList();
     }
 }

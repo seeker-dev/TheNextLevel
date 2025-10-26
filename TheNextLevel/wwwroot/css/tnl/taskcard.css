@@ -8,6 +8,19 @@
     margin-bottom: 30px;
 }
 
+/* Fix for Blazor Virtualize component breaking grid layout
+   Makes the Virtualize wrapper divs transparent to grid layout */
+.task-grid > * {
+    display: contents;
+}
+
+/* Ensure task cards still render as grid items */
+.task-grid .task-card,
+.task-grid .loading-card,
+.task-grid .empty-state {
+    display: block;
+}
+
 /* Task Card Core Styles */
 .task-card {
     background: #000000;

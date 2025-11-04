@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Application.Services;
 using TheNextLevel.Core.Interfaces;
@@ -24,10 +25,16 @@ namespace TheNextLevel
 
             builder.Services.AddMauiBlazorWebView();
 
-            // Load configuration from appsettings.json
+            // Load configuration from appsettings.json (embedded resource)
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = $"{assembly.GetName().Name}.appsettings.json";
+
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream == null)
+                throw new InvalidOperationException($"Could not find embedded resource: {resourceName}");
+
             var config = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddJsonStream(stream)
                 .Build();
 
             var tursoConfig = config.GetSection("Turso").Get<TursoConfiguration>()

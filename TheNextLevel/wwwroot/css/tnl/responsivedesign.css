@@ -1,6 +1,18 @@
 ﻿@media (max-width: 1200px) {
     .projects-grid {
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+/* Force single column layout for tablets and phones */
+@media (max-width: 900px) {
+    .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .project-card {
+        min-height: 280px;
     }
 }
 
@@ -60,10 +72,20 @@
     /* Project grid specific */
     .projects-grid {
         grid-template-columns: 1fr;
+        gap: 18px;
     }
 
     .project-card {
-        min-height: 300px;
+        min-height: 260px;
+    }
+
+    .project-header {
+        padding: 20px;
+        min-height: 100px;
+    }
+
+    .project-body {
+        padding: 18px 20px 20px;
     }
 
     .project-stats {
@@ -89,25 +111,49 @@
     }
 
     .projects-grid {
-        gap: 20px;
+        gap: 15px;
+    }
+
+    .project-card {
+        min-height: 240px;
     }
 
     .project-header {
-        padding: 20px;
-        min-height: 100px;
+        padding: 15px;
+        min-height: 90px;
     }
 
     .project-icon-wrapper {
-        width: 50px;
-        height: 50px;
-        font-size: 2rem;
+        width: 45px;
+        height: 45px;
+        font-size: 1.8rem;
     }
 
     .project-name {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
+        margin-top: 8px;
     }
 
     .project-body {
-        padding: 15px 20px 20px;
+        padding: 12px 15px 15px;
+    }
+
+    .project-description {
+        font-size: 0.85rem;
+        margin-bottom: 15px;
+    }
+
+    .project-stats {
+        gap: 8px;
+        margin-bottom: 15px;
+        padding-bottom: 12px;
+    }
+
+    .stat-value {
+        font-size: 1.2rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
     }
 }

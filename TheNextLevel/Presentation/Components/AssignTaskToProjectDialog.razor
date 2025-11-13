@@ -43,11 +43,11 @@
 
             <div class="atpd-footer">
                 <div class="atpd-footer-left">
-                    <button class="atpd-btn atpd-btn-unassign" @onclick="Unassign">Unassign</button>
+                    <button class="atpd-btn atpd-btn-unassign" @onclick="Unassign" disabled="@(!Task?.ProjectId.HasValue)">Unassign</button>
                 </div>
                 <div class="atpd-footer-right">
                     <button class="atpd-btn atpd-btn-cancel" @onclick="Cancel">Cancel</button>
-                    <button class="atpd-btn atpd-btn-save" @onclick="Save">Save</button>
+                    <button class="atpd-btn atpd-btn-save" @onclick="Save" disabled="@(!selectedProjectId.HasValue)">Save</button>
                 </div>
             </div>
         </div>
@@ -106,7 +106,7 @@
     }
 
     private async Task Unassign()
-    {
+    {   
         if (Task != null)
         {
             await TaskService.AssignTaskToProjectAsync(Task.Id, null);

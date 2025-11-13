@@ -7,6 +7,7 @@
 
 @page "/"
 <main class="main-content">
+    <input type="text" placeholder="Filter projects..." @bind="filterText" @bind:event="oninput" @bind:after="OnFilterTextChanged" class="filter-input" />
     <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
             <ItemContent>
@@ -44,6 +45,7 @@
     private bool _showProjectDialog = false;
     private ProjectDto? _editingProject = null;
     private int _totalCount = 0;
+    private string filterText = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -58,7 +60,8 @@
 
             var pagedResult = await ProjectService.GetProjectsPagedAsync(
                 skip: request.StartIndex,
-                take: request.Count);
+                take: request.Count,
+                filterText: string.IsNullOrWhiteSpace(filterText) ? null : filterText);
 
             _totalCount = pagedResult.TotalCount;
 
@@ -77,6 +80,11 @@
                 Array.Empty<ProjectDto>(),
                 0);
         }
+    }
+
+    private async Task OnFilterTextChanged()
+    {
+        await RefreshList();
     }
 
     private async Task RefreshList()

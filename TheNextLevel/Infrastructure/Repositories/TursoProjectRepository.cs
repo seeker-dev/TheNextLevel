@@ -19,12 +19,25 @@ public class TursoProjectRepository : IProjectRepository
         _accountContext = accountContext;
     }
 
-    public async Task<int> GetTotalProjectsCountAsync()
+    public async Task<int> GetTotalProjectsCountAsync(string? filterText = null)
     {
         var accountId = _accountContext.GetCurrentAccountId();
-        var response = await _client.QueryAsync(
-            "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ?",
-            accountId);
+
+        string query;
+        object[] parameters;
+
+        if (!string.IsNullOrWhiteSpace(filterText))
+        {
+            query = "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ? AND Name LIKE ?";
+            parameters = new object[] { accountId, $"%{filterText}%" };
+        }
+        else
+        {
+            query = "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ?";
+            parameters = new object[] { accountId };
+        }
+
+        var response = await _client.QueryAsync(query, parameters);
         if (response.Result?.Rows == null || response.Result.Rows.Length == 0)
             return 0;
 
@@ -91,19 +104,29 @@ public class TursoProjectRepository : IProjectRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async Task<PagedResult<Project>> GetPagedAsync(int skip, int take)
+    public async Task<PagedResult<Project>> GetPagedAsync(int skip, int take, string? filterText = null)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
-        // Get total count
-        var totalCount = await GetTotalProjectsCountAsync();
+        // Get total count with filter
+        var totalCount = await GetTotalProjectsCountAsync(filterText);
 
-        // Get paged data
-        var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description FROM Projects WHERE AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?",
-            accountId,
-            take,
-            skip);
+        // Get paged data with filter
+        string query;
+        object[] parameters;
+
+        if (!string.IsNullOrWhiteSpace(filterText))
+        {
+            query = "SELECT Id, AccountId, Name, Description FROM Projects WHERE AccountId = ? AND Name LIKE ? ORDER BY Name desc LIMIT ? OFFSET ?";
+            parameters = new object[] { accountId, $"%{filterText}%", take, skip };
+        }
+        else
+        {
+            query = "SELECT Id, AccountId, Name, Description FROM Projects WHERE AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?";
+            parameters = new object[] { accountId, take, skip };
+        }
+
+        var response = await _client.QueryAsync(query, parameters);
 
         var items = MapToProjects(response).ToList();
 

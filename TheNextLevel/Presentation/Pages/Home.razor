@@ -4,9 +4,11 @@
 @using TheNextLevel.Application.Services
 @inject IProjectService ProjectService
 @inject ITaskService TaskService
+@implements IDisposable
 
 @page "/"
 <main class="main-content">
+    <input type="text" placeholder="Filter projects..." @bind="filterText" @bind:event="oninput" @bind:after="OnFilterTextChangedDebounced" class="filter-input" />
     <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
             <ItemContent>
@@ -44,10 +46,15 @@
     private bool _showProjectDialog = false;
     private ProjectDto? _editingProject = null;
     private int _totalCount = 0;
+    private string filterText = string.Empty;
+    private System.Threading.Timer? _debounceTimer;
+    private const int DebounceDelayMs = 400; // Wait 400ms after last keystroke
+    private bool _disposed = false;
+    private bool _isRefreshing = false;
 
     protected override async Task OnInitializedAsync()
     {
-        
+
     }
 
     private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjectsProvider(ItemsProviderRequest request)
@@ -58,7 +65,8 @@
 
             var pagedResult = await ProjectService.GetProjectsPagedAsync(
                 skip: request.StartIndex,
-                take: request.Count);
+                take: request.Count,
+                filterText: string.IsNullOrWhiteSpace(filterText) ? null : filterText);
 
             _totalCount = pagedResult.TotalCount;
 
@@ -79,13 +87,45 @@
         }
     }
 
+    private void OnFilterTextChangedDebounced()
+    {
+        // Cancel previous timer if it exists
+        _debounceTimer?.Dispose();
+
+        // Create new timer that will fire after the debounce delay
+        _debounceTimer = new System.Threading.Timer(async _ =>
+        {
+            if (!_disposed)
+            {
+                await InvokeAsync(async () =>
+                {
+                    if (!_disposed)
+                    {
+                        await RefreshList();
+                    }
+                });
+            }
+        }, null, DebounceDelayMs, Timeout.Infinite);
+    }
+
     private async Task RefreshList()
     {
-        if (_virtualizeComponent != null)
+        if (_isRefreshing) return; // Prevent concurrent refreshes
+
+        try
         {
-            await _virtualizeComponent.RefreshDataAsync();
+            _isRefreshing = true;
+
+            if (_virtualizeComponent != null)
+            {
+                await _virtualizeComponent.RefreshDataAsync();
+            }
+            StateHasChanged();
         }
-        StateHasChanged();
+        finally
+        {
+            _isRefreshing = false;
+        }
     }
 
     private void OpenNewProjectDialog()
@@ -115,5 +155,11 @@
     private async Task HandleProjectDeleted(ProjectDto project)
     {
         await RefreshList();
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _debounceTimer?.Dispose();
     }
 }

@@ -73,9 +73,9 @@ public class ProjectService : IProjectService
         return await _projectRepository.DeleteAsync(id);
     }
 
-    public async Task<PagedResult<ProjectDto>> GetProjectsPagedAsync(int skip, int take)
+    public async Task<PagedResult<ProjectDto>> GetProjectsPagedAsync(int skip, int take, string? filterText = null)
     {
-        var pagedResult = await _projectRepository.GetPagedAsync(skip, take);
+        var pagedResult = await _projectRepository.GetPagedAsync(skip, take, filterText);
 
         var projectDtos = new List<ProjectDto>();
         foreach (var project in pagedResult.Items)

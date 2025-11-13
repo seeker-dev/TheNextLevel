@@ -799,6 +799,14 @@
         transform: translateY(-1px);
     }
 
+    .atpd-btn-unassign:disabled {
+        background: rgba(139, 69, 19, 0.2);
+        color: #8B4513;
+        border-color: rgba(139, 69, 19, 0.2);
+        cursor: not-allowed;
+        transform: none;
+    }
+
 /* Animations */
 @keyframes atpdFadeIn {
     from {

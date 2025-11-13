@@ -49,6 +49,8 @@
     private string filterText = string.Empty;
     private System.Threading.Timer? _debounceTimer;
     private const int DebounceDelayMs = 400; // Wait 400ms after last keystroke
+    private bool _disposed = false;
+    private bool _isRefreshing = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,20 +95,37 @@
         // Create new timer that will fire after the debounce delay
         _debounceTimer = new System.Threading.Timer(async _ =>
         {
-            await InvokeAsync(async () =>
+            if (!_disposed)
             {
-                await RefreshList();
-            });
+                await InvokeAsync(async () =>
+                {
+                    if (!_disposed)
+                    {
+                        await RefreshList();
+                    }
+                });
+            }
         }, null, DebounceDelayMs, Timeout.Infinite);
     }
 
     private async Task RefreshList()
     {
-        if (_virtualizeComponent != null)
+        if (_isRefreshing) return; // Prevent concurrent refreshes
+
+        try
         {
-            await _virtualizeComponent.RefreshDataAsync();
+            _isRefreshing = true;
+
+            if (_virtualizeComponent != null)
+            {
+                await _virtualizeComponent.RefreshDataAsync();
+            }
+            StateHasChanged();
         }
-        StateHasChanged();
+        finally
+        {
+            _isRefreshing = false;
+        }
     }
 
     private void OpenNewProjectDialog()
@@ -140,6 +159,7 @@
 
     public void Dispose()
     {
+        _disposed = true;
         _debounceTimer?.Dispose();
     }
 }

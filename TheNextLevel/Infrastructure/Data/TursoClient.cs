@@ -75,9 +75,10 @@ public class TursoClient
 
         for (int attempt = 0; attempt <= maxRetries; attempt++)
         {
+            StringContent? content = null;
             try
             {
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync("/v2/pipeline", content);
 
                 response.EnsureSuccessStatusCode();
@@ -121,6 +122,10 @@ public class TursoClient
                     Console.WriteLine($"Turso request timed out (attempt {attempt + 1}/{maxRetries + 1}). Retrying in {retryDelays[attempt].TotalMilliseconds}ms...");
                     await Task.Delay(retryDelays[attempt]);
                 }
+            }
+            finally
+            {
+                content.Dispose();
             }
         }
 

@@ -63,30 +63,68 @@ public class TursoClient
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         });
 
-        var content = new StringContent(json, Encoding.UTF8, "application/json");
-        var response = await _httpClient.PostAsync("/v2/pipeline", content);
+        // Retry with exponential backoff
+        const int maxRetries = 3;
+        var retryDelays = new[] {
+            TimeSpan.FromMilliseconds(500),  // First retry after 500ms
+            TimeSpan.FromMilliseconds(1000), // Second retry after 1s
+            TimeSpan.FromMilliseconds(2000)  // Third retry after 2s
+        };
 
-        response.EnsureSuccessStatusCode();
+        Exception? lastException = null;
 
-        var responseJson = await response.Content.ReadAsStringAsync();
-        var pipelineResponse = JsonSerializer.Deserialize<TursoPipelineResponse>(responseJson, new JsonSerializerOptions
+        for (int attempt = 0; attempt <= maxRetries; attempt++)
         {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+            try
+            {
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("/v2/pipeline", content);
 
-        if (pipelineResponse?.Results == null || pipelineResponse.Results.Length == 0)
-        {
-            throw new InvalidOperationException("No results returned from Turso");
+                response.EnsureSuccessStatusCode();
+
+                var responseJson = await response.Content.ReadAsStringAsync();
+                var pipelineResponse = JsonSerializer.Deserialize<TursoPipelineResponse>(responseJson, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                if (pipelineResponse?.Results == null || pipelineResponse.Results.Length == 0)
+                {
+                    throw new InvalidOperationException("No results returned from Turso");
+                }
+
+                var executeResult = pipelineResponse.Results[0];
+
+                if (executeResult.Type == "error")
+                {
+                    throw new InvalidOperationException($"Turso error: {executeResult.Error?.Message ?? "Unknown error"}");
+                }
+
+                return executeResult.Response ?? new TursoResponse();
+            }
+            catch (HttpRequestException ex)
+            {
+                lastException = ex;
+
+                if (attempt < maxRetries)
+                {
+                    Console.WriteLine($"Turso request failed (attempt {attempt + 1}/{maxRetries + 1}): {ex.Message}. Retrying in {retryDelays[attempt].TotalMilliseconds}ms...");
+                    await Task.Delay(retryDelays[attempt]);
+                }
+            }
+            catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+            {
+                lastException = ex;
+
+                if (attempt < maxRetries)
+                {
+                    Console.WriteLine($"Turso request timed out (attempt {attempt + 1}/{maxRetries + 1}). Retrying in {retryDelays[attempt].TotalMilliseconds}ms...");
+                    await Task.Delay(retryDelays[attempt]);
+                }
+            }
         }
 
-        var executeResult = pipelineResponse.Results[0];
-
-        if (executeResult.Type == "error")
-        {
-            throw new InvalidOperationException($"Turso error: {executeResult.Error?.Message ?? "Unknown error"}");
-        }
-
-        return executeResult.Response ?? new TursoResponse();
+        throw new InvalidOperationException($"Failed to execute Turso request after {maxRetries + 1} attempts", lastException);
     }
 
     public async Task<TursoResponse> QueryAsync(string sql, params object[] parameters)

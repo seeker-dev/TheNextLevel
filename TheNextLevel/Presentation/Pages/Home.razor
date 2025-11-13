@@ -4,10 +4,11 @@
 @using TheNextLevel.Application.Services
 @inject IProjectService ProjectService
 @inject ITaskService TaskService
+@implements IDisposable
 
 @page "/"
 <main class="main-content">
-    <input type="text" placeholder="Filter projects..." @bind="filterText" @bind:event="oninput" @bind:after="OnFilterTextChanged" class="filter-input" />
+    <input type="text" placeholder="Filter projects..." @bind="filterText" @bind:event="oninput" @bind:after="OnFilterTextChangedDebounced" class="filter-input" />
     <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
             <ItemContent>
@@ -46,10 +47,12 @@
     private ProjectDto? _editingProject = null;
     private int _totalCount = 0;
     private string filterText = string.Empty;
+    private System.Threading.Timer? _debounceTimer;
+    private const int DebounceDelayMs = 400; // Wait 400ms after last keystroke
 
     protected override async Task OnInitializedAsync()
     {
-        
+
     }
 
     private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjectsProvider(ItemsProviderRequest request)
@@ -82,9 +85,19 @@
         }
     }
 
-    private async Task OnFilterTextChanged()
+    private void OnFilterTextChangedDebounced()
     {
-        await RefreshList();
+        // Cancel previous timer if it exists
+        _debounceTimer?.Dispose();
+
+        // Create new timer that will fire after the debounce delay
+        _debounceTimer = new System.Threading.Timer(async _ =>
+        {
+            await InvokeAsync(async () =>
+            {
+                await RefreshList();
+            });
+        }, null, DebounceDelayMs, Timeout.Infinite);
     }
 
     private async Task RefreshList()
@@ -123,5 +136,10 @@
     private async Task HandleProjectDeleted(ProjectDto project)
     {
         await RefreshList();
+    }
+
+    public void Dispose()
+    {
+        _debounceTimer?.Dispose();
     }
 }

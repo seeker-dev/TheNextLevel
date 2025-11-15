@@ -1,4 +1,4 @@
-namespace TheNextLevel.Shared.DTOs;
+namespace TheNextLevel.Core.DTOs;
 
 public class PagedResult<T>
 {

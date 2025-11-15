@@ -23,12 +23,22 @@ public class ProjectService : IProjectService
         if (project == null)
             return null;
 
+        // map tasks to DTOs
+        var taskDtos = project.Tasks.Select(task => new TaskDto(
+            task.Id,
+            task.AccountId,
+            task.Name,
+            task.Description ?? string.Empty,
+            task.IsCompleted,
+            task.ProjectId
+        )).ToList();
+
         return new ProjectDto(
             project.Id,
             project.AccountId,
             project.Name,
             project.Description ?? string.Empty,
-            project.Tasks
+            taskDtos
         );
     }
 
@@ -59,12 +69,21 @@ public class ProjectService : IProjectService
 
         var updatedProject = await _projectRepository.UpdateAsync(project);
 
+        var taskDtos = updatedProject.Tasks.Select(task => new TaskDto(
+            task.Id,
+            task.AccountId,
+            task.Name,
+            task.Description ?? string.Empty,
+            task.IsCompleted,
+            task.ProjectId
+        )).ToList();
+
         return new ProjectDto(
             updatedProject.Id,
             updatedProject.AccountId,
             updatedProject.Name,
             updatedProject.Description ?? string.Empty,
-            updatedProject.Tasks
+            taskDtos
         );
     }
 
@@ -80,12 +99,21 @@ public class ProjectService : IProjectService
         var projectDtos = new List<ProjectDto>();
         foreach (var project in pagedResult.Items)
         {
+            var taskDtos = project.Tasks.Select(task => new TaskDto(
+                task.Id,
+                task.AccountId,
+                task.Name,
+                task.Description ?? string.Empty,
+                task.IsCompleted,
+                task.ProjectId
+            )).ToList();
+            
             projectDtos.Add(new ProjectDto(
                 project.Id,
                 project.AccountId,
                 project.Name,
                 project.Description ?? string.Empty,
-                project.Tasks
+                taskDtos
             ));
         }
 

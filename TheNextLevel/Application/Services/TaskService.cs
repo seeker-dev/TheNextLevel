@@ -1,4 +1,5 @@
 using TheNextLevel.Application.DTOs;
+using TheNextLevel.Application.Extensions;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Core.DTOs;
@@ -21,18 +22,13 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetAllTasksAsync()
     {
         var tasks = await _taskRepository.GetAllAsync();
-        var taskDtos = new List<TaskDto>();
-        foreach (var task in tasks)
-        {
-            taskDtos.Add(await MapToDtoAsync(task));
-        }
-        return taskDtos;
+        return tasks.ToDto();
     }
     
     public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
-        return task != null ? await MapToDtoAsync(task) : null;
+        return task?.ToDto();
     }
 
     public async System.Threading.Tasks.Task<int> CreateTaskAsync(CreateTaskRequest request)
@@ -84,34 +80,19 @@ public class TaskService : ITaskService
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(bool isCompleted)
     {
         var tasks = await _taskRepository.GetByStatusAsync(isCompleted);
-        var taskDtos = new List<TaskDto>();
-        foreach (var task in tasks)
-        {
-            taskDtos.Add(await MapToDtoAsync(task));
-        }
-        return taskDtos;
+        return tasks.ToDto();
     }
 
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByProjectAsync(int projectId)
     {
         var tasks = await _taskRepository.GetTasksByProjectIdAsync(projectId);
-        var taskDtos = new List<TaskDto>();
-        foreach (var task in tasks)
-        {
-            taskDtos.Add(await MapToDtoAsync(task));
-        }
-        return taskDtos;
+        return tasks.ToDto();
     }
 
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetUngroupedTasksAsync()
     {
         var tasks = await _taskRepository.GetUngroupedTasksAsync();
-        var taskDtos = new List<TaskDto>();
-        foreach (var task in tasks)
-        {
-            taskDtos.Add(await MapToDtoAsync(task));
-        }
-        return taskDtos;
+        return tasks.ToDto();
     }
 
     public async System.Threading.Tasks.Task<bool> AssignTaskToProjectAsync(int taskId, int? projectId)
@@ -136,28 +117,10 @@ public class TaskService : ITaskService
     {
         var pagedResult = await _taskRepository.GetPagedAsync(skip, take, isCompleted);
 
-        var taskDtos = new List<TaskDto>();
-        foreach (var task in pagedResult.Items)
-        {
-            taskDtos.Add(await MapToDtoAsync(task));
-        }
-
         return new PagedResult<TaskDto>
         {
-            Items = taskDtos,
+            Items = pagedResult.Items.ToDto(),
             TotalCount = pagedResult.TotalCount
         };
-    }
-
-    private async System.Threading.Tasks.Task<TaskDto> MapToDtoAsync(Core.Entities.Task task)
-    {
-        return new TaskDto(
-            task.Id,
-            task.AccountId,
-            task.Name,
-            task.Description,
-            task.IsCompleted,
-            task.ProjectId
-        );
     }
 }

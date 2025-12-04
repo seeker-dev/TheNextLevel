@@ -26,7 +26,8 @@
                     OnTaskUpdated="HandleTaskUpdated"
                     OnTaskDeleted="HandleTaskDeleted"
                     OnTaskEdit="HandleTaskEdit"
-                    OnTaskAssignToProject="HandleTaskAssignToProject" />
+                    OnTaskAssignToProject="HandleTaskAssignToProject"
+                    OnTaskDeleteRequest="HandleTaskDeleteRequest" />
             </ItemContent>
             <Placeholder>
                 <div class="loading-card">Loading...</div>
@@ -65,6 +66,13 @@
         OnResult="HandleTaskAssigned"
         OnCancel="CloseAssignDialog"
         Task="_assigningTask" />
+
+    <ConfirmDeleteDialog
+        IsVisible="_showDeleteConfirm"
+        ItemName="@_deletingTask?.Name"
+        ItemType="task"
+        OnConfirm="ConfirmDelete"
+        OnCancel="CancelDelete" />
 </main>
 @code {
     private Virtualize<TaskDto>? _virtualizeComponent;
@@ -72,11 +80,13 @@
     private bool _showCompleted = false;
     private bool _showTaskDialog = false;
     private bool _showAssignDialog = false;
+    private bool _showDeleteConfirm = false;
     private int _pendingCount = 0;
     private int _completedCount = 0;
     private int _totalCount = 0;
     private TaskDto? _editingTask = null;
     private TaskDto? _assigningTask = null;
+    private TaskDto? _deletingTask = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -186,5 +196,31 @@
         _showAssignDialog = false;
         _assigningTask = null;
         await RefreshList();
+    }
+
+    private void HandleTaskDeleteRequest(TaskDto task)
+    {
+        _deletingTask = task;
+        _showDeleteConfirm = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        _showDeleteConfirm = false;
+        if (_deletingTask != null)
+        {
+            var success = await TaskService.DeleteTaskAsync(_deletingTask.Id);
+            if (success)
+            {
+                await RefreshList();
+            }
+        }
+        _deletingTask = null;
+    }
+
+    private void CancelDelete()
+    {
+        _showDeleteConfirm = false;
+        _deletingTask = null;
     }
 }

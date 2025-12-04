@@ -46,6 +46,9 @@
     [Parameter]
     public EventCallback<TaskDto> OnTaskAssignToProject { get; set; }
 
+    [Parameter]
+    public EventCallback<TaskDto> OnTaskDeleteRequest { get; set; }
+
     private bool IsCompleted => Task?.IsCompleted == true;
     private bool showMenu = false;
 
@@ -100,11 +103,7 @@
         showMenu = false;
         if (Task != null)
         {
-            var success = await TaskService.DeleteTaskAsync(Task.Id);
-            if (success)
-            {
-                await OnTaskDeleted.InvokeAsync(Task);
-            }
+            await OnTaskDeleteRequest.InvokeAsync(Task);
         }
     }
 }

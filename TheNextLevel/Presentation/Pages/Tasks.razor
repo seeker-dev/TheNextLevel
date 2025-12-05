@@ -24,7 +24,6 @@
                 <TaskCard
                     Task="task"
                     OnTaskUpdated="HandleTaskUpdated"
-                    OnTaskDeleted="HandleTaskDeleted"
                     OnTaskEdit="HandleTaskEdit"
                     OnTaskAssignToProject="HandleTaskAssignToProject"
                     OnTaskDeleteRequest="HandleTaskDeleteRequest" />
@@ -164,11 +163,6 @@
     }
 
     private async Task HandleTaskUpdated(TaskDto updatedTask)
-    {
-        await RefreshList();
-    }
-
-    private async Task HandleTaskDeleted(TaskDto deletedTask)
     {
         await RefreshList();
     }

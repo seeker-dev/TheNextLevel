@@ -12,6 +12,11 @@ public class Task
     public int? ProjectId { get; set; }
     public Project? Project { get; set; }
 
+    // Subtask relationship
+    public int? ParentTaskId { get; set; }
+    public Task? ParentTask { get; set; }
+    public ICollection<Task> Subtasks { get; set; } = new List<Task>();
+
     // Parameterless constructor for EF Core
     public Task()
     {
@@ -29,6 +34,11 @@ public class Task
     public Task(string name, string description, int? projectId) : this(name, description)
     {
         ProjectId = projectId;
+    }
+
+    public Task(string name, string description, int? projectId, int? parentTaskId) : this(name, description, projectId)
+    {
+        ParentTaskId = parentTaskId;
     }
 
     public void UpdateName(string newName)
@@ -58,5 +68,17 @@ public class Task
         {
             IsCompleted = false;
         }
+    }
+
+    public bool CanHaveSubtasks()
+    {
+        return ParentTaskId == null;
+    }
+
+    public void SetParentTask(int parentTaskId)
+    {
+        if (Subtasks.Any())
+            throw new InvalidOperationException("Cannot set parent on a task that already has subtasks");
+        ParentTaskId = parentTaskId;
     }
 }

@@ -95,7 +95,7 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId = ? AND AccountId = ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId = ? AND AccountId = ? AND ParentTaskId IS NULL",
             projectId, accountId);
 
         return MapToTasks(response);
@@ -105,7 +105,7 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId IS NULL AND AccountId = ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId IS NULL AND AccountId = ? AND ParentTaskId IS NULL",
             accountId);
 
         return MapToTasks(response);

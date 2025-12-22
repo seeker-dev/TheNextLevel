@@ -69,16 +69,4 @@ public class Task
             IsCompleted = false;
         }
     }
-
-    public bool CanHaveSubtasks()
-    {
-        return ParentTaskId == null;
-    }
-
-    public void SetParentTask(int parentTaskId)
-    {
-        if (Subtasks.Any())
-            throw new InvalidOperationException("Cannot set parent on a task that already has subtasks");
-        ParentTaskId = parentTaskId;
-    }
 }

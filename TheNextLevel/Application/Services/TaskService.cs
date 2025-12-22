@@ -69,13 +69,10 @@ public class TaskService : ITaskService
         if (task.ParentTaskId == null)
         {
             var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(id);
-            foreach (var subtask in subtasks)
+            foreach (var subtask in subtasks.Where(subtask => !subtask.IsCompleted))
             {
-                if (!subtask.IsCompleted)
-                {
-                    subtask.MarkComplete();
-                    await _taskRepository.UpdateAsync(subtask);
-                }
+                subtask.MarkComplete();
+                await _taskRepository.UpdateAsync(subtask);
             }
         }
 

@@ -17,4 +17,7 @@ public interface ITaskService
     System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetUngroupedTasksAsync();
     System.Threading.Tasks.Task<bool> AssignTaskToProjectAsync(int taskId, int? projectId);
     System.Threading.Tasks.Task<PagedResult<TaskDto>> GetTasksPagedAsync(int skip, int take, bool isCompleted = false);
+    System.Threading.Tasks.Task<int> CreateSubtaskAsync(CreateSubtaskRequest request);
+    System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetSubtasksByParentIdAsync(int parentTaskId);
+    System.Threading.Tasks.Task<bool> CanTaskHaveSubtasksAsync(int taskId);
 }

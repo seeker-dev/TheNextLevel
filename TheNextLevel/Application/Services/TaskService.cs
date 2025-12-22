@@ -64,6 +64,18 @@ public class TaskService : ITaskService
 
         task.MarkComplete();
         await _taskRepository.UpdateAsync(task);
+
+        // Auto-complete all subtasks if this is a parent task
+        if (task.ParentTaskId == null)
+        {
+            var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(id);
+            foreach (var subtask in subtasks.Where(subtask => !subtask.IsCompleted))
+            {
+                subtask.MarkComplete();
+                await _taskRepository.UpdateAsync(subtask);
+            }
+        }
+
         return true;
     }
 
@@ -74,6 +86,18 @@ public class TaskService : ITaskService
 
         task.Reopen();
         await _taskRepository.UpdateAsync(task);
+
+        // If reopening a subtask, reopen parent if completed
+        if (task.ParentTaskId.HasValue)
+        {
+            var parentTask = await _taskRepository.GetByIdAsync(task.ParentTaskId.Value);
+            if (parentTask != null && parentTask.IsCompleted)
+            {
+                parentTask.Reopen();
+                await _taskRepository.UpdateAsync(parentTask);
+            }
+        }
+
         return true;
     }
 
@@ -110,6 +134,18 @@ public class TaskService : ITaskService
         // Update the task's project assignment
         task.ProjectId = projectId;
         await _taskRepository.UpdateAsync(task);
+
+        // Update all subtasks to match parent's project
+        if (task.ParentTaskId == null)
+        {
+            var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(taskId);
+            foreach (var subtask in subtasks)
+            {
+                subtask.ProjectId = projectId;
+                await _taskRepository.UpdateAsync(subtask);
+            }
+        }
+
         return true;
     }
 
@@ -122,5 +158,38 @@ public class TaskService : ITaskService
             Items = pagedResult.Items.ToDto(),
             TotalCount = pagedResult.TotalCount
         };
+    }
+
+    public async System.Threading.Tasks.Task<int> CreateSubtaskAsync(CreateSubtaskRequest request)
+    {
+        // Validate parent task exists
+        var parentTask = await _taskRepository.GetByIdAsync(request.ParentTaskId);
+        if (parentTask == null)
+            throw new InvalidOperationException("Parent task not found");
+
+        // Enforce single-level nesting
+        if (parentTask.ParentTaskId.HasValue)
+            throw new InvalidOperationException("Cannot create subtask under another subtask. Only single-level nesting is supported.");
+
+        // Create subtask inheriting ProjectId from parent
+        var subtask = new Core.Entities.Task(request.Name, request.Description);
+        subtask.AccountId = _accountContext.GetCurrentAccountId();
+        subtask.ParentTaskId = request.ParentTaskId;
+        subtask.ProjectId = parentTask.ProjectId;
+
+        await _taskRepository.AddAsync(subtask);
+        return subtask.Id;
+    }
+
+    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetSubtasksByParentIdAsync(int parentTaskId)
+    {
+        var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(parentTaskId);
+        return subtasks.ToDto();
+    }
+
+    public async System.Threading.Tasks.Task<bool> CanTaskHaveSubtasksAsync(int taskId)
+    {
+        var task = await _taskRepository.GetByIdAsync(taskId);
+        return task?.ParentTaskId == null;
     }
 }

@@ -19,7 +19,7 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE AccountId = ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE AccountId = ?",
             accountId);
         return MapToTasks(response);
     }
@@ -28,7 +28,7 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE Id = ? AND AccountId = ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE Id = ? AND AccountId = ?",
             id, accountId);
 
         var tasks = MapToTasks(response);
@@ -39,12 +39,13 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
-            "INSERT INTO Tasks (AccountId, Name, Description, IsCompleted, ProjectId) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO Tasks (AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId) VALUES (?, ?, ?, ?, ?, ?)",
             accountId,
             task.Name,
             task.Description,
             task.IsCompleted ? 1 : 0,
-            task.ProjectId.HasValue ? (object)task.ProjectId.Value : null);
+            task.ProjectId.HasValue ? (object)task.ProjectId.Value : null,
+            task.ParentTaskId.HasValue ? (object)task.ParentTaskId.Value : null);
 
         // Set the database-generated ID
         if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var id))
@@ -59,11 +60,12 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         await _client.ExecuteAsync(
-            "UPDATE Tasks SET Name = ?, Description = ?, IsCompleted = ?, ProjectId = ? WHERE Id = ? AND AccountId = ?",
+            "UPDATE Tasks SET Name = ?, Description = ?, IsCompleted = ?, ProjectId = ?, ParentTaskId = ? WHERE Id = ? AND AccountId = ?",
             task.Name,
             task.Description,
             task.IsCompleted ? 1 : 0,
             task.ProjectId.HasValue ? (object)task.ProjectId.Value : null,
+            task.ParentTaskId.HasValue ? (object)task.ParentTaskId.Value : null,
             task.Id,
             accountId);
 
@@ -83,7 +85,7 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? AND AccountId = ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL",
             isCompleted ? 1 : 0, accountId);
 
         return MapToTasks(response);
@@ -93,7 +95,7 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId = ? AND AccountId = ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId = ? AND AccountId = ? AND ParentTaskId IS NULL",
             projectId, accountId);
 
         return MapToTasks(response);
@@ -103,7 +105,7 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IS NULL AND AccountId = ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId IS NULL AND AccountId = ? AND ParentTaskId IS NULL",
             accountId);
 
         return MapToTasks(response);
@@ -115,7 +117,7 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get total count
         var countResponse = await _client.QueryAsync(
-            "SELECT COUNT(*) as Count FROM Tasks WHERE IsCompleted = ? AND AccountId = ?",
+            "SELECT COUNT(*) as Count FROM Tasks WHERE IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL",
             isCompleted ? 1 : 0, accountId);
         var totalCount = 0;
 
@@ -127,7 +129,7 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get paged data
         var dataResponse = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE IsCompleted = ? AND AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
             isCompleted ? 1 : 0,
             accountId,
             take,
@@ -152,7 +154,7 @@ public class TursoTaskRepository : ITaskRepository
 
         // Build dynamic query with placeholders for IN clause
         var placeholders = string.Join(",", projectIdList.Select(_ => "?"));
-        var query = $"SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId FROM Tasks WHERE ProjectId IN ({placeholders}) AND AccountId = ?";
+        var query = $"SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId IN ({placeholders}) AND AccountId = ?";
 
         // Execute query with project IDs as parameters
         var parameters = projectIdList.Cast<object>().ToList();
@@ -179,7 +181,8 @@ public class TursoTaskRepository : ITaskRepository
                 Name = GetColumnValue(row, columns, "Name"),
                 Description = GetColumnValue(row, columns, "Description"),
                 IsCompleted = GetColumnValue(row, columns, "IsCompleted") == "1",
-                ProjectId = ParseNullableInt(GetColumnValue(row, columns, "ProjectId"))
+                ProjectId = ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
+                ParentTaskId = ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId"))
             };
             tasks.Add(task);
         }
@@ -202,5 +205,39 @@ public class TursoTaskRepository : ITaskRepository
             return null;
 
         return int.TryParse(value, out var result) ? result : null;
+    }
+
+    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetSubtasksByParentIdAsync(int parentTaskId)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        var response = await _client.QueryAsync(
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ParentTaskId = ? AND AccountId = ?",
+            parentTaskId, accountId);
+        return MapToTasks(response);
+    }
+
+    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetRootTasksAsync()
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        var response = await _client.QueryAsync(
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ParentTaskId IS NULL AND AccountId = ?",
+            accountId);
+        return MapToTasks(response);
+    }
+
+    public async System.Threading.Tasks.Task<int> GetSubtaskCountAsync(int parentTaskId)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        var response = await _client.QueryAsync(
+            "SELECT COUNT(*) as Count FROM Tasks WHERE ParentTaskId = ? AND AccountId = ?",
+            parentTaskId, accountId);
+
+        if (response.Result?.Rows != null && response.Result.Rows.Length > 0)
+        {
+            var countValue = response.Result.Rows[0][0];
+            return countValue.GetInt32Value();
+        }
+
+        return 0;
     }
 }

@@ -160,7 +160,7 @@ public class TaskService : ITaskService
         if (parentTask.ParentTaskId.HasValue)
             throw new InvalidOperationException("Cannot create subtask under another subtask. Only single-level nesting is supported.");
 
-        // Create subtask - subtasks do not have projects, parent handles that
+        // Create subtask without project association - subtasks belong to their parent task, not directly to projects
         var subtask = new Core.Entities.Task(request.Name, request.Description);
         subtask.AccountId = _accountContext.GetCurrentAccountId();
         subtask.ParentTaskId = request.ParentTaskId;

@@ -68,12 +68,7 @@ public class TaskService : ITaskService
         // Auto-complete all subtasks if this is a parent task
         if (task.ParentTaskId == null)
         {
-            var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(id);
-            foreach (var subtask in subtasks.Where(subtask => !subtask.IsCompleted))
-            {
-                subtask.MarkComplete();
-                await _taskRepository.UpdateAsync(subtask);
-            }
+            await _taskRepository.BulkCompleteSubtasksAsync(id);
         }
 
         return true;

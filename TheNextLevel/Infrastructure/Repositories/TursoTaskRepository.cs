@@ -240,4 +240,14 @@ public class TursoTaskRepository : ITaskRepository
 
         return 0;
     }
+
+    public async System.Threading.Tasks.Task<int> BulkCompleteSubtasksAsync(int parentTaskId)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        var response = await _client.ExecuteAsync(
+            "UPDATE Tasks SET IsCompleted = 1 WHERE ParentTaskId = ? AND AccountId = ? AND IsCompleted = 0",
+            parentTaskId, accountId);
+
+        return response.Result?.AffectedRowCount ?? 0;
+    }
 }

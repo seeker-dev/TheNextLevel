@@ -135,17 +135,6 @@ public class TaskService : ITaskService
         task.ProjectId = projectId;
         await _taskRepository.UpdateAsync(task);
 
-        // Update all subtasks to match parent's project
-        if (task.ParentTaskId == null)
-        {
-            var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(taskId);
-            foreach (var subtask in subtasks)
-            {
-                subtask.ProjectId = projectId;
-                await _taskRepository.UpdateAsync(subtask);
-            }
-        }
-
         return true;
     }
 
@@ -171,11 +160,10 @@ public class TaskService : ITaskService
         if (parentTask.ParentTaskId.HasValue)
             throw new InvalidOperationException("Cannot create subtask under another subtask. Only single-level nesting is supported.");
 
-        // Create subtask inheriting ProjectId from parent
+        // Create subtask - subtasks do not have projects, parent handles that
         var subtask = new Core.Entities.Task(request.Name, request.Description);
         subtask.AccountId = _accountContext.GetCurrentAccountId();
         subtask.ParentTaskId = request.ParentTaskId;
-        subtask.ProjectId = parentTask.ProjectId;
 
         await _taskRepository.AddAsync(subtask);
         return subtask.Id;

@@ -10,13 +10,13 @@
 
 @code {
     [Parameter]
-    public EventCallback OnEdit { get; set; }
+    public EventCallback<TaskDto> OnEdit { get; set; }
 
     [Parameter]
-    public EventCallback OnAssignToProject { get; set; }
+    public EventCallback<TaskDto> OnAssignToProject { get; set; }
 
     [Parameter]
-    public EventCallback OnDelete { get; set; }
+    public EventCallback<TaskDto> OnDelete { get; set; }
 
     private bool showMenu = false;
 

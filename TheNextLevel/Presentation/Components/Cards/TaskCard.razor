@@ -5,10 +5,7 @@
 
 <div class="task-card @(IsCompleted ? "completed" : "")" @onclick:stopPropagation="true">
     <div class="task-actions">
-        <ContextMenuButton OnMenuClick="OnMenuClick"
-                           OnEditClick="OnEditClick"
-                           OnAssignToProjectClick="OnAssignToProjectClick"
-                           OnDeleteClick="OnDeleteClick" />
+        <ContextMenuButton OnEdit="OnTaskEdit" />
     </div>
     <div class="task-checkbox-container">
         <input class="task-checkbox" type="checkbox" checked="@IsCompleted" @onchange="OnStatusChange">
@@ -65,38 +62,6 @@
         if (updatedTask != null)
         {
             await OnTaskUpdated.InvokeAsync(updatedTask);
-        }
-    }
-    
-    private void OnMenuClick()
-    {
-        showMenu = !showMenu;
-    }
-
-    private async Task OnEditClick()
-    {
-        showMenu = false;
-        if (Task != null)
-        {
-            await OnTaskEdit.InvokeAsync(Task);
-        }
-    }
-
-    private async Task OnAssignToProjectClick()
-    {
-        showMenu = false;
-        if (Task != null)
-        {
-            await OnTaskAssignToProject.InvokeAsync(Task);
-        }
-    }
-
-    private async Task OnDeleteClick()
-    {
-        showMenu = false;
-        if (Task != null)
-        {
-            await OnTaskDeleteRequest.InvokeAsync(Task);
         }
     }
 }

@@ -1,22 +1,3 @@
-.projects-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 25px;
-}
-
-/* Fix for Blazor Virtualize component breaking grid layout
-   Makes the Virtualize wrapper divs transparent to grid layout */
-.projects-grid > * {
-    display: contents;
-}
-
-/* Ensure project cards still render as grid items */
-.projects-grid .project-card,
-.projects-grid .loading-card,
-.projects-grid .empty-project {
-    display: block;
-}
-
 .project-card {
     background: linear-gradient(145deg, #0a0a0a 0%, #1a0a0a 100%);
     border-radius: 16px;

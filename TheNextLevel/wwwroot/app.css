@@ -24,3 +24,29 @@ body {
     display: flex;
     flex-direction: column;
 }
+
+/* Fix for Blazor Virtualize component breaking grid layout
+   Makes the Virtualize wrapper divs transparent to grid layout */
+.task-grid > * {
+    display: contents;
+}
+
+/* Ensure task cards still render as grid items */
+.task-grid .task-card,
+.task-grid .loading-card,
+.task-grid .empty-state {
+    display: block;
+}
+
+/* Fix for Blazor Virtualize component breaking grid layout
+   Makes the Virtualize wrapper divs transparent to grid layout */
+.projects-grid > * {
+    display: contents;
+}
+
+/* Ensure project cards still render as grid items */
+.projects-grid .project-card,
+.projects-grid .loading-card,
+.projects-grid .empty-project {
+    display: block;
+}

@@ -5,7 +5,11 @@
 
 <div class="task-card @(IsCompleted ? "completed" : "")" @onclick:stopPropagation="true">
     <div class="task-actions">
-        <ContextMenuButton OnEdit="OnTaskEdit" />
+        <ContextMenuButton 
+                            Task="Task"
+                            OnEdit="OnTaskEdit"
+                            OnAssignToProject="OnTaskAssignToProject"
+                            OnDelete="OnTaskDeleteRequest" />
     </div>
     <div class="task-checkbox-container">
         <input class="task-checkbox" type="checkbox" checked="@IsCompleted" @onchange="OnStatusChange">

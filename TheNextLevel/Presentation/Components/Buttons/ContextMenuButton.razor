@@ -10,6 +10,9 @@
 
 @code {
     [Parameter]
+    public TaskDto? Task { get; set; }
+
+    [Parameter]
     public EventCallback<TaskDto> OnEdit { get; set; }
 
     [Parameter]
@@ -28,18 +31,18 @@
     private async Task OnEditClick()
     {
         showMenu = false;
-        await OnEdit.InvokeAsync(null);
+        await OnEdit.InvokeAsync(Task);
     }
 
     private async Task OnAssignToProjectClick()
     {
         showMenu = false;
-        await OnAssignToProject.InvokeAsync(null);
+        await OnAssignToProject.InvokeAsync(Task);
     }
 
     private async Task OnDeleteClick()
     {
         showMenu = false;
-        await OnDelete.InvokeAsync(null);
+        await OnDelete.InvokeAsync(Task);
     }
 }

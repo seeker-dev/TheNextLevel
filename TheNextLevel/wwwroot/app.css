@@ -50,3 +50,23 @@ body {
 .projects-grid .empty-project {
     display: block;
 }
+
+/* Project card empty state */
+.empty-project {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    color: #8B4513;
+    text-align: center;
+}
+
+.empty-project .emoji {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.empty-project p {
+    font-size: 0.9rem;
+}

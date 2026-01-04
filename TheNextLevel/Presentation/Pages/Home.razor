@@ -3,6 +3,8 @@
 @using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Application.Services
 @using TheNextLevel.Presentation.Dialogs
+@using TheNextLevel.Presentation.Components.Buttons
+@using TheNextLevel.Presentation.Components.Cards
 
 @inject IProjectService ProjectService
 @inject ITaskService TaskService
@@ -30,9 +32,7 @@
         </Virtualize>
     </div>
 
-    <div class="fab-container">
-        <button class="fab" @onclick="OpenNewProjectDialog">+</button>
-    </div>
+    <FloatingActionButton OnClick="OpenNewProjectDialog" /> 
 
     <NewProjectDialog
         IsVisible="_showProjectDialog"

@@ -1,18 +1,14 @@
 ﻿@using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Presentation.Components.Buttons
 @inject ITaskService TaskService
 
 <div class="task-card @(IsCompleted ? "completed" : "")" @onclick:stopPropagation="true">
     <div class="task-actions">
-        <button class="btn-menu" @onclick="OnMenuClick">⋮</button>
-        @if (showMenu)
-        {
-            <div class="task-menu">
-                <button class="menu-item" @onclick="OnEditClick">Edit</button>
-                <button class="menu-item" @onclick="OnAssignToProjectClick">Assign to Project</button>
-                <button class="menu-item menu-item-danger" @onclick="OnDeleteClick">Delete</button>
-            </div>
-        }
+        <ContextMenuButton OnMenuClick="OnMenuClick"
+                           OnEditClick="OnEditClick"
+                           OnAssignToProjectClick="OnAssignToProjectClick"
+                           OnDeleteClick="OnDeleteClick" />
     </div>
     <div class="task-checkbox-container">
         <input class="task-checkbox" type="checkbox" checked="@IsCompleted" @onchange="OnStatusChange">

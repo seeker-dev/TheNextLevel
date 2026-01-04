@@ -1,0 +1,19 @@
+<div class="fab-container">
+    <button class="fab" @onclick="HandleClick" title="@Title">+</button>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "";
+
+    private async Task HandleClick()
+    {
+        if (OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync(null);
+        }
+    }
+}

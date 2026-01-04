@@ -1,0 +1,36 @@
+/* Filter Input Styles */
+.filter-input {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(139, 69, 19, 0.3);
+    border-radius: 12px;
+    padding: 15px 20px;
+    padding-left: 45px;
+    color: #f5f5f5;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%238B4513' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cpath d='m21 21-4.35-4.35'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 15px center;
+    background-size: 20px 20px;
+}
+
+.filter-input:focus {
+    outline: none;
+    border-color: #8B0000;
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.filter-input::placeholder {
+    color: #8B4513;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .filter-input {
+        max-width: 100%;
+    }
+}

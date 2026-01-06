@@ -1,39 +1,39 @@
 @* Debug: IsVisible = @IsVisible *@
 @if (IsVisible)
 {
-    <div class="ntd-overlay visible" @onclick="HandleOverlayClick">
-        <div class="ntd-container" @onclick:stopPropagation="true">
-            <div class="ntd-header">
-                <h2 class="ntd-title">@DialogTitle</h2>
-                <button class="ntd-btn-close" @onclick="Cancel">×</button>
+    <div class="dialog-overlay visible" @onclick="HandleOverlayClick">
+        <div class="dialog-container" @onclick:stopPropagation="true">
+            <div class="dialog-header">
+                <h2 class="dialog-title">@DialogTitle</h2>
+                <button class="dialog-btn-close" @onclick="Cancel">×</button>
             </div>
-            
-            <div class="ntd-body">
-                <div class="ntd-form-section">
-                    <div class="ntd-section-title">
-                        <span class="ntd-section-icon">📝</span>
+
+            <div class="dialog-body">
+                <div class="dialog-form-section">
+                    <div class="dialog-section-title">
+                        <span class="dialog-section-icon">📝</span>
                         Task Details
                     </div>
-                    
-                    <div class="ntd-form-group">
-                        <label class="ntd-form-label">Title</label>
-                        <input class="ntd-form-input" @bind="taskTitle" placeholder="Enter task title..." />
+
+                    <div class="dialog-form-group">
+                        <label class="dialog-form-label">Title</label>
+                        <input class="dialog-form-input" @bind="taskTitle" placeholder="Enter task title..." />
                     </div>
-                    
-                    <div class="ntd-form-group">
-                        <label class="ntd-form-label">Description</label>
-                        <textarea class="ntd-form-input ntd-form-textarea" @bind="taskDescription" placeholder="Add task description..."></textarea>
+
+                    <div class="dialog-form-group">
+                        <label class="dialog-form-label">Description</label>
+                        <textarea class="dialog-form-input dialog-form-textarea" @bind="taskDescription" placeholder="Add task description..."></textarea>
                     </div>
                 </div>
             </div>
-            
-            <div class="ntd-footer">
-                <div class="ntd-footer-left">
-                    <span class="ntd-motivation-text">Every task completed is a step forward! 🚀</span>
+
+            <div class="dialog-footer">
+                <div class="dialog-footer-left">
+                    <span class="dialog-motivation-text">Every task completed is a step forward! 🚀</span>
                 </div>
-                <div class="ntd-footer-right">
-                    <button class="ntd-btn ntd-btn-cancel" @onclick="Cancel">Cancel</button>
-                    <button class="ntd-btn ntd-btn-save" @onclick="Save">@SaveButtonText</button>
+                <div class="dialog-footer-right">
+                    <button class="dialog-btn dialog-btn-cancel" @onclick="Cancel">Cancel</button>
+                    <button class="dialog-btn dialog-btn-primary" @onclick="Save">@SaveButtonText</button>
                 </div>
             </div>
         </div>

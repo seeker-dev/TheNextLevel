@@ -1,38 +1,38 @@
 @if (IsVisible)
 {
-    <div class="npd-overlay visible" @onclick="HandleOverlayClick">
-        <div class="npd-container" @onclick:stopPropagation="true">
-            <div class="npd-header">
-                <h2 class="npd-title">@DialogTitle</h2>
-                <button class="npd-btn-close" @onclick="Cancel">×</button>
+    <div class="dialog-overlay visible" @onclick="HandleOverlayClick">
+        <div class="dialog-container" @onclick:stopPropagation="true">
+            <div class="dialog-header">
+                <h2 class="dialog-title">@DialogTitle</h2>
+                <button class="dialog-btn-close" @onclick="Cancel">×</button>
             </div>
 
-            <div class="npd-body">
-                <div class="npd-form-section">
-                    <div class="npd-section-title">
-                        <span class="npd-section-icon">📁</span>
+            <div class="dialog-body">
+                <div class="dialog-form-section">
+                    <div class="dialog-section-title">
+                        <span class="dialog-section-icon">📁</span>
                         Project Details
                     </div>
 
-                    <div class="npd-form-group">
-                        <label class="npd-form-label">Name</label>
-                        <input class="npd-form-input" @bind="projectName" placeholder="Enter project name..." />
+                    <div class="dialog-form-group">
+                        <label class="dialog-form-label">Name</label>
+                        <input class="dialog-form-input" @bind="projectName" placeholder="Enter project name..." />
                     </div>
 
-                    <div class="npd-form-group">
-                        <label class="npd-form-label">Description</label>
-                        <textarea class="npd-form-input npd-form-textarea" @bind="projectDescription" placeholder="Add project description..."></textarea>
+                    <div class="dialog-form-group">
+                        <label class="dialog-form-label">Description</label>
+                        <textarea class="dialog-form-input dialog-form-textarea" @bind="projectDescription" placeholder="Add project description..."></textarea>
                     </div>
                 </div>
             </div>
 
-            <div class="npd-footer">
-                <div class="npd-footer-left">
-                    <span class="npd-motivation-text">Start your journey to the next level! 🚀</span>
+            <div class="dialog-footer">
+                <div class="dialog-footer-left">
+                    <span class="dialog-motivation-text">Start your journey to the next level! 🚀</span>
                 </div>
-                <div class="npd-footer-right">
-                    <button class="npd-btn npd-btn-cancel" @onclick="Cancel">Cancel</button>
-                    <button class="npd-btn npd-btn-save" @onclick="Save">@SaveButtonText</button>
+                <div class="dialog-footer-right">
+                    <button class="dialog-btn dialog-btn-cancel" @onclick="Cancel">Cancel</button>
+                    <button class="dialog-btn dialog-btn-primary" @onclick="Save">@SaveButtonText</button>
                 </div>
             </div>
         </div>

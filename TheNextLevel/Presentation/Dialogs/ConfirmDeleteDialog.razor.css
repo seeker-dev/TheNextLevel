@@ -1,117 +1,35 @@
-/* Confirm Delete Dialog Styles */
+/* ConfirmDeleteDialog - Danger/Warning Theme Overrides */
 
-/* Overlay */
-.cdd-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    padding: 20px;
-    animation: cddFadeIn 0.3s ease-out;
+/* Override CSS Variables for Red/Danger Theme */
+::deep .dialog-container {
+    --dialog-primary-color: #dc3545;
+    --dialog-primary-light: #c82333;
+    --dialog-accent-color: #bd2130;
+    --dialog-accent-light: #a71d2a;
+    --dialog-border-primary: rgba(220, 53, 69, 0.4);
+    --dialog-shadow-container: 0 20px 60px rgba(220, 53, 69, 0.3);
+    --dialog-shadow-button: 0 4px 15px rgba(220, 53, 69, 0.4);
+    --dialog-shadow-button-hover: 0 6px 20px rgba(220, 53, 69, 0.6);
+    --dialog-shadow-focus: 0 0 0 3px rgba(220, 53, 69, 0.3);
+    --dialog-max-width: 500px;
 }
 
-@keyframes cddFadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-/* Container */
-.cdd-container {
-    background: linear-gradient(145deg, #0a0a0a 0%, #1a0a0a 100%);
-    border: 1px solid rgba(220, 53, 69, 0.4);
-    border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(220, 53, 69, 0.3);
-    max-width: 500px;
-    width: 100%;
-    overflow: hidden;
-    animation: cddSlideInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes cddSlideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px) scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* Header */
-.cdd-header {
+::deep .dialog-header {
     background: linear-gradient(135deg, rgba(220, 53, 69, 0.9) 0%, rgba(185, 28, 28, 0.9) 100%);
-    padding: 20px 25px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     border-bottom: 1px solid rgba(220, 53, 69, 0.3);
 }
 
-.cdd-title {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #ffffff;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+::deep .dialog-footer {
+    border-top: 1px solid rgba(220, 53, 69, 0.2);
 }
 
-.cdd-warning-icon {
+/* Specific elements for this dialog */
+.warning-icon {
     font-size: 1.4rem;
     filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.6));
 }
 
-.cdd-close-btn {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 2rem;
-    line-height: 1;
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-.cdd-close-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #ffffff;
-    transform: rotate(90deg);
-}
-
-/* Body */
-.cdd-body {
-    padding: 30px 25px;
-    color: #f5f5f5;
-}
-
-.cdd-message {
-    font-size: 1rem;
-    line-height: 1.6;
-    margin: 0 0 15px 0;
-    color: #e0e0e0;
-}
-
-.cdd-item-name {
+.item-name {
     color: #ffc107;
     font-weight: 600;
     background: rgba(255, 193, 7, 0.1);
@@ -120,146 +38,41 @@
     border: 1px solid rgba(255, 193, 7, 0.3);
 }
 
-.cdd-warning {
+.warning-text {
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.6);
     margin: 0;
     font-style: italic;
 }
 
-/* Footer */
-.cdd-footer {
-    padding: 20px 25px;
-    background: rgba(0, 0, 0, 0.3);
-    border-top: 1px solid rgba(220, 53, 69, 0.2);
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-}
-
-/* Buttons */
-.cdd-btn {
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: none;
-    text-transform: capitalize;
-}
-
-.cdd-btn-cancel {
-    background: rgba(139, 69, 19, 0.2);
-    color: #cd853f;
-    border: 1px solid rgba(139, 69, 19, 0.4);
-}
-
-.cdd-btn-cancel:hover {
-    background: rgba(139, 69, 19, 0.3);
-    border-color: rgba(139, 69, 19, 0.6);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
-}
-
-.cdd-btn-delete {
+/* Delete Button - Danger Variant */
+.btn-delete {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
     color: #ffffff;
     border: 1px solid rgba(220, 53, 69, 0.5);
     box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
 }
 
-.cdd-btn-delete:hover {
+.btn-delete:hover {
     background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
 }
 
-.cdd-btn-delete:active {
+.btn-delete:active {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba(220, 53, 69, 0.4);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .cdd-container {
-        max-width: 100%;
-        border-radius: 12px;
-        margin: 0 10px;
-    }
-
-    .cdd-header {
-        padding: 16px 20px;
-    }
-
-    .cdd-title {
-        font-size: 1.1rem;
-    }
-
-    .cdd-body {
-        padding: 24px 20px;
-    }
-
-    .cdd-footer {
-        padding: 16px 20px;
-        flex-direction: column-reverse;
-    }
-
-    .cdd-btn {
-        width: 100%;
-        padding: 14px;
-    }
-}
-
-@media (max-width: 480px) {
-    .cdd-overlay {
-        padding: 10px;
-    }
-
-    .cdd-container {
-        border-radius: 10px;
-    }
-
-    .cdd-title {
-        font-size: 1rem;
-    }
-
-    .cdd-message {
-        font-size: 0.95rem;
-    }
-
-    .cdd-warning {
-        font-size: 0.85rem;
-    }
-}
-
-/* Accessibility */
-.cdd-btn:focus {
+/* Focus state for delete button */
+.btn-delete:focus-visible {
     outline: 2px solid rgba(220, 53, 69, 0.5);
     outline-offset: 2px;
 }
 
-.cdd-btn-cancel:focus {
-    outline-color: rgba(139, 69, 19, 0.5);
-}
-
-/* Animation on exit */
-@keyframes cddFadeOut {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-    }
-}
-
-@keyframes cddSlideDown {
-    from {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: translateY(50px) scale(0.9);
-    }
+/* Close button hover effect with rotation */
+::deep .dialog-btn-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    transform: rotate(90deg) scale(1.1);
 }

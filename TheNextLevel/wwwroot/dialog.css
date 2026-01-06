@@ -1,71 +1,139 @@
-/* New Task Dialog Global Styles */
-.ntd-overlay {
+/* ============================================
+   Base Dialog Styles - Shared Across All Dialogs
+   ============================================ */
+
+/* CSS Variables for Customization */
+:root {
+    /* Primary Colors */
+    --dialog-primary-color: #8B0000;
+    --dialog-primary-light: #A52A2A;
+    --dialog-accent-color: #A0522D;
+    --dialog-accent-light: #CD853F;
+
+    /* Text Colors */
+    --dialog-text-primary: #f5f5f5;
+    --dialog-text-secondary: #e0e0e0;
+    --dialog-text-muted: rgba(255, 255, 255, 0.6);
+    --dialog-text-accent: #cd853f;
+
+    /* Background Colors */
+    --dialog-bg-overlay: rgba(0, 0, 0, 0.8);
+    --dialog-bg-container-start: #0a0a0a;
+    --dialog-bg-container-end: #1a0a0a;
+    --dialog-bg-input: rgba(0, 0, 0, 0.6);
+    --dialog-bg-input-focus: rgba(0, 0, 0, 0.8);
+    --dialog-bg-footer: rgba(0, 0, 0, 0.4);
+
+    /* Border Colors */
+    --dialog-border-primary: rgba(139, 69, 19, 0.3);
+    --dialog-border-focus: #8B0000;
+    --dialog-border-footer: rgba(139, 69, 19, 0.2);
+
+    /* Shadows */
+    --dialog-shadow-container: 0 20px 60px rgba(128, 0, 32, 0.4);
+    --dialog-shadow-button: 0 4px 15px rgba(128, 0, 32, 0.4);
+    --dialog-shadow-button-hover: 0 8px 25px rgba(128, 0, 32, 0.6);
+    --dialog-shadow-focus: 0 0 0 3px rgba(139, 0, 0, 0.2);
+
+    /* Spacing */
+    --dialog-padding-header: 25px 30px;
+    --dialog-padding-body: 30px;
+    --dialog-padding-footer: 25px 30px;
+    --dialog-gap-buttons: 15px;
+
+    /* Sizing */
+    --dialog-max-width: 600px;
+    --dialog-max-height: 90vh;
+    --dialog-body-max-height: 60vh;
+    --dialog-border-radius: 20px;
+    --dialog-border-radius-input: 12px;
+    --dialog-border-radius-button: 8px;
+
+    /* Animation */
+    --dialog-animation-duration: 0.3s;
+    --dialog-animation-timing: ease-out;
+}
+
+/* ============================================
+   Overlay
+   ============================================ */
+.dialog-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: var(--dialog-bg-overlay);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 9999;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease-out;
+    transition: opacity var(--dialog-animation-duration) var(--dialog-animation-timing);
 }
-    .ntd-overlay.visible {
-        opacity: 1;
-        pointer-events: auto;
-        animation: ntdFadeIn 0.3s ease-out;
-    }
 
-.ntd-container {
-    background: linear-gradient(145deg, #0a0a0a 0%, #1a0a0a 100%);
-    border-radius: 20px;
-    border: 1px solid rgba(139, 69, 19, 0.3);
-    box-shadow: 0 20px 60px rgba(128, 0, 32, 0.4);
+.dialog-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+    animation: dialogFadeIn var(--dialog-animation-duration) var(--dialog-animation-timing);
+}
+
+/* ============================================
+   Container
+   ============================================ */
+.dialog-container {
+    background: linear-gradient(145deg, var(--dialog-bg-container-start) 0%, var(--dialog-bg-container-end) 100%);
+    border-radius: var(--dialog-border-radius);
+    border: 1px solid var(--dialog-border-primary);
+    box-shadow: var(--dialog-shadow-container);
     width: 100%;
-    max-width: 600px;
-    max-height: 90vh;
+    max-width: var(--dialog-max-width);
+    max-height: var(--dialog-max-height);
     overflow: hidden;
     opacity: 0;
     transform: translateY(50px) scale(0.9);
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+    transition: opacity 0.4s var(--dialog-animation-timing), transform 0.4s var(--dialog-animation-timing);
 }
 
-.ntd-overlay.visible .ntd-container {
+.dialog-overlay.visible .dialog-container {
     opacity: 1;
     transform: translateY(0) scale(1);
-    animation: ntdSlideInUp 0.4s ease-out;
+    animation: dialogSlideInUp 0.4s var(--dialog-animation-timing);
 }
 
-.ntd-header {
-    background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
-    padding: 25px 30px;
+/* ============================================
+   Header
+   ============================================ */
+.dialog-header {
+    background: linear-gradient(135deg, var(--dialog-primary-color) 0%, var(--dialog-accent-color) 100%);
+    padding: var(--dialog-padding-header);
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: relative;
 }
 
-    .ntd-header::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-        pointer-events: none;
-    }
+.dialog-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+    pointer-events: none;
+}
 
-.ntd-title {
-    color: #f5f5f5;
+.dialog-title {
+    color: var(--dialog-text-primary);
     font-size: 1.5rem;
     font-weight: 300;
     margin: 0;
+    position: relative;
+    z-index: 1;
 }
 
-.ntd-btn-close {
+.dialog-btn-close {
     background: none;
     border: none;
-    color: #f5f5f5;
+    color: var(--dialog-text-primary);
     font-size: 1.5rem;
     cursor: pointer;
     width: 35px;
@@ -75,25 +143,53 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
 }
 
-    .ntd-btn-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
-    }
+.dialog-btn-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
 
-.ntd-body {
-    padding: 30px;
-    max-height: 60vh;
+/* ============================================
+   Body
+   ============================================ */
+.dialog-body {
+    padding: var(--dialog-padding-body);
+    max-height: var(--dialog-body-max-height);
     overflow-y: auto;
+    color: var(--dialog-text-primary);
 }
 
-.ntd-form-section {
+/* Scrollbar Styling */
+.dialog-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dialog-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.dialog-body::-webkit-scrollbar-thumb {
+    background: var(--dialog-border-primary);
+    border-radius: 4px;
+}
+
+.dialog-body::-webkit-scrollbar-thumb:hover {
+    background: var(--dialog-accent-color);
+}
+
+/* ============================================
+   Form Elements
+   ============================================ */
+.dialog-form-section {
     margin-bottom: 30px;
 }
 
-.ntd-section-title {
-    color: #cd853f;
+.dialog-section-title {
+    color: var(--dialog-text-accent);
     font-size: 0.9rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -104,80 +200,80 @@
     gap: 10px;
 }
 
-.ntd-section-icon {
+.dialog-section-icon {
     font-size: 1.2rem;
 }
 
-.ntd-form-group {
+.dialog-form-group {
     margin-bottom: 20px;
 }
 
-.ntd-form-label {
+.dialog-form-label {
     display: block;
-    color: #f5f5f5;
+    color: var(--dialog-text-primary);
     font-size: 0.9rem;
     font-weight: 500;
     margin-bottom: 8px;
 }
 
-.ntd-form-input {
+.dialog-form-input {
     width: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    border: 2px solid rgba(139, 69, 19, 0.3);
-    border-radius: 12px;
+    background: var(--dialog-bg-input);
+    border: 2px solid var(--dialog-border-primary);
+    border-radius: var(--dialog-border-radius-input);
     padding: 15px;
-    color: #f5f5f5;
+    color: var(--dialog-text-primary);
     font-size: 1rem;
     transition: all 0.3s ease;
 }
 
-    .ntd-form-input:focus {
-        outline: none;
-        border-color: #8B0000;
-        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.2);
-        background: rgba(0, 0, 0, 0.8);
-    }
-
-    .ntd-form-input::placeholder {
-        color: #8B4513;
-    }
-
-.ntd-form-textarea {
-    min-height: 80px;
-    resize: vertical;
+.dialog-form-input:focus {
+    outline: none;
+    border-color: var(--dialog-border-focus);
+    box-shadow: var(--dialog-shadow-focus);
+    background: var(--dialog-bg-input-focus);
 }
 
-/* Footer */
-.ntd-footer {
-    background: rgba(0, 0, 0, 0.4);
-    padding: 25px 30px;
+.dialog-form-input::placeholder {
+    color: #8B4513;
+}
+
+.dialog-form-textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+.dialog-footer {
+    background: var(--dialog-bg-footer);
+    padding: var(--dialog-padding-footer);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid rgba(139, 69, 19, 0.2);
+    border-top: 1px solid var(--dialog-border-footer);
 }
 
-.ntd-footer-left {
+.dialog-footer-left {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: var(--dialog-gap-buttons);
 }
 
-.ntd-motivation-text {
-    color: #cd853f;
-    font-size: 0.9rem;
-    font-style: italic;
-}
-
-.ntd-footer-right {
+.dialog-footer-right {
     display: flex;
-    gap: 15px;
+    gap: var(--dialog-gap-buttons);
 }
 
-.ntd-btn {
+/* ============================================
+   Buttons
+   ============================================ */
+.dialog-btn {
     padding: 12px 24px;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--dialog-border-radius-button);
     cursor: pointer;
     font-weight: 500;
     font-size: 0.9rem;
@@ -186,660 +282,191 @@
     overflow: hidden;
 }
 
-    .ntd-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s ease;
-    }
+.dialog-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
 
-    .ntd-btn:hover::before {
-        left: 100%;
-    }
+.dialog-btn:hover::before {
+    left: 100%;
+}
 
-.ntd-btn-cancel {
+.dialog-btn-cancel {
     background: rgba(139, 69, 19, 0.3);
-    color: #f5f5f5;
+    color: var(--dialog-text-primary);
     border: 1px solid rgba(139, 69, 19, 0.5);
 }
 
-    .ntd-btn-cancel:hover {
-        background: rgba(139, 69, 19, 0.5);
-        transform: translateY(-1px);
-    }
-
-.ntd-btn-save {
-    background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
-    color: #f5f5f5;
-    box-shadow: 0 4px 15px rgba(128, 0, 32, 0.4);
+.dialog-btn-cancel:hover {
+    background: rgba(139, 69, 19, 0.5);
+    transform: translateY(-1px);
 }
 
-    .ntd-btn-save:hover {
-        background: linear-gradient(135deg, #A52A2A 0%, #CD853F 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(128, 0, 32, 0.6);
-    }
-
-    .ntd-btn-save:disabled {
-        background: rgba(139, 69, 19, 0.3);
-        color: #8B4513;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
-
-/* Animations */
-@keyframes ntdFadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+.dialog-btn-primary {
+    background: linear-gradient(135deg, var(--dialog-primary-color) 0%, var(--dialog-accent-color) 100%);
+    color: var(--dialog-text-primary);
+    box-shadow: var(--dialog-shadow-button);
 }
 
-@keyframes ntdSlideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px) scale(0.9);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+.dialog-btn-primary:hover {
+    background: linear-gradient(135deg, var(--dialog-primary-light) 0%, var(--dialog-accent-light) 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--dialog-shadow-button-hover);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    .ntd-container {
-        margin: 20px;
-        max-width: none;
-    }
-
-    .ntd-header,
-    .ntd-body,
-    .ntd-footer {
-        padding: 20px;
-    }
-}
-
-/* New Project Dialog Styles */
-.npd-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease-out;
-}
-
-    .npd-overlay.visible {
-        opacity: 1;
-        pointer-events: auto;
-        animation: npdFadeIn 0.3s ease-out;
-    }
-
-.npd-container {
-    background: linear-gradient(145deg, #0a0a0a 0%, #1a0a0a 100%);
-    border-radius: 20px;
-    border: 1px solid rgba(139, 69, 19, 0.3);
-    box-shadow: 0 20px 60px rgba(128, 0, 32, 0.4);
-    width: 100%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(50px) scale(0.9);
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-}
-
-.npd-overlay.visible .npd-container {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    animation: npdSlideInUp 0.4s ease-out;
-}
-
-.npd-header {
-    background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
-    padding: 25px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-}
-
-    .npd-header::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-        pointer-events: none;
-    }
-
-.npd-title {
-    color: #f5f5f5;
-    font-size: 1.5rem;
-    font-weight: 300;
-    margin: 0;
-}
-
-.npd-btn-close {
-    background: none;
-    border: none;
-    color: #f5f5f5;
-    font-size: 1.5rem;
-    cursor: pointer;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-    .npd-btn-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
-    }
-
-.npd-body {
-    padding: 30px;
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.npd-form-section {
-    margin-bottom: 30px;
-}
-
-.npd-section-title {
-    color: #cd853f;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.npd-section-icon {
-    font-size: 1.2rem;
-}
-
-.npd-form-group {
-    margin-bottom: 20px;
-}
-
-.npd-form-label {
-    display: block;
-    color: #f5f5f5;
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 8px;
-}
-
-.npd-form-input {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    border: 2px solid rgba(139, 69, 19, 0.3);
-    border-radius: 12px;
-    padding: 15px;
-    color: #f5f5f5;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-}
-
-    .npd-form-input:focus {
-        outline: none;
-        border-color: #8B0000;
-        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.2);
-        background: rgba(0, 0, 0, 0.8);
-    }
-
-    .npd-form-input::placeholder {
-        color: #8B4513;
-    }
-
-.npd-form-textarea {
-    min-height: 80px;
-    resize: vertical;
-}
-
-/* Footer */
-.npd-footer {
-    background: rgba(0, 0, 0, 0.4);
-    padding: 25px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(139, 69, 19, 0.2);
-}
-
-.npd-footer-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.npd-motivation-text {
-    color: #cd853f;
-    font-size: 0.9rem;
-    font-style: italic;
-}
-
-.npd-footer-right {
-    display: flex;
-    gap: 15px;
-}
-
-.npd-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-    .npd-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s ease;
-    }
-
-    .npd-btn:hover::before {
-        left: 100%;
-    }
-
-.npd-btn-cancel {
+.dialog-btn-primary:disabled {
     background: rgba(139, 69, 19, 0.3);
-    color: #f5f5f5;
-    border: 1px solid rgba(139, 69, 19, 0.5);
+    color: #8B4513;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
-    .npd-btn-cancel:hover {
-        background: rgba(139, 69, 19, 0.5);
-        transform: translateY(-1px);
-    }
-
-.npd-btn-save {
-    background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
-    color: #f5f5f5;
-    box-shadow: 0 4px 15px rgba(128, 0, 32, 0.4);
+.dialog-btn-primary:active:not(:disabled) {
+    transform: translateY(0);
 }
 
-    .npd-btn-save:hover {
-        background: linear-gradient(135deg, #A52A2A 0%, #CD853F 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(128, 0, 32, 0.6);
-    }
-
-    .npd-btn-save:disabled {
-        background: rgba(139, 69, 19, 0.3);
-        color: #8B4513;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
-
-/* Animations */
-@keyframes npdFadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes npdSlideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(50px) scale(0.9);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .npd-container {
-        margin: 20px;
-        max-width: none;
-    }
-
-    .npd-header,
-    .npd-body,
-    .npd-footer {
-        padding: 20px;
-    }
-}
-
-/* Assign Task to Project Dialog Styles */
-.atpd-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(10px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease-out;
-}
-
-    .atpd-overlay.visible {
-        opacity: 1;
-        pointer-events: auto;
-        animation: atpdFadeIn 0.3s ease-out;
-    }
-
-.atpd-container {
-    background: linear-gradient(145deg, #0a0a0a 0%, #1a0a0a 100%);
-    border-radius: 20px;
-    border: 1px solid rgba(139, 69, 19, 0.3);
-    box-shadow: 0 20px 60px rgba(128, 0, 32, 0.4);
-    width: 100%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow: hidden;
-    opacity: 0;
-    transform: translateY(50px) scale(0.9);
-    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
-}
-
-.atpd-overlay.visible .atpd-container {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    animation: atpdSlideInUp 0.4s ease-out;
-}
-
-.atpd-header {
-    background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
-    padding: 25px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-}
-
-    .atpd-header::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-        pointer-events: none;
-    }
-
-.atpd-title {
-    color: #f5f5f5;
-    font-size: 1.5rem;
-    font-weight: 300;
-    margin: 0;
-}
-
-.atpd-btn-close {
-    background: none;
-    border: none;
-    color: #f5f5f5;
-    font-size: 1.5rem;
-    cursor: pointer;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-    .atpd-btn-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
-    }
-
-.atpd-body {
-    padding: 30px;
-    max-height: 60vh;
-    overflow-y: auto;
-}
-
-.atpd-form-section {
-    margin-bottom: 30px;
-}
-
-.atpd-section-title {
-    color: #cd853f;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.atpd-section-icon {
-    font-size: 1.2rem;
-}
-
-.atpd-loading {
-    color: #cd853f;
+/* ============================================
+   Utility Classes
+   ============================================ */
+.dialog-loading {
+    color: var(--dialog-text-accent);
     text-align: center;
     padding: 20px;
     font-style: italic;
 }
 
-.atpd-empty-state {
+.dialog-empty-state {
     color: #8B4513;
     text-align: center;
     padding: 30px;
     font-style: italic;
 }
 
-.atpd-project-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.atpd-project-item {
-    background: rgba(0, 0, 0, 0.6);
-    border: 2px solid rgba(139, 69, 19, 0.3);
-    border-radius: 12px;
-    padding: 15px 20px;
-    color: #f5f5f5;
+.dialog-message {
     font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    line-height: 1.6;
+    margin: 0 0 15px 0;
+    color: var(--dialog-text-secondary);
 }
 
-    .atpd-project-item:hover {
-        background: rgba(139, 69, 19, 0.2);
-        border-color: #8B0000;
-        transform: translateX(5px);
-    }
-
-    .atpd-project-item.selected {
-        background: rgba(139, 0, 0, 0.3);
-        border-color: #8B0000;
-        box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.2);
-    }
-
-.atpd-project-name {
-    flex: 1;
-}
-
-.atpd-check-icon {
-    color: #cd853f;
-    font-size: 1.2rem;
-    font-weight: bold;
-}
-
-/* Footer */
-.atpd-footer {
-    background: rgba(0, 0, 0, 0.4);
-    padding: 25px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(139, 69, 19, 0.2);
-}
-
-.atpd-footer-left {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.atpd-footer-right {
-    display: flex;
-    gap: 15px;
-}
-
-.atpd-btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
+.dialog-motivation-text {
+    color: var(--dialog-text-accent);
     font-size: 0.9rem;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
+    font-style: italic;
 }
 
-    .atpd-btn::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s ease;
-    }
-
-    .atpd-btn:hover::before {
-        left: 100%;
-    }
-
-.atpd-btn-cancel {
-    background: rgba(139, 69, 19, 0.3);
-    color: #f5f5f5;
-    border: 1px solid rgba(139, 69, 19, 0.5);
-}
-
-    .atpd-btn-cancel:hover {
-        background: rgba(139, 69, 19, 0.5);
-        transform: translateY(-1px);
-    }
-
-.atpd-btn-save {
-    background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
-    color: #f5f5f5;
-    box-shadow: 0 4px 15px rgba(128, 0, 32, 0.4);
-}
-
-    .atpd-btn-save:hover {
-        background: linear-gradient(135deg, #A52A2A 0%, #CD853F 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(128, 0, 32, 0.6);
-    }
-
-    .atpd-btn-save:disabled {
-        background: rgba(139, 69, 19, 0.3);
-        color: #8B4513;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-    }
-
-.atpd-btn-unassign {
-    background: rgba(139, 69, 19, 0.3);
-    color: #f5f5f5;
-    border: 1px solid rgba(139, 69, 19, 0.5);
-}
-
-    .atpd-btn-unassign:hover {
-        background: rgba(139, 0, 0, 0.4);
-        border-color: #8B0000;
-        transform: translateY(-1px);
-    }
-
-    .atpd-btn-unassign:disabled {
-        background: rgba(139, 69, 19, 0.2);
-        color: #8B4513;
-        border-color: rgba(139, 69, 19, 0.2);
-        cursor: not-allowed;
-        transform: none;
-    }
-
-/* Animations */
-@keyframes atpdFadeIn {
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes dialogFadeIn {
     from {
         opacity: 0;
     }
-
     to {
         opacity: 1;
     }
 }
 
-@keyframes atpdSlideInUp {
+@keyframes dialogSlideInUp {
     from {
         opacity: 0;
         transform: translateY(50px) scale(0.9);
     }
-
     to {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
 }
 
-/* Responsive Design */
+@keyframes dialogFadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes dialogSlideDown {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+}
+
+/* ============================================
+   Responsive Design
+   ============================================ */
 @media (max-width: 768px) {
-    .atpd-container {
+    .dialog-container {
         margin: 20px;
         max-width: none;
     }
 
-    .atpd-header,
-    .atpd-body,
-    .atpd-footer {
+    .dialog-header,
+    .dialog-body,
+    .dialog-footer {
         padding: 20px;
+    }
+
+    .dialog-footer {
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+
+    .dialog-footer-left,
+    .dialog-footer-right {
+        width: 100%;
+    }
+
+    .dialog-btn {
+        width: 100%;
+        padding: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --dialog-border-radius: 12px;
+    }
+
+    .dialog-overlay {
+        padding: 10px;
+    }
+
+    .dialog-title {
+        font-size: 1.1rem;
+    }
+
+    .dialog-message {
+        font-size: 0.95rem;
+    }
+}
+
+/* ============================================
+   Accessibility
+   ============================================ */
+.dialog-btn:focus-visible {
+    outline: 2px solid var(--dialog-accent-color);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dialog-overlay,
+    .dialog-container,
+    .dialog-btn {
+        animation: none;
+        transition: none;
     }
 }

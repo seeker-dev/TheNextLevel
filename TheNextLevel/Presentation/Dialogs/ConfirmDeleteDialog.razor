@@ -1,30 +1,30 @@
 @if (IsVisible)
 {
-    <div class="cdd-overlay" @onclick="OnCancelClick" @onclick:stopPropagation="true">
-        <div class="cdd-container" @onclick:stopPropagation="true">
-            <div class="cdd-header">
-                <h3 class="cdd-title">
-                    <span class="cdd-warning-icon">⚠️</span>
+    <div class="dialog-overlay visible" @onclick="OnCancelClick">
+        <div class="dialog-container" @onclick:stopPropagation="true">
+            <div class="dialog-header">
+                <h3 class="dialog-title">
+                    <span class="warning-icon">⚠️</span>
                     Confirm Deletion
                 </h3>
-                <button class="cdd-close-btn" @onclick="OnCancelClick" aria-label="Close">&times;</button>
+                <button class="dialog-btn-close" @onclick="OnCancelClick" aria-label="Close">&times;</button>
             </div>
 
-            <div class="cdd-body">
-                <p class="cdd-message">
+            <div class="dialog-body">
+                <p class="dialog-message">
                     Are you sure you want to delete
-                    <strong class="cdd-item-name">@(string.IsNullOrEmpty(ItemName) ? $"this {ItemType}" : ItemName)</strong>?
+                    <strong class="item-name">@(string.IsNullOrEmpty(ItemName) ? $"this {ItemType}" : ItemName)</strong>?
                 </p>
-                <p class="cdd-warning">
+                <p class="warning-text">
                     This action cannot be undone.
                 </p>
             </div>
 
-            <div class="cdd-footer">
-                <button class="cdd-btn cdd-btn-cancel" @onclick="OnCancelClick">
+            <div class="dialog-footer">
+                <button class="dialog-btn dialog-btn-cancel" @onclick="OnCancelClick">
                     Cancel
                 </button>
-                <button class="cdd-btn cdd-btn-delete" @onclick="OnConfirmClick">
+                <button class="dialog-btn btn-delete" @onclick="OnConfirmClick">
                     Delete @ItemType
                 </button>
             </div>

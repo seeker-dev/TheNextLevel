@@ -1,8 +1,8 @@
-﻿.main-content {
-    flex: 1;
-    padding: 30px;
-    display: flex;
-    flex-direction: column;
+/* Project Details Page Styles */
+.projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
 }
 
 /* Filter Input Styles */

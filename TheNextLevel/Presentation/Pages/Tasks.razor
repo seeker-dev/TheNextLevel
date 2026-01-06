@@ -2,7 +2,9 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Presentation.Components.Buttons
 @using TheNextLevel.Presentation.Dialogs
+@using TheNextLevel.Presentation.Components.Cards
 
 @inject ITaskService TaskService
 @inject IProjectService ProjectService
@@ -52,9 +54,7 @@
         </Virtualize>
     </div>
 
-    <div class="fab-container">
-        <button class="fab" @onclick="OpenNewTaskDialog" title="Create new task">+</button>
-    </div>
+    <FloatingActionButton OnClick="OpenNewTaskDialog" Title="Create new task" />
 
     <NewTaskDialog
         IsVisible="_showTaskDialog"

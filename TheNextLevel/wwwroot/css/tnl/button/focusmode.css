@@ -1,9 +1,0 @@
-﻿.focus-mode-toggle {
-    background: rgba(139, 69, 19, 0.3);
-    color: #f5f5f5;
-    border: 1px solid rgba(139, 69, 19, 0.5);
-}
-
-    .focus-mode-toggle:hover {
-        background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
-    }

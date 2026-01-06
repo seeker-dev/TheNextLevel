@@ -1,0 +1,48 @@
+<button class="btn-menu" @onclick="OnMenuClick">⋮</button>
+@if (showMenu)
+{
+    <div class="task-menu">
+        <button class="menu-item" @onclick="OnEditClick">Edit</button>
+        <button class="menu-item" @onclick="OnAssignToProjectClick">Assign to Project</button>
+        <button class="menu-item menu-item-danger" @onclick="OnDeleteClick">Delete</button>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public TaskDto? Task { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskDto> OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskDto> OnAssignToProject { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskDto> OnDelete { get; set; }
+
+    private bool showMenu = false;
+
+    private void OnMenuClick()
+    {
+        showMenu = !showMenu;
+    }
+
+    private async Task OnEditClick()
+    {
+        showMenu = false;
+        await OnEdit.InvokeAsync(Task);
+    }
+
+    private async Task OnAssignToProjectClick()
+    {
+        showMenu = false;
+        await OnAssignToProject.InvokeAsync(Task);
+    }
+
+    private async Task OnDeleteClick()
+    {
+        showMenu = false;
+        await OnDelete.InvokeAsync(Task);
+    }
+}

@@ -1,6 +1,7 @@
 /* Header Container */
 .header {
-    background: rgba(0, 0, 0, 0.95);
+    /*background: rgba(0, 0, 0, 0.95);*/
+    background: linear-gradient(135deg, #000000 0%, #1a0a0a 100%);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid rgba(139, 69, 19, 0.3);
     padding: 0 30px;

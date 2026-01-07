@@ -159,7 +159,7 @@
     }
 
     .menu-toggle {
-        display: flex;
+        display: none;
     }
 
     .mobile-menu {

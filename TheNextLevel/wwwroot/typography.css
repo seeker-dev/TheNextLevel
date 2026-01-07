@@ -1,0 +1,379 @@
+/* The Next Level - Typography System */
+/* Font: Manrope - Modern, Geometric, Balanced */
+
+/* ============================================
+   BASE TYPOGRAPHY
+   ============================================ */
+
+body {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+/* ============================================
+   HEADINGS
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+h1 {
+    font-weight: 300;
+    font-size: 2rem;
+    letter-spacing: -0.02em;
+}
+
+h2 {
+    font-weight: 400;
+    font-size: 1.5rem;
+}
+
+h3 {
+    font-weight: 500;
+    font-size: 1.2rem;
+}
+
+h4 {
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+h5, h6 {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* ============================================
+   APP HEADER
+   ============================================ */
+
+/* Apply Manrope to header elements
+   Note: Weights and sizing are defined in Header.razor.css */
+
+.app-title {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 300; */ /* Defined in Header.razor.css */
+    letter-spacing: -0.01em;
+}
+
+.header-left h1,
+.header-left .date {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 300; */ /* h1 weight - defined in Header.razor.css */
+    /* font-weight: 400; */ /* .date weight - defined in Header.razor.css */
+}
+
+/* ============================================
+   PROJECT CARDS
+   ============================================ */
+
+/* Apply Manrope to project card elements
+   Note: Sizing and weights are defined in ProjectCard.razor.css */
+
+.project-name {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* Defined in ProjectCard.razor.css */
+    letter-spacing: -0.01em;
+}
+
+.project-description {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* Defined in ProjectCard.razor.css */
+    /* line-height: 1.4; */ /* Defined in ProjectCard.razor.css */
+}
+
+.project-icon-wrapper {
+    font-family: 'Manrope', sans-serif;
+}
+
+/* ============================================
+   STATS & NUMBERS
+   ============================================ */
+
+/* Apply Manrope to stat elements
+   Note: Sizing and weights may be overridden in component-scoped CSS */
+
+.stat-value {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 500; */ /* May be overridden in component CSS */
+    letter-spacing: -0.01em;
+}
+
+.stat-label {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* May be overridden in component CSS */
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.stat-number {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 600; */ /* May be overridden in component CSS */
+}
+
+/* ============================================
+   TASKS
+   ============================================ */
+
+/* Apply Manrope to task elements
+   Note: Sizing and weights are defined in component-scoped CSS files */
+
+.task-title {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* Defined in TaskCard.razor.css */
+    letter-spacing: -0.01em;
+}
+
+.task-description {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* Defined in TaskCard.razor.css */
+}
+
+.task-meta {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* Defined in TaskCard.razor.css */
+}
+
+.task-preview-title {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 500; */ /* Defined in component CSS */
+}
+
+.task-preview-text {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* Defined in component CSS */
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+/* Apply Manrope to button elements
+   Note: Weights and sizing are defined in component-scoped CSS */
+
+.btn {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 500; */ /* Defined in component CSS */
+    letter-spacing: 0.01em;
+}
+
+.btn-secondary,
+.btn-settings {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 500; */ /* .btn-secondary - defined in component CSS */
+    /* font-weight: 400; */ /* .btn-settings - defined in component CSS */
+}
+
+.filter-btn {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 500; */ /* Defined in component CSS */
+}
+
+.new-project-btn {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 500; */ /* Defined in component CSS */
+}
+
+.view-all-tasks {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* Defined in component CSS */
+}
+
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+/* Apply Manrope to navigation elements
+   Note: Weights and sizing are defined in Header.razor.css */
+
+.nav-link,
+.mobile-nav-link {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* Defined in Header.razor.css */
+}
+
+/* .nav-link.active has font-weight: 500 defined in Header.razor.css */
+
+/* ============================================
+   PAGES
+   ============================================ */
+
+/* Apply Manrope to page elements
+   Note: Weights and sizing may be overridden in component-scoped CSS */
+
+.page-title {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 300; */ /* May be overridden in component CSS */
+    letter-spacing: -0.01em;
+}
+
+.section-title {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 500; */ /* May be overridden in component CSS */
+}
+
+.project-details-title {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 500; */ /* May be overridden in component CSS */
+    letter-spacing: -0.01em;
+}
+
+/* ============================================
+   DIALOGS & MODALS
+   ============================================ */
+
+/* Apply Manrope to dialog elements
+   Note: Font sizes, weights, and other properties are defined in dialog.css
+   This ensures the Manrope font family is used across all dialog components */
+
+.dialog-title {
+    font-family: 'Manrope', sans-serif;
+    letter-spacing: -0.01em;
+}
+
+.dialog-section-title {
+    font-family: 'Manrope', sans-serif;
+}
+
+.dialog-form-label {
+    font-family: 'Manrope', sans-serif;
+}
+
+.dialog-form-input,
+.dialog-form-textarea {
+    font-family: 'Manrope', sans-serif;
+}
+
+.dialog-btn {
+    font-family: 'Manrope', sans-serif;
+    letter-spacing: 0.01em;
+}
+
+.dialog-motivation-text {
+    font-family: 'Manrope', sans-serif;
+}
+
+.dialog-message {
+    font-family: 'Manrope', sans-serif;
+}
+
+/* ============================================
+   MENU ITEMS
+   ============================================ */
+
+/* Apply Manrope to menu elements
+   Note: Weights and sizing are defined in component-scoped CSS */
+
+.menu-item,
+.project-menu-btn,
+.btn-menu {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* Defined in component CSS */
+}
+
+/* ============================================
+   EMPTY STATES
+   ============================================ */
+
+/* Apply Manrope to empty state elements
+   Note: Weights and sizing are defined in component-scoped CSS */
+
+.empty-title,
+.empty-subtitle {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 300; */ /* .empty-title - defined in component CSS */
+    /* font-weight: 400; */ /* .empty-subtitle - defined in component CSS */
+}
+
+/* ============================================
+   INPUTS & FORMS
+   ============================================ */
+
+/* Global form element typography - applies to all inputs unless overridden */
+
+input, textarea, select {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+}
+
+input::placeholder,
+textarea::placeholder {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+}
+
+.search-box,
+.filter-input {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 400;
+}
+
+/* ============================================
+   LOADING & STATUS
+   ============================================ */
+
+/* Apply Manrope to status elements */
+
+.loading-state,
+.task-status {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* May be overridden in component CSS */
+}
+
+/* ============================================
+   PRIORITY BADGES
+   ============================================ */
+
+/* Apply Manrope to badge elements */
+
+.priority-badge {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 500; */ /* May be overridden in component CSS */
+    letter-spacing: 0.5px;
+}
+
+.category-label {
+    font-family: 'Manrope', sans-serif;
+    /* font-weight: 400; */ /* May be overridden in component CSS */
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+/* Responsive typography scaling
+   Note: Component-specific responsive styles are in their respective .razor.css files */
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.35rem;
+    }
+
+    h3 {
+        font-size: 1.1rem;
+    }
+
+    /* .project-name font-weight moved to ProjectCard.razor.css */
+    /* .app-title font-weight moved to Header.razor.css */
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+    }
+
+    /* .project-name font-weight moved to ProjectCard.razor.css */
+}

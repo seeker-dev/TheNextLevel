@@ -232,3 +232,16 @@
 .project-card.unsorted .project-header {
     background: linear-gradient(135deg, rgba(105, 105, 105, 0.3) 0%, rgba(128, 128, 128, 0.3) 100%);
 }
+
+/* Responsive Typography Adjustments */
+@media (max-width: 768px) {
+    .project-name {
+        font-weight: 400;
+    }
+}
+
+@media (max-width: 480px) {
+    .project-name {
+        font-weight: 500; /* Heavier on small screens for visibility */
+    }
+}

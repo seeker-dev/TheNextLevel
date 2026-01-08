@@ -26,3 +26,9 @@
         box-shadow: 0 12px 35px rgba(128, 0, 32, 0.8);
         background: linear-gradient(135deg, #DC143C 0%, #CD853F 100%);
     }
+
+@media (max-width: 768px) {
+    .fab-container {
+        display: none;
+    }
+}

@@ -100,13 +100,27 @@
 }
 
 /* Responsive Typography Adjustments */
+@media (max-width: 900px) {
+    .project-card {
+        min-height: 280px;
+    }
+}
+
 @media (max-width: 768px) {
+    .project-card {
+        min-height: 260px;
+    }
+
     .project-name {
         font-weight: 400;
     }
 }
 
 @media (max-width: 480px) {
+    .project-card {
+        min-height: 240px;
+    }
+
     .project-name {
         font-weight: 500;
     }

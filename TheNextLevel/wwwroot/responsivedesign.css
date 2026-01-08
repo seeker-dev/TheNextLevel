@@ -1,22 +1,4 @@
-﻿@media (max-width: 1200px) {
-    .projects-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
-}
-
-/* Force single column layout for tablets and phones */
-@media (max-width: 900px) {
-    .projects-grid {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .project-card {
-        min-height: 280px;
-    }
-}
-
-@media (max-width: 768px) {
+﻿@media (max-width: 768px) {
     .header {
         padding: 15px 20px;
         flex-direction: column;
@@ -70,15 +52,6 @@
     }
 
     /* Project grid specific */
-    .projects-grid {
-        grid-template-columns: 1fr;
-        gap: 18px;
-    }
-
-    .project-card {
-        min-height: 260px;
-    }
-
     .project-header {
         padding: 20px;
         min-height: 100px;
@@ -108,14 +81,6 @@
 
     .main-content {
         padding: 15px;
-    }
-
-    .projects-grid {
-        gap: 15px;
-    }
-
-    .project-card {
-        min-height: 240px;
     }
 
     .project-header {

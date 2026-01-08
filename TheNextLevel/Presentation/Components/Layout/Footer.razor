@@ -1,0 +1,35 @@
+@using TheNextLevel.Presentation.Components.Buttons
+@inject NavigationManager Navigation
+
+<footer class="footer">
+    <div class="footer-content">
+        <nav class="footer-nav">
+            <a href="/home" class="footer-link @GetActiveClass("/")">Home</a>
+            <a class="footer-link">Add</a>
+            <a href="/settings" class="footer-link @GetActiveClass("/settings")">Settings</a>
+        </nav>
+    </div>
+</footer>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    private string GetActiveClass(string path)
+    {
+        var currentPath = new Uri(Navigation.Uri).AbsolutePath;
+        return currentPath == path ? "active" : "";
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

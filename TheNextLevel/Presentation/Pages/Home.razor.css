@@ -1,7 +1,7 @@
 /* Project Details Page Styles */
 .projects-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
     gap: 25px;
 }
 
@@ -36,8 +36,34 @@
     font-style: italic;
 }
 
+/* Responsive Grid Adjustments */
+@media (max-width: 1200px) {
+    .projects-grid {
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .projects-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+}
+
 @media (max-width: 768px) {
     .filter-input {
         max-width: 100%;
+    }
+
+    .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .projects-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
     }
 }

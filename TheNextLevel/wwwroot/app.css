@@ -46,7 +46,10 @@ body {
 }
 
 /* Ensure project cards still render as grid items */
-.projects-grid .project-card,
+.projects-grid .project-card {
+    display: flex;
+}
+
 .projects-grid .loading-card,
 .projects-grid .empty-project {
     display: block;

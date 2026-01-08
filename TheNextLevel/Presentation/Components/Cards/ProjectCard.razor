@@ -1,64 +1,18 @@
 @using TheNextLevel.Application.DTOs
-@using TheNextLevel.Application.Interfaces
 
-@inject IProjectService ProjectService
-@inject NavigationManager Navigation
-
-<div class="project-card">
-    <div class="project-header custom-bg">
-        <div class="project-header-top">
-            <div class="project-icon-wrapper"></div>
-            <div class="project-actions">
-                <button class="project-menu-btn" @onclick:stopPropagation="true" @onclick="ShowProjectMenu">⋮</button>
-                @if (showMenu)
-                {
-                    <div class="project-menu">
-                        <button class="menu-item" @onclick="OnEditClick">Edit</button>
-                        <button class="menu-item menu-item-danger" @onclick="OnDeleteClick">Delete</button>
-                    </div>
-                }
-            </div>
-        </div>
-        <div class="project-name">@Project?.Name</div>
-    </div>
-    <div class="project-body">
-        <div class="project-description">@Project?.Description</div>
+<div class="project-card" style="--bg-image: url('@GetBackgroundImage()')">
+    <div class="project-content">
         <div class="project-stats">
-            <span class="stat">
+            <div class="stat">
                 <div class="stat-value">@Project?.Tasks.Count()</div>
                 <div class="stat-label">Tasks</div>
-            </span>
-            <span class="stat">
+            </div>
+            <div class="stat">
                 <div class="stat-value">@Project?.Tasks.Where(t => t.IsCompleted).Count()</div>
                 <div class="stat-label">Completed</div>
-            </span>
+            </div>
         </div>
-        
-        @if (Project?.Tasks != null && Project.Tasks.Any())
-        {
-            <div class="task-preview">
-                <div class="task-preview-title">Active Tasks</div>
-                <div class="task-preview-list">
-                    @foreach (var task in Project.Tasks.Where(t => !t.IsCompleted).Take(3))
-                    {
-                        <div class="task-preview-item">
-                            <input type="checkbox" class="task-preview-checkbox" @onclick:stopPropagation="true" />
-                            <span class="task-preview-text">@task.Name</span>
-                        </div>
-                    }
-                </div>
-                <div class="task-preview-more">
-                    <button class="view-all-tasks" @onclick:stopPropagation="true" @onclick="() => ViewAllTasks(Project.Id)">See details</button>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="empty-project">
-                <div class="emoji">🎨</div>
-                <p>No tasks yet.</p>
-            </div>
-        }
+        <h3 class="project-name">@Project?.Name</h3>
     </div>
 </div>
 
@@ -66,46 +20,14 @@
     [Parameter]
     public ProjectDto? Project { get; set; }
 
-    [Parameter]
-    public EventCallback<ProjectDto> OnProjectEdit { get; set; }
-
-    [Parameter]
-    public EventCallback<ProjectDto> OnProjectDeleted { get; set; }
-
-    private bool showMenu = false;
-
-    private void ShowProjectMenu()
+    private string GetBackgroundImage()
     {
-        showMenu = !showMenu;
-    }
+        // For now, use the default image
+        // In the future, when Project has a BackgroundImageUrl property, use:
+        // return !string.IsNullOrEmpty(Project?.BackgroundImageUrl)
+        //     ? Project.BackgroundImageUrl
+        //     : "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80";
 
-    private async Task OnEditClick()
-    {
-        showMenu = false;
-        if (Project != null)
-        {
-            await OnProjectEdit.InvokeAsync(Project);
-        }
-    }
-
-    private async Task OnDeleteClick()
-    {
-        showMenu = false;
-        if (Project != null)
-        {
-            var success = await ProjectService.DeleteProjectAsync(Project.Id);
-            if (success)
-            {
-                await OnProjectDeleted.InvokeAsync(Project);
-            }
-        }
-    }
-
-    private void ViewAllTasks(int? projectId)
-    {
-        if (projectId.HasValue)
-        {
-            Navigation.NavigateTo($"/projects/{projectId.Value}");
-        }
+        return "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80";
     }
 }

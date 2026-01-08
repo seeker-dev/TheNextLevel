@@ -16,10 +16,7 @@
     <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
             <ItemContent>
-                <ProjectCard
-                    Project="project"
-                    OnProjectEdit="HandleProjectEdit"
-                    OnProjectDeleted="HandleProjectDeleted" />
+                <ProjectCard Project="project" />
             </ItemContent>
             <Placeholder>
                 <div class="loading-card">Loading...</div>

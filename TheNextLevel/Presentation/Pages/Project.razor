@@ -1,0 +1,75 @@
+@page "/project/{Id:int}"
+
+@using Microsoft.JSInterop
+@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Presentation.Components.Cards
+@using TheNextLevel.Presentation.Dialogs
+@using TheNextLevel.Presentation.Components.Buttons
+
+@inject IProjectService ProjectService
+@inject NavigationManager Navigation
+@inject ITaskService TaskService
+@inject IJSRuntime JSRuntime
+
+<main class="main-content">
+    <div class="project-page-header custom-bg">
+        <button class="back-button" @onclick="NavigateBack">←</button>
+        @if (_isLoading)
+        {
+            <p class="loading-text">Loading...</p>
+        }
+        else if (_errorMessage != null)
+        {
+            <p class="error-message">@_errorMessage</p>
+        }
+        else if (_project != null)
+        {
+            <h1 class="project-page-title">@_project.Name</h1>
+        }
+    </div>
+</main>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private bool _isLoading = true;
+    private ProjectDto? _project;
+    private string? _errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProject();
+    }
+
+    private async Task LoadProject()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = null;
+            _project = await ProjectService.GetProjectByIdAsync(Id);
+
+            if (_project == null)
+            {
+                _errorMessage = "Project could not be found.";
+            }
+
+            _isLoading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading project: {ex.Message}");
+            _errorMessage = "An error occurred while loading the project.";
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task NavigateBack()
+    {
+        await JSRuntime.InvokeVoidAsync("history.back");
+    }
+}

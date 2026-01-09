@@ -1,6 +1,7 @@
 @using TheNextLevel.Application.DTOs
+@inject NavigationManager Navigation
 
-<div class="project-card" style="--bg-image: url('@GetBackgroundImage()')">
+<div class="project-card" @onclick="@( () => Navigation.NavigateTo($"/project/{Project?.Id}"))" style="--bg-image: url('@GetBackgroundImage()')">
     <div class="project-content">
         <div class="project-stats">
             <div class="stat">

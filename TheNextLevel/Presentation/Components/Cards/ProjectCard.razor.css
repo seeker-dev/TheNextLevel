@@ -1,8 +1,30 @@
+.project-card-wrapper {
+    position: relative;
+    border-radius: 16px;
+}
+
+.project-card-wrapper::before {
+    content: "";
+    position: absolute;
+    inset: -30px;
+    background-image: var(--bg-image);
+    background-size: cover;
+    background-position: center;
+    filter: blur(50px) brightness(1.2);
+    opacity: 0;
+    z-index: -1;
+    border-radius: 16px;
+    transition: opacity 0.3s ease;
+}
+
+.project-card-wrapper:hover::before {
+    opacity: 0.6;
+}
+
 .project-card {
     position: relative;
     border-radius: 16px;
     overflow: hidden;
-    border: 1px solid rgba(139, 69, 19, 0.3);
     transition: all 0.3s ease;
     cursor: pointer;
     display: flex;
@@ -53,8 +75,6 @@
 
 .project-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(128, 0, 32, 0.5);
-    border-color: #8B0000;
 }
 
 .project-content {

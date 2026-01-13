@@ -1,0 +1,75 @@
+@page "/taskdetail/{Id:int}"
+@using TheNextLevel.Application.DTOs
+@using System.Text.Json
+
+@inject ITaskService TaskService
+@inject IJSRuntime JSRuntime
+@inject NavigationManager Navigation
+
+<main class="main-content">
+    <div class="task-detail-page-header custom-bg">
+        <button class="back-button" @onclick="NavigateBack">←</button>
+        @if (_isLoading)
+        {
+            <p class="loading-text">Loading...</p>
+        }
+        else if (_errorMessage != null)
+        {
+            <p class="error-message">@_errorMessage</p>
+        }
+        else if (_task != null)
+        {
+            <h1 class="task-detail-page-title">@_task.Name</h1>
+            <h2 class="task-detail-page-subtitle">Project: @(_project?.Name ?? "Unknown")</h2>
+        }
+    </div>
+</main>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private TaskDto? _task;
+    private ProjectDto? _project;
+    private bool _isLoading = true;
+    private string? _errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectJson = Navigation.HistoryEntryState as string;
+        if (!string.IsNullOrEmpty(projectJson))
+        {
+            _project = JsonSerializer.Deserialize<ProjectDto>(projectJson);
+        }
+        await LoadTask();
+    }
+
+    private async Task NavigateBack()
+    {
+        await JSRuntime.InvokeVoidAsync("history.back");
+    }
+
+    private async Task LoadTask()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = null;
+            _task = await TaskService.GetTaskByIdAsync(Id);
+
+            if (_task == null)
+            {
+                _errorMessage = "Task could not be found.";
+            }
+
+            _isLoading = false;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading task: {ex.Message}");
+            _errorMessage = "An error occurred while loading the task.";
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+}

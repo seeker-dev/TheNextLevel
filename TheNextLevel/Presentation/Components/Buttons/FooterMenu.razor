@@ -1,0 +1,37 @@
+<div class="footer-menu-wrapper">
+    <button class="btn-menu" @onclick="OnMenuClick">+</button>
+    @if (showMenu)
+    {
+        <div class="task-menu">
+            <button class="menu-item" @onclick="OnNewProjectClick">New Project</button>
+            <button class="menu-item" @onclick="OnNewTaskClick">New Task</button>
+        </div>
+    }
+</div>
+
+@code {
+    private bool showMenu = false;
+
+    [Parameter]
+    public EventCallback OnNewProject { get; set; }
+
+    [Parameter]
+    public EventCallback OnNewTask { get; set; }
+
+    private void OnMenuClick()
+    {
+        showMenu = !showMenu;
+    }
+
+    private void OnNewProjectClick()
+    {
+        showMenu = false;
+        OnNewProject.InvokeAsync(null);
+    }
+
+    private void OnNewTaskClick()
+    {
+        showMenu = false;
+        OnNewTask.InvokeAsync(null);
+    }
+}

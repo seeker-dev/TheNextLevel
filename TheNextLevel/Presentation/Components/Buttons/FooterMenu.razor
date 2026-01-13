@@ -1,5 +1,5 @@
 <div class="footer-menu-wrapper">
-    <button class="btn-menu" @onclick="OnMenuClick">+</button>
+    <button class="btn-menu" @onclick="OnMenuClick">Add</button>
     @if (showMenu)
     {
         <div class="task-menu">
@@ -23,15 +23,15 @@
         showMenu = !showMenu;
     }
 
-    private void OnNewProjectClick()
+    private async Task OnNewProjectClick()
     {
         showMenu = false;
-        OnNewProject.InvokeAsync(null);
+        await OnNewProject.InvokeAsync(null);
     }
 
-    private void OnNewTaskClick()
+    private async Task OnNewTaskClick()
     {
         showMenu = false;
-        OnNewTask.InvokeAsync(null);
+        await OnNewTask.InvokeAsync(null);
     }
 }

@@ -4,6 +4,7 @@
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Presentation.Components.Cards
+@using TheNextLevel.Presentation.Components.Grids
 @using TheNextLevel.Presentation.Dialogs
 @using TheNextLevel.Presentation.Components.Buttons
 
@@ -26,6 +27,20 @@
         else if (_project != null)
         {
             <h1 class="project-page-title">@_project.Name</h1>
+        }
+    </div>
+    <div class="tasks-section">
+        @if (_isLoading)
+        {
+            <p class="loading-text">Loading tasks...</p>
+        }
+        else if (_errorMessage != null)
+        {
+            <p class="error-message">@_errorMessage</p>
+        }
+        else if (_project != null)
+        {
+            <TaskGrid Project="_project" />
         }
     </div>
 </main>

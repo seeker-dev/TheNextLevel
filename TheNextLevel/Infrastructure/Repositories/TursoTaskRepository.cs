@@ -164,6 +164,40 @@ public class TursoTaskRepository : ITaskRepository
         return MapToTasks(response);
     }
 
+    public async System.Threading.Tasks.Task<PagedResult<Core.Entities.Task>> GetPagedByProjectIdAsync(int projectId, int skip, int take, bool isCompleted = false)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+
+        // Get total count
+        var countResponse = await _client.QueryAsync(
+            "SELECT COUNT(*) as Count FROM Tasks WHERE ProjectId = ? AND IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL",
+            projectId, isCompleted ? 1 : 0, accountId);
+        var totalCount = 0;
+
+        if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
+        {
+            var countValue = countResponse.Result.Rows[0][0];
+            totalCount = countValue.GetInt32Value();
+        }
+
+        // Get paged data
+        var dataResponse = await _client.QueryAsync(
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId = ? AND IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
+            projectId,
+            isCompleted ? 1 : 0,
+            accountId,
+            take,
+            skip);
+
+        var items = MapToTasks(dataResponse);
+
+        return new PagedResult<Core.Entities.Task>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
+    }
+
     private IEnumerable<Core.Entities.Task> MapToTasks(TursoResponse response)
     {
         if (response.Result?.Rows == null)

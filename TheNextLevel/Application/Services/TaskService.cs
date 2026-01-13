@@ -144,6 +144,17 @@ public class TaskService : ITaskService
         };
     }
 
+    public async System.Threading.Tasks.Task<PagedResult<TaskDto>> GetTasksByProjectPagedAsync(int projectId, int skip, int take, bool isCompleted = false)
+    {
+        var pagedResult = await _taskRepository.GetPagedByProjectIdAsync(projectId, skip, take, isCompleted);
+
+        return new PagedResult<TaskDto>
+        {
+            Items = pagedResult.Items.ToDto(),
+            TotalCount = pagedResult.TotalCount
+        };
+    }
+
     public async System.Threading.Tasks.Task<int> CreateSubtaskAsync(CreateSubtaskRequest request)
     {
         // Validate parent task exists

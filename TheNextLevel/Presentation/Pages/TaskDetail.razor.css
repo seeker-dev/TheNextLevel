@@ -64,6 +64,27 @@
     text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* Task Detail Card */
+.task-detail-card h3 {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #f0f0f0;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -0.01em;
+}
+
+/* Description Section */
+.description-section {
+    margin-bottom: 2rem;
+}
+
+.description-section p {
+    min-height: 4.5em; /* Space for ~3 lines */
+    color: #d0d0d0;
+    line-height: 1.5;
+    margin: 0;
+}
+
 /* Loading Text */
 .loading-text {
     font-size: 1.5rem;

@@ -36,8 +36,10 @@
         else if (_task != null)
         {
             <div class="task-detail-card">
-                <h3>Description</h3>
-                <p>@_task.Description</p>
+                <div class="description-section">
+                    <h3>Description</h3>
+                    <p>@_task.Description</p>
+                </div>
 
                 <h3>Subtasks</h3>
                 <SubtaskGrid ParentTask="_task" />

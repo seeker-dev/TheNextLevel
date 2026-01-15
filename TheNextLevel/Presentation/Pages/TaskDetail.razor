@@ -1,5 +1,6 @@
 @page "/taskdetail/{Id:int}"
 @using TheNextLevel.Application.DTOs
+@using TheNextLevel.Presentation.Components.Grids
 @using System.Text.Json
 
 @inject ITaskService TaskService
@@ -7,7 +8,7 @@
 @inject NavigationManager Navigation
 
 <main class="main-content">
-    <div class="task-detail-page-header custom-bg">
+    <div class="task-detail-page-header sunrise-bg">
         <button class="back-button" @onclick="NavigateBack">←</button>
         @if (_isLoading)
         {
@@ -21,6 +22,28 @@
         {
             <h1 class="task-detail-page-title">@_task.Name</h1>
             <h2 class="task-detail-page-subtitle">Project: @(_project?.Name ?? "Unknown")</h2>
+        }
+    </div>
+    <div class="task-detail-section">
+        @if (_isLoading)
+        {
+            <p class="loading-text">Loading task details...</p>
+        }
+        else if (_errorMessage != null)
+        {
+            <p class="error-message">@_errorMessage</p>
+        }
+        else if (_task != null)
+        {
+            <div class="task-detail-card">
+                <div class="description-section">
+                    <h3>Description</h3>
+                    <p>@_task.Description</p>
+                </div>
+
+                <h3>Subtasks</h3>
+                <SubtaskGrid ParentTask="_task" />
+            </div>
         }
     </div>
 </main>
@@ -67,7 +90,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading task: {ex.Message}");
-            _errorMessage = "An error occurred while loading the task.";
+            _errorMessage += "An error occurred while loading the task.";
             _isLoading = false;
             StateHasChanged();
         }

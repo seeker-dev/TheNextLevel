@@ -1,0 +1,64 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Presentation.Components.Buttons
+@using TheNextLevel.Presentation.Components.Cards
+
+@inject ITaskService TaskService
+
+<div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
+    <Virtualize ItemsProvider="LoadSubtasksProvider" @ref="_virtualizeComponent" Context="task">
+        <ItemContent>
+            <TaskCard 
+                Task="task"
+                Project="null" />
+        </ItemContent>
+        <Placeholder>
+            <div class="loading-card">Loading...</div>
+        </Placeholder>
+        <EmptyContent>
+            <div class="empty-state">
+                @if (ParentTask == null)
+                {
+                    <div class="empty-icon">📁</div>
+                    <p class="empty-title">No parent task selected</p>
+                    <p class="empty-subtitle">Please select a parent task to view its subtasks</p>
+                }
+                else 
+                {
+                    <div class="empty-icon">🗂️</div>
+                    <p class="empty-title">No subtasks found</p>
+                    <p class="empty-subtitle">This task has no subtasks</p>
+                }
+            </div>
+        </EmptyContent>
+    </Virtualize>
+</div>
+
+@code
+{
+    [Parameter]
+    public TaskDto? ParentTask { get; set; }
+
+    private Virtualize<TaskDto>? _virtualizeComponent;
+    private int _totalCount;
+
+    private async ValueTask<ItemsProviderResult<TaskDto>> LoadSubtasksProvider(ItemsProviderRequest request)
+    {
+        if (ParentTask == null)
+        {
+            return new ItemsProviderResult<TaskDto>(Array.Empty<TaskDto>(), 0);
+        }
+
+        try
+        {
+            var result = await TaskService.GetSubtasksByParentIdAsync(ParentTask.Id , request.StartIndex, request.Count);
+            _totalCount = result.TotalCount;
+            return new ItemsProviderResult<TaskDto>(result.Items, result.TotalCount);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading tasks: {ex.Message}");
+            return new ItemsProviderResult<TaskDto>(Array.Empty<TaskDto>(), 0);
+        }
+    }
+}

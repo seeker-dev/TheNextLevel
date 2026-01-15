@@ -20,11 +20,7 @@
             <ItemContent>
                 <TaskCard
                     Task="task"
-                    Project="Project"
-                    OnTaskUpdated="HandleTaskUpdated"
-                    OnTaskEdit="HandleTaskEdit"
-                    OnTaskAssignToProject="HandleTaskAssignToProject"
-                    OnTaskDeleteRequest="HandleTaskDeleteRequest" />
+                    Project="Project" />
             </ItemContent>
             <Placeholder>
                 <div class="loading-card">Loading...</div>
@@ -54,38 +50,13 @@
         </Virtualize>
 </div>
 
-<NewTaskDialog
-    IsVisible="_showTaskDialog"
-    OnResult="HandleTaskSaved"
-    OnCancel="CloseTaskDialog"
-    ExistingTask="_editingTask" />
-
-<AssignTaskToProjectDialog
-    IsVisible="_showAssignDialog"
-    OnResult="HandleTaskAssigned"
-    OnCancel="CloseAssignDialog"
-    Task="_assigningTask" />
-
-<ConfirmDeleteDialog
-    IsVisible="_showDeleteConfirm"
-    ItemName="@_deletingTask?.Name"
-    ItemType="task"
-    OnConfirm="ConfirmDelete"
-    OnCancel="CancelDelete" />
-
 @code {
     [Parameter]
     public ProjectDto? Project { get; set; }
 
     private Virtualize<TaskDto>? _virtualizeComponent;
     private bool _showCompleted = false;
-    private bool _showTaskDialog = false;
-    private bool _showAssignDialog = false;
-    private bool _showDeleteConfirm = false;
     private int _totalCount = 0;
-    private TaskDto? _editingTask = null;
-    private TaskDto? _assigningTask = null;
-    private TaskDto? _deletingTask = null;
 
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadTasksProvider(ItemsProviderRequest request)
     {
@@ -139,76 +110,4 @@
         }
         StateHasChanged();
     }
-
-    #region Task Card Event Handlers
-    private void HandleTaskDeleteRequest(TaskDto task)
-    {
-        _deletingTask = task;
-        _showDeleteConfirm = true;
-    }
-
-    private async Task HandleTaskUpdated(TaskDto task)
-    {
-        await RefreshList();
-    }
-
-    private void HandleTaskEdit(TaskDto task)
-    {
-        _editingTask = task;
-        _showTaskDialog = true;
-    }
-
-    private void HandleTaskAssignToProject(TaskDto task)
-    {
-        _assigningTask = task;
-        _showAssignDialog = true;
-    }
-    #endregion
-
-    #region Task Dialog Event Handlers
-    private async Task HandleTaskSaved(TaskDto task)
-    {
-        _showTaskDialog = false;
-        await RefreshList();
-    }
-    
-    private void CloseTaskDialog()
-    {
-        _editingTask = null;
-        _showTaskDialog = false;
-    }
-
-    private async Task HandleTaskAssigned()
-    {
-        _showAssignDialog = false;
-        _assigningTask = null;
-        await RefreshList();
-    }
-
-    private void CloseAssignDialog()
-    {
-        _assigningTask = null;
-        _showAssignDialog = false;
-    }
-
-    private async Task ConfirmDelete()
-    {
-        _showDeleteConfirm = false;
-        if (_deletingTask != null)
-        {
-            var success = await TaskService.DeleteTaskAsync(_deletingTask.Id);
-            if (success)
-            {
-                await RefreshList();
-            }
-        }
-        _deletingTask = null;
-    }
-
-    private void CancelDelete()
-    {
-        _deletingTask = null;
-        _showDeleteConfirm = false;
-    }
-    #endregion
 }

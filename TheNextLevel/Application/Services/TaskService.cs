@@ -175,10 +175,15 @@ public class TaskService : ITaskService
         return subtask.Id;
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetSubtasksByParentIdAsync(int parentTaskId)
+    public async System.Threading.Tasks.Task<PagedResult<TaskDto>> GetSubtasksByParentIdAsync(int parentTaskId, int skip, int take)
     {
-        var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(parentTaskId);
-        return subtasks.ToDto();
+        var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(parentTaskId, skip, take);
+        
+        return new PagedResult<TaskDto>
+        {
+            Items = subtasks.Items.ToDto(),
+            TotalCount = subtasks.TotalCount
+        };
     }
 
     public async System.Threading.Tasks.Task<bool> CanTaskHaveSubtasksAsync(int taskId)

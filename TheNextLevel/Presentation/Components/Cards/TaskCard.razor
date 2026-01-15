@@ -6,13 +6,6 @@
 @inject NavigationManager Navigation
 
 <div class="task-card @(IsCompleted ? "completed" : "")" @onclick="NavigateToDetail" @onclick:stopPropagation="true" style="cursor: pointer;">
-    <div class="task-actions">
-        <ContextMenuButton 
-                            Task="Task"
-                            OnEdit="OnTaskEdit"
-                            OnAssignToProject="OnTaskAssignToProject"
-                            OnDelete="OnTaskDeleteRequest" />
-    </div>
     <div class="task-checkbox-container">
         <input class="task-checkbox" type="checkbox" checked="@IsCompleted" @onchange="OnStatusChange">
         <div class="task-details">
@@ -36,19 +29,9 @@
     [Parameter]
     public ProjectDto? Project { get; set; }
 
-    [Parameter]
-    public EventCallback<TaskDto> OnTaskUpdated { get; set; }
-
-    [Parameter]
-    public EventCallback<TaskDto> OnTaskEdit { get; set; }
-
-    [Parameter]
-    public EventCallback<TaskDto> OnTaskAssignToProject { get; set; }
-
-    [Parameter]
-    public EventCallback<TaskDto> OnTaskDeleteRequest { get; set; }
-
     private bool IsCompleted => Task?.IsCompleted == true;
+
+    private bool IsSubtask => Task?.ParentTaskId != null;
 
     private async Task OnStatusChange(ChangeEventArgs e)
     {
@@ -64,18 +47,11 @@
         {
             await TaskService.ReopenTaskAsync(Task.Id);
         }
-        
-        // Refresh task data and notify parent
-        var updatedTask = await TaskService.GetTaskByIdAsync(Task.Id);
-        if (updatedTask != null)
-        {
-            await OnTaskUpdated.InvokeAsync(updatedTask);
-        }
     }
 
     private void NavigateToDetail()
     {
-        if (Task != null && Project != null)
+        if (Task != null && Project != null && !IsSubtask)
         {
             var projectJson = JsonSerializer.Serialize(Project);
             Navigation.NavigateTo($"/taskdetail/{Task.Id}",

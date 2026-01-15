@@ -241,13 +241,31 @@ public class TursoTaskRepository : ITaskRepository
         return int.TryParse(value, out var result) ? result : null;
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetSubtasksByParentIdAsync(int parentTaskId)
+    public async System.Threading.Tasks.Task<PagedResult<Core.Entities.Task>> GetSubtasksByParentIdAsync(int parentTaskId, int skip, int take)
     {
         var accountId = _accountContext.GetCurrentAccountId();
-        var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ParentTaskId = ? AND AccountId = ?",
+        var countResponse = await _client.QueryAsync(
+            "SELECT COUNT(*) as Count FROM Tasks WHERE ParentTaskId = ? AND AccountId = ?",
             parentTaskId, accountId);
-        return MapToTasks(response);
+        var totalCount = 0;
+
+        if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
+        {
+            var countValue = countResponse.Result.Rows[0][0];
+            totalCount = countValue.GetInt32Value();
+        }
+
+        var dataResponse = await _client.QueryAsync(
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ParentTaskId FROM Tasks WHERE ParentTaskId = ? AND AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?",
+            parentTaskId, accountId, take, skip);
+
+        var items = MapToTasks(dataResponse);
+
+        return new PagedResult<Core.Entities.Task>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
     }
 
     public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetRootTasksAsync()

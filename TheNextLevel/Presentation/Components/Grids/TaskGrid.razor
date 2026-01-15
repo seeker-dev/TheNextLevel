@@ -5,48 +5,53 @@
 @using TheNextLevel.Presentation.Dialogs
 
 @inject ITaskService TaskService
-@inject IProjectService ProjectService
 
 <div class="filter-controls">
     <button class="filter-btn @(_showCompleted ? "" : "active")" @onclick="ShowPending">
-        Pending (@_pendingCount)
+        Pending
     </button>
     <button class="filter-btn @(_showCompleted ? "active" : "")" @onclick="ShowCompleted">
-        Completed (@_completedCount)
+        Completed
     </button>
 </div>
 
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
-    <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
-        <ItemContent>
-            <TaskCard
-                Task="task"
-                Project="Project"
-                OnTaskUpdated="HandleTaskUpdated"
-                OnTaskEdit="HandleTaskEdit"
-                OnTaskAssignToProject="HandleTaskAssignToProject"
-                OnTaskDeleteRequest="HandleTaskDeleteRequest" />
-        </ItemContent>
-        <Placeholder>
-            <div class="loading-card">Loading...</div>
-        </Placeholder>
-        <EmptyContent>
-            <div class="empty-state">
-                @if (_showCompleted)
-                {
-                    <div class="empty-icon">✓</div>
-                    <p class="empty-title">No completed tasks yet</p>
-                    <p class="empty-subtitle">Tasks you complete will appear here</p>
-                }
-                else
-                {
-                    <div class="empty-icon">🎯</div>
-                    <p class="empty-title">No pending tasks</p>
-                    <p class="empty-subtitle">You're all caught up! Time to add something new?</p>
-                }
-            </div>
-        </EmptyContent>
-    </Virtualize>
+        <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
+            <ItemContent>
+                <TaskCard
+                    Task="task"
+                    Project="Project"
+                    OnTaskUpdated="HandleTaskUpdated"
+                    OnTaskEdit="HandleTaskEdit"
+                    OnTaskAssignToProject="HandleTaskAssignToProject"
+                    OnTaskDeleteRequest="HandleTaskDeleteRequest" />
+            </ItemContent>
+            <Placeholder>
+                <div class="loading-card">Loading...</div>
+            </Placeholder>
+            <EmptyContent>
+                <div class="empty-state">
+                    @if (Project == null)
+                    {
+                        <div class="empty-icon">📁</div>
+                        <p class="empty-title">No project selected</p>
+                        <p class="empty-subtitle">Please select a project to view its tasks</p>
+                    }
+                    else if (_showCompleted)
+                    {
+                        <div class="empty-icon">✓</div>
+                        <p class="empty-title">No completed tasks yet</p>
+                        <p class="empty-subtitle">Tasks you complete will appear here</p>
+                    }
+                    else 
+                    {
+                        <div class="empty-icon">🎯</div>
+                        <p class="empty-title">No pending tasks</p>
+                        <p class="empty-subtitle">You're all caught up! Time to add something new?</p>
+                    }
+                </div>
+            </EmptyContent>
+        </Virtualize>
 </div>
 
 <NewTaskDialog
@@ -73,7 +78,6 @@
     public ProjectDto? Project { get; set; }
 
     private Virtualize<TaskDto>? _virtualizeComponent;
-    private bool _isLoading = false;
     private bool _showCompleted = false;
     private bool _showTaskDialog = false;
     private bool _showAssignDialog = false;
@@ -84,13 +88,18 @@
     private TaskDto? _editingTask = null;
     private TaskDto? _assigningTask = null;
     private TaskDto? _deletingTask = null;
-    
+
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadTasksProvider(ItemsProviderRequest request)
     {
+        if (Project == null)
+        {
+            return new ItemsProviderResult<TaskDto>(
+                Array.Empty<TaskDto>(),
+                0);
+        }
+
         try
         {
-            _isLoading = true;
-
             var pagedResult = await TaskService.GetTasksByProjectPagedAsync(
                 projectId: Project?.Id ?? 0,
                 skip: request.StartIndex,
@@ -98,9 +107,6 @@
                 isCompleted: _showCompleted);
 
             _totalCount = pagedResult.TotalCount;
-            
-            _isLoading = false;
-            StateHasChanged();
 
             return new ItemsProviderResult<TaskDto>(
                 pagedResult.Items,
@@ -118,14 +124,12 @@
     private async Task ShowPending()
     {
         _showCompleted = false;
-        _totalCount = _pendingCount;
         await RefreshList();
     }
 
     private async Task ShowCompleted()
     {
         _showCompleted = true;
-        _totalCount = _completedCount;
         await RefreshList();
     }
 

@@ -20,7 +20,9 @@
             <ItemContent>
                 <TaskCard
                     Task="task"
-                    Project="Project" />
+                    Project="Project"
+                    EditEnabled="EditEnabled"
+                    DeleteEnabled="DeleteEnabled" />
             </ItemContent>
             <Placeholder>
                 <div class="loading-card">Loading...</div>
@@ -49,10 +51,15 @@
             </EmptyContent>
         </Virtualize>
 </div>
-
 @code {
     [Parameter]
     public ProjectDto? Project { get; set; }
+
+    [Parameter]
+    public bool EditEnabled { get; set; }
+
+    [Parameter]
+    public bool DeleteEnabled { get; set; }
 
     private Virtualize<TaskDto>? _virtualizeComponent;
     private bool _showCompleted = false;
@@ -102,7 +109,7 @@
         await RefreshList();
     }
 
-    private async Task RefreshList()
+    public async Task RefreshList()
     {
         if (_virtualizeComponent != null)
         {

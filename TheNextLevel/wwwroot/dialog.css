@@ -332,6 +332,29 @@
     transform: translateY(0);
 }
 
+.dialog-btn-secondary {
+    background: rgba(139, 69, 19, 0.3);
+    color: var(--dialog-text-primary);
+    border: 1px solid rgba(139, 69, 19, 0.5);
+}
+
+.dialog-btn-secondary:hover {
+    background: rgba(139, 69, 19, 0.5);
+    transform: translateY(-1px);
+}
+
+.dialog-btn-danger {
+    background: linear-gradient(135deg, #8B0000 0%, #B22222 100%);
+    color: var(--dialog-text-primary);
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.4);
+}
+
+.dialog-btn-danger:hover {
+    background: linear-gradient(135deg, #A52A2A 0%, #CD5C5C 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 0, 0, 0.6);
+}
+
 /* ============================================
    Utility Classes
    ============================================ */

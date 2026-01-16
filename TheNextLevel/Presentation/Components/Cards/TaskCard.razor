@@ -1,15 +1,16 @@
 ﻿@using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Presentation.Components.Buttons
+@using TheNextLevel.Presentation.Dialogs
 @using System.Text.Json
 @inject ITaskService TaskService
 @inject NavigationManager Navigation
 
-<div class="task-card @(IsCompleted ? "completed" : "")" @onclick="NavigateToDetail" @onclick:stopPropagation="true" style="cursor: pointer;">
+<div class="task-card @(IsCompleted ? "completed" : "")" style="cursor: pointer;">
     <div class="task-checkbox-container">
         <input class="task-checkbox" type="checkbox" checked="@IsCompleted" @onchange="OnStatusChange">
         <div class="task-details">
-            <div class="task-title @(IsCompleted ? "completed" : "")">@(Task?.Name ?? "Untitled")</div>
+            <div class="task-title @(IsCompleted ? "completed" : "")" @onclick="NavigateToDetail" @onclick:stopPropagation="true">@(Task?.Name ?? "Untitled")</div>
             @if (!string.IsNullOrEmpty(Task?.Description))
             {
                 <div class="task-description">@Task.Description</div>
@@ -18,8 +19,34 @@
                 <span class="task-status">@(Task?.IsCompleted == true ? "Completed" : "Pending")</span>
             </div>
         </div>
+        @if (EditEnabled || DeleteEnabled)
+        {
+            <div class="task-card-actions">
+                @if (EditEnabled)
+                {
+                    <button class="action-btn" title="Edit Task" @onclick="() => OnTaskEdit.InvokeAsync(Task!)" @onclick:stopPropagation="true">✏️</button>
+                }
+                @if (DeleteEnabled)
+                {
+                    <button class="action-btn action-btn-danger" title="Delete Task" @onclick="() => OnTaskDeleteRequest.InvokeAsync(Task!)" @onclick:stopPropagation="true">🗑️</button>
+                }
+            </div>
+        }
     </div>
 </div>
+
+<EditTaskDialog 
+    Task="_editingTask" 
+    IsVisible="_showTaskDialog" 
+    OnClose="CloseTaskDialog" 
+    OnTaskSaved="HandleTaskSaved" />
+
+<ConfirmDeleteDialog 
+    IsVisible="_showDeleteConfirm" 
+    OnCancel="CancelDelete" 
+    OnConfirm="ConfirmDelete"
+    ItemName="@(_deletingTask?.Name ?? "this task")"
+    ItemType="Task"  />
 
 @code 
 {
@@ -29,9 +56,21 @@
     [Parameter]
     public ProjectDto? Project { get; set; }
 
+    [Parameter]
+    public bool EditEnabled { get; set; }
+
+    [Parameter]
+    public bool DeleteEnabled { get; set; }
+
     private bool IsCompleted => Task?.IsCompleted == true;
 
     private bool IsSubtask => Task?.ParentTaskId != null;
+
+    private TaskDto? _editingTask = null;
+    private TaskDto? _deletingTask = null;
+
+    private bool _showTaskDialog = false;
+    private bool _showDeleteConfirm = false;
 
     private async Task OnStatusChange(ChangeEventArgs e)
     {
@@ -47,6 +86,50 @@
         {
             await TaskService.ReopenTaskAsync(Task.Id);
         }
+    }
+
+    private EventCallback<TaskDto> OnTaskEdit => EventCallback.Factory.Create<TaskDto>(this, async (task) =>
+    {
+        _editingTask = task;
+        _showTaskDialog = true;
+    });
+
+    private EventCallback<TaskDto> OnTaskDeleteRequest => EventCallback.Factory.Create<TaskDto>(this, async (task) =>
+    {
+        _deletingTask = task;
+        _showDeleteConfirm = true;
+    });
+
+    private void CloseTaskDialog()
+    {
+        _showTaskDialog = false;
+        _editingTask = null;
+    }
+
+    private void CancelDelete()
+    {
+        _showDeleteConfirm = false;
+        _deletingTask = null;
+    }
+
+    private async Task HandleTaskSaved(TaskDto savedTask)
+    {
+        if (Task != null && Task.Id == savedTask.Id)
+        {
+            Task = savedTask;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (_deletingTask != null)
+        {
+            await TaskService.DeleteTaskAsync(_deletingTask.Id);
+            // Optionally, raise an event or refresh the task list
+        }
+        _showDeleteConfirm = false;
+        _deletingTask = null;
     }
 
     private void NavigateToDetail()

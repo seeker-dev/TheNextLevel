@@ -1,0 +1,182 @@
+@using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Application.DTOs
+@inject IProjectService ProjectService
+@inject ITaskService TaskService
+
+@if (!IsVisible)
+{
+    return;
+}
+<div class="dialog-overlay visible">
+    <div class="dialog-container" @onclick:stopPropagation="true">
+        <div class="dialog-header">
+            <h3 class="dialog-title">
+                <span class="edit-icon">✏️</span>
+                Edit Task
+            </h3>
+            <button class="dialog-btn-close" @onclick="OnCancelClick" aria-label="Close">&times;</button>
+        </div>
+    </div>
+    <div class="dialog-body">
+        <div class="dialog-form-group">
+            <label class="dialog-form-label">Title</label>
+            <input class="dialog-form-input" @bind="taskTitle" placeholder="Enter task title..." />
+        </div>
+        <div class="dialog-form-group">
+            <label class="dialog-form-label">Description</label>
+            <textarea class="dialog-form-input dialog-form-textarea" @bind="taskDescription" placeholder="Add task description..."></textarea>
+        </div>
+        <div class="dialog-form-group">
+            <label class="dialog-form-label">@(isLoadingProjects ? "Loading..." : "Select a project")</label>
+            <select class="dialog-form-input" @onfocus="OnProjectDropdownFocus" @bind="selectedProjectId">
+                @if (projects != null)
+                {
+                    @foreach (var project in projects)
+                    {
+                        <option value="@project.Id">@project.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="dialog-actions">
+            <button class="dialog-btn dialog-btn-secondary" @onclick="OnCancelClick">Cancel</button>
+            <button class="dialog-btn dialog-btn-primary" @onclick="OnSaveChangesClick">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+@if (showDiscardConfirmation)
+{
+    <div class="dialog-overlay visible">
+        <div class="dialog-container" @onclick:stopPropagation="true">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Discard Changes?</h3>
+            </div>
+            <div class="dialog-body">
+                <p>You have unsaved changes. Are you sure you want to discard them?</p>
+                <div class="dialog-actions">
+                    <button class="dialog-btn dialog-btn-secondary" @onclick="OnDiscardCancel">Keep Editing</button>
+                    <button class="dialog-btn dialog-btn-danger" @onclick="OnDiscardConfirm">Discard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code
+{
+    [Parameter]
+    public TaskDto? Task { get; set; }
+
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskDto> OnTaskSaved { get; set; }
+
+    private string noProjectSelectedText = "-- No Project --";
+
+    private string taskTitle = string.Empty;
+    private string taskDescription = string.Empty;
+
+    private List<ProjectDto>? projects;
+    private int? selectedProjectId;
+    private bool isLoadingProjects = false;
+    private bool hasLoadedProjects = false;
+    private bool showDiscardConfirmation = false;
+
+    bool nameChanged => Task?.Name != taskTitle;
+    bool descriptionChanged => Task?.Description != taskDescription;
+    bool projectChanged => Task?.ProjectId != selectedProjectId;
+    bool hasUnsavedChanges => nameChanged || descriptionChanged || projectChanged;
+
+    protected override void OnParametersSet()
+    {
+        if (Task != null)
+        {
+            taskTitle = Task.Name;
+            taskDescription = Task.Description ?? string.Empty;
+            selectedProjectId = Task.ProjectId;
+        }
+    }
+
+    private async Task OnProjectDropdownFocus()
+    {
+        if (hasLoadedProjects)
+        {
+            return;
+        }
+
+        isLoadingProjects = true;
+        try
+        {
+            var projectsList = await ProjectService.GetProjectsPagedAsync(0, 1000);
+            projects = projectsList.Items.ToList();
+            hasLoadedProjects = true;
+        }
+        finally
+        {
+            isLoadingProjects = false;
+        }
+    }
+
+    private async Task OnCancelClick()
+    {
+        if (hasUnsavedChanges)
+        {
+            showDiscardConfirmation = true;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        await CloseDialog();
+    }
+
+    private async Task OnDiscardConfirm()
+    {
+        showDiscardConfirmation = false;
+        await CloseDialog();
+    }
+
+    private async Task OnDiscardCancel()
+    {
+        showDiscardConfirmation = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CloseDialog()
+    {
+        IsVisible = false;
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task OnSaveChangesClick()
+    {
+        await SaveTaskChangesAsync();
+        if (Task != null)
+        {
+            var updatedTask = await TaskService.GetTaskByIdAsync(Task.Id);
+            await OnTaskSaved.InvokeAsync(updatedTask);
+        }
+        await CloseDialog();
+    }
+
+    private async Task SaveTaskChangesAsync()
+    {
+        // if task name changed, update it
+        if (nameChanged || descriptionChanged)
+        {
+            await TaskService.UpdateTaskAsync(Task!.Id, 
+                new UpdateTaskRequest(taskTitle, taskDescription));
+        }
+
+        // if project changed, update it
+        if (projectChanged)
+        {
+            await TaskService.AssignTaskToProjectAsync(Task!.Id, selectedProjectId);
+        }
+    }
+}

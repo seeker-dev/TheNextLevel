@@ -2,15 +2,24 @@
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Presentation.Components.Buttons
 @using TheNextLevel.Presentation.Components.Cards
+@using TheNextLevel.Presentation.Dialogs
 
 @inject ITaskService TaskService
+
+<div class="add-task-container">
+    <button class="filter-btn" @onclick="OpenAddTaskDialog">
+        Add New Task ➕
+    </button>
+</div>
 
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
     <Virtualize ItemsProvider="LoadSubtasksProvider" @ref="_virtualizeComponent" Context="task">
         <ItemContent>
             <TaskCard 
                 Task="task"
-                Project="null" />
+                Project="null"
+                DeleteEnabled="true"
+                EditEnabled="true" />
         </ItemContent>
         <Placeholder>
             <div class="loading-card">Loading...</div>
@@ -34,10 +43,20 @@
     </Virtualize>
 </div>
 
+<NewTaskDialog 
+    @ref="newTaskDialog"
+    IsVisible="@_showNewTaskDialog"
+    OnCancel="CloseNewTaskDialog"
+    OnResult="HandleNewTaskResult"
+    ParentTaskId="@(ParentTask?.Id)" />
+
 @code
 {
     [Parameter]
     public TaskDto? ParentTask { get; set; }
+
+    private NewTaskDialog? newTaskDialog;
+    private bool _showNewTaskDialog = false;
 
     private Virtualize<TaskDto>? _virtualizeComponent;
     private int _totalCount;
@@ -60,5 +79,32 @@
             Console.WriteLine($"Error loading tasks: {ex.Message}");
             return new ItemsProviderResult<TaskDto>(Array.Empty<TaskDto>(), 0);
         }
+    }
+
+    private async Task OpenAddTaskDialog()
+    {
+        _showNewTaskDialog = true;
+        StateHasChanged();
+    }
+
+    private async Task CloseNewTaskDialog()
+    {
+        _showNewTaskDialog = false;
+        StateHasChanged();
+    }
+
+    public async Task RefreshList()
+    {
+        if (_virtualizeComponent != null)
+        {
+            await _virtualizeComponent.RefreshDataAsync();
+        }
+        StateHasChanged();
+    }
+
+    private async Task HandleNewTaskResult(TaskDto task)
+    {
+        _showNewTaskDialog = false;
+        await RefreshList();
     }
 }

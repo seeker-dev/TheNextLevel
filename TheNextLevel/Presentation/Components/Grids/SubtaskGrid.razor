@@ -36,7 +36,7 @@
                 {
                     <div class="empty-icon">🗂️</div>
                     <p class="empty-title">No subtasks found</p>
-                    <p class="empty-subtitle">This task has no subtasks</p>
+                    <p class="empty-subtitle">@_subtitleMessage</p>
                 }
             </div>
         </EmptyContent>
@@ -44,7 +44,6 @@
 </div>
 
 <NewTaskDialog
-    @ref="_newTaskDialog"
     IsVisible="@_showNewTaskDialog"
     OnCancel="CloseNewTaskDialog"
     OnResult="HandleTaskCreated"
@@ -68,16 +67,15 @@
     [Parameter]
     public TaskDto? ParentTask { get; set; }
 
-    private NewTaskDialog? _newTaskDialog;
     private Virtualize<TaskDto>? _virtualizeComponent;
     private TaskDto? _selectedTask;
+    private int _totalCount;
+    private string _subtitleMessage = string.Empty;
 
     // Dialog visibility flags
     private bool _showNewTaskDialog;
     private bool _showEditDialog;
     private bool _showDeleteDialog;
-
-    private int _totalCount;
 
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadSubtasksProvider(ItemsProviderRequest request)
     {
@@ -90,11 +88,21 @@
         {
             var result = await TaskService.GetSubtasksByParentIdAsync(ParentTask.Id, request.StartIndex, request.Count);
             _totalCount = result.TotalCount;
+
+            if (result.TotalCount == 0)
+            {
+                _subtitleMessage = "You can add a new subtask using the 'Add New Subtask' button above.";
+            }
+            else
+            {
+                _subtitleMessage = string.Empty;
+            }
+
             return new ItemsProviderResult<TaskDto>(result.Items, result.TotalCount);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading subtasks: {ex.Message}");
+            _subtitleMessage = $"Error loading subtasks: {ex.Message}";
             return new ItemsProviderResult<TaskDto>(Array.Empty<TaskDto>(), 0);
         }
     }

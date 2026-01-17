@@ -12,49 +12,62 @@
 
 @page "/"
 <main class="main-content">
-    <input type="text" placeholder="Filter projects..." @bind="filterText" @bind:event="oninput" @bind:after="OnFilterTextChangedDebounced" class="filter-input" />
-    <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
-        <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
-            <ItemContent>
-                <ProjectCard Project="project" />
-            </ItemContent>
-            <Placeholder>
-                <div class="loading-card">Loading...</div>
-            </Placeholder>
-            <EmptyContent>
-                <div class="empty-project">
-                    <p>No projects found. Create your first project!</p>
-                </div>
-            </EmptyContent>
-        </Virtualize>
-    </div>
-
-    <FloatingActionButton OnClick="OpenNewProjectDialog" /> 
+    @if (_isLoading)
+    {
+        <p class="loading-text">Loading...</p>
+    }
+    else
+    {
+        <h1 class="page-title">Projects</h1>
+        <input type="text" placeholder="Filter projects..." @bind="filterText" @bind:event="oninput" @bind:after="OnFilterTextChangedDebounced" class="filter-input" />
+        <div class="add-container">
+            <button class="filter-btn" @onclick="OpenNewProjectDialog">
+                Add New Project ➕
+            </button>
+        </div>
+        <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
+            <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
+                <ItemContent>
+                    <ProjectCard Project="project" />
+                </ItemContent>
+                <Placeholder>
+                    <div class="loading-card">Loading...</div>
+                </Placeholder>
+                <EmptyContent>
+                    <div class="empty-project">
+                        <p>No projects found. Create your first project!</p>
+                    </div>
+                </EmptyContent>
+            </Virtualize>
+        </div>
+    }
 
     <NewProjectDialog
-        IsVisible="_showProjectDialog"
+        IsVisible="_showNewProjectDialog"
         ExistingProject="_editingProject"
         OnResult="HandleProjectSaved"
-        OnCancel="CloseProjectDialog" />
+        OnCancel="CloseNewProjectDialog" />
 </main>
 
 @code
 {
+    // Virtualize component 
     private Virtualize<ProjectDto>? _virtualizeComponent;
     private bool _isLoading = false;
-    private bool _showProjectDialog = false;
-    private ProjectDto? _editingProject = null;
     private int _totalCount = 0;
+    private bool _isRefreshing = false;
+
+    // Dialog state
+    private bool _showNewProjectDialog = false;
+    private ProjectDto? _editingProject = null;
+
+    // Filter state
     private string filterText = string.Empty;
     private System.Threading.Timer? _debounceTimer;
     private const int DebounceDelayMs = 400; // Wait 400ms after last keystroke
+
+    // Disposal state
     private bool _disposed = false;
-    private bool _isRefreshing = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-
-    }
 
     private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjectsProvider(ItemsProviderRequest request)
     {
@@ -107,6 +120,29 @@
         }, null, DebounceDelayMs, Timeout.Infinite);
     }
 
+    private void OpenNewProjectDialog()
+    {
+        _editingProject = null;  // null = create mode
+        _showNewProjectDialog = true;
+    }
+
+    private void CloseNewProjectDialog()
+    {
+        _showNewProjectDialog = false;
+        _editingProject = null;  // reset state
+    }
+
+    private async Task HandleProjectSaved(ProjectDto savedProject)
+    {
+        CloseNewProjectDialog();
+        await RefreshList();
+    }
+
+    private async Task HandleProjectDeleted(ProjectDto project)
+    {
+        await RefreshList();
+    }
+
     private async Task RefreshList()
     {
         if (_isRefreshing) return; // Prevent concurrent refreshes
@@ -125,35 +161,6 @@
         {
             _isRefreshing = false;
         }
-    }
-
-    private void OpenNewProjectDialog()
-    {
-        _editingProject = null;  // null = create mode
-        _showProjectDialog = true;
-    }
-
-    private void CloseProjectDialog()
-    {
-        _showProjectDialog = false;
-        _editingProject = null;  // reset state
-    }
-
-    private async Task HandleProjectSaved(ProjectDto savedProject)
-    {
-        CloseProjectDialog();
-        await RefreshList();
-    }
-
-    private void HandleProjectEdit(ProjectDto project)
-    {
-        _editingProject = project;  // not null = edit mode
-        _showProjectDialog = true;
-    }
-
-    private async Task HandleProjectDeleted(ProjectDto project)
-    {
-        await RefreshList();
     }
 
     public void Dispose()

@@ -14,7 +14,7 @@
                 <div class="task-description">@Task.Description</div>
             }
             <div class="task-meta">
-                <span class="task-status">@(_isCompleted ? "Completed" : "Pending")</span>
+                <span class="task-status">@(_isCompleted ? "Completed" : "Active")</span>
             </div>
         </div>
         @if (_editEnabled || _deleteEnabled)
@@ -90,7 +90,7 @@
         if (Task != null && Project != null && !_isSubtask)
         {
             var projectJson = JsonSerializer.Serialize(Project);
-            Navigation.NavigateTo($"/taskdetail/{Task.Id}",
+            Navigation.NavigateTo($"/task/{Task.Id}",
                 new NavigationOptions
                 {
                     HistoryEntryState = projectJson

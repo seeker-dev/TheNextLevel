@@ -8,7 +8,7 @@
 
 <div class="filter-controls">
     <button class="filter-btn @(_showCompleted ? "" : "active")" @onclick="ShowPending">
-        Pending
+        Active
     </button>
     <button class="filter-btn @(_showCompleted ? "active" : "")" @onclick="ShowCompleted">
         Completed
@@ -50,7 +50,7 @@
                     else
                     {
                         <div class="empty-icon">🎯</div>
-                        <p class="empty-title">No pending tasks</p>
+                        <p class="empty-title">No active tasks</p>
                         <p class="empty-subtitle">You're all caught up! Time to add something new?</p>
                     }
                 </div>

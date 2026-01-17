@@ -26,18 +26,27 @@
             <label class="dialog-form-label">Description</label>
             <textarea class="dialog-form-input dialog-form-textarea" @bind="taskDescription" placeholder="Add task description..."></textarea>
         </div>
-        <div class="dialog-form-group">
-            <label class="dialog-form-label">@(isLoadingProjects ? "Loading..." : "Select a project")</label>
-            <select class="dialog-form-input" @onfocus="OnProjectDropdownFocus" @bind="selectedProjectId">
-                @if (projects != null)
-                {
-                    @foreach (var project in projects)
+        @if (Task?.ParentTaskId != null)
+        {
+            <div class="dialog-info-message">
+                This task is a subtask and cannot be assigned to a project directly.
+            </div>
+        }
+        else
+        {
+            <div class="dialog-form-group">
+                <label class="dialog-form-label">@(isLoadingProjects ? "Loading..." : "Select a project")</label>
+                <select class="dialog-form-input" @onfocus="OnProjectDropdownFocus" @bind="selectedProjectId">
+                    @if (projects != null)
                     {
-                        <option value="@project.Id">@project.Name</option>
+                        @foreach (var project in projects)
+                        {
+                            <option value="@project.Id">@project.Name</option>
+                        }
                     }
-                }
-            </select>
-        </div>
+                </select>
+            </div>
+        }
         <div class="dialog-actions">
             <button class="dialog-btn dialog-btn-secondary" @onclick="OnCancelClick">Cancel</button>
             <button class="dialog-btn dialog-btn-primary" @onclick="OnSaveChangesClick">Save Changes</button>

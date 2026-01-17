@@ -15,6 +15,12 @@
     </button>
 </div>
 
+<div class="add-task-container">
+    <button class="filter-btn" @onclick="OpenAddTaskDialog">
+        Add New Task ➕
+    </button>
+</div>
+
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
             <ItemContent>
@@ -51,6 +57,13 @@
             </EmptyContent>
         </Virtualize>
 </div>
+
+<NewTaskDialog 
+    @ref="newTaskDialog" 
+    IsVisible="@_showNewTaskDialog"
+    OnCancel="CloseNewTaskDialog"
+    OnResult="HandleNewTaskResult"  />
+
 @code {
     [Parameter]
     public ProjectDto? Project { get; set; }
@@ -61,7 +74,9 @@
     [Parameter]
     public bool DeleteEnabled { get; set; }
 
+    private NewTaskDialog? newTaskDialog;
     private Virtualize<TaskDto>? _virtualizeComponent;
+    private bool _showNewTaskDialog = false;
     private bool _showCompleted = false;
     private int _totalCount = 0;
 
@@ -109,6 +124,12 @@
         await RefreshList();
     }
 
+    private async Task OpenAddTaskDialog()
+    {
+        _showNewTaskDialog = true;
+        StateHasChanged();
+    }
+
     public async Task RefreshList()
     {
         if (_virtualizeComponent != null)
@@ -116,5 +137,23 @@
             await _virtualizeComponent.RefreshDataAsync();
         }
         StateHasChanged();
+    }
+    private async Task CloseNewTaskDialog()
+    {
+        _showNewTaskDialog = false;
+        StateHasChanged();
+    }
+
+    private async Task HandleNewTaskResult(TaskDto task)
+    {
+        _showNewTaskDialog = false;
+
+        // Auto-assign the newly created task to this project
+        if (task != null && task.ProjectId != Project?.Id)
+        {
+            await TaskService.AssignTaskToProjectAsync(task.Id, Project?.Id);
+        }
+
+        await RefreshList();
     }
 }

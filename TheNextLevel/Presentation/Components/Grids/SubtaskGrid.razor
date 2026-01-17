@@ -1,6 +1,6 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using TheNextLevel.Application.DTOs
-@using TheNextLevel.Presentation.Components.Buttons
+@using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Presentation.Components.Cards
 @using TheNextLevel.Presentation.Dialogs
 
@@ -15,11 +15,11 @@
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
     <Virtualize ItemsProvider="LoadSubtasksProvider" @ref="_virtualizeComponent" Context="task">
         <ItemContent>
-            <TaskCard 
+            <TaskCard
                 Task="task"
                 Project="null"
-                DeleteEnabled="true"
-                EditEnabled="true" />
+                OnEditRequested="OpenEditDialog"
+                OnDeleteRequested="OpenDeleteDialog" />
         </ItemContent>
         <Placeholder>
             <div class="loading-card">Loading...</div>
@@ -32,7 +32,7 @@
                     <p class="empty-title">No parent task selected</p>
                     <p class="empty-subtitle">Please select a parent task to view its subtasks</p>
                 }
-                else 
+                else
                 {
                     <div class="empty-icon">🗂️</div>
                     <p class="empty-title">No subtasks found</p>
@@ -43,22 +43,40 @@
     </Virtualize>
 </div>
 
-<NewTaskDialog 
-    @ref="newTaskDialog"
+<NewTaskDialog
+    @ref="_newTaskDialog"
     IsVisible="@_showNewTaskDialog"
     OnCancel="CloseNewTaskDialog"
-    OnResult="HandleNewTaskResult"
+    OnResult="HandleTaskCreated"
     ParentTaskId="@(ParentTask?.Id)" />
+
+<EditTaskDialog
+    Task="@_selectedTask"
+    IsVisible="@_showEditDialog"
+    OnClose="CloseEditDialog"
+    OnTaskSaved="HandleTaskUpdated" />
+
+<ConfirmDeleteDialog
+    IsVisible="@_showDeleteDialog"
+    OnCancel="CloseDeleteDialog"
+    OnConfirm="HandleDeleteConfirmed"
+    ItemName="@(_selectedTask?.Name ?? "this subtask")"
+    ItemType="Subtask" />
 
 @code
 {
     [Parameter]
     public TaskDto? ParentTask { get; set; }
 
-    private NewTaskDialog? newTaskDialog;
-    private bool _showNewTaskDialog = false;
-
+    private NewTaskDialog? _newTaskDialog;
     private Virtualize<TaskDto>? _virtualizeComponent;
+    private TaskDto? _selectedTask;
+
+    // Dialog visibility flags
+    private bool _showNewTaskDialog;
+    private bool _showEditDialog;
+    private bool _showDeleteDialog;
+
     private int _totalCount;
 
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadSubtasksProvider(ItemsProviderRequest request)
@@ -70,29 +88,86 @@
 
         try
         {
-            var result = await TaskService.GetSubtasksByParentIdAsync(ParentTask.Id , request.StartIndex, request.Count);
+            var result = await TaskService.GetSubtasksByParentIdAsync(ParentTask.Id, request.StartIndex, request.Count);
             _totalCount = result.TotalCount;
             return new ItemsProviderResult<TaskDto>(result.Items, result.TotalCount);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading tasks: {ex.Message}");
+            Console.WriteLine($"Error loading subtasks: {ex.Message}");
             return new ItemsProviderResult<TaskDto>(Array.Empty<TaskDto>(), 0);
         }
     }
 
-    private async Task OpenAddTaskDialog()
+    // === OPEN DIALOGS ===
+    private void OpenAddTaskDialog()
     {
         _showNewTaskDialog = true;
         StateHasChanged();
     }
 
-    private async Task CloseNewTaskDialog()
+    private void OpenEditDialog(TaskDto task)
+    {
+        _selectedTask = task;
+        _showEditDialog = true;
+        StateHasChanged();
+    }
+
+    private void OpenDeleteDialog(TaskDto task)
+    {
+        _selectedTask = task;
+        _showDeleteDialog = true;
+        StateHasChanged();
+    }
+
+    // === CLOSE DIALOGS ===
+    private void CloseNewTaskDialog()
     {
         _showNewTaskDialog = false;
         StateHasChanged();
     }
 
+    private void CloseEditDialog()
+    {
+        _showEditDialog = false;
+        _selectedTask = null;
+        StateHasChanged();
+    }
+
+    private void CloseDeleteDialog()
+    {
+        _showDeleteDialog = false;
+        _selectedTask = null;
+        StateHasChanged();
+    }
+
+    // === HANDLE RESULTS ===
+    private async Task HandleTaskCreated(TaskDto task)
+    {
+        _showNewTaskDialog = false;
+        await RefreshList();
+    }
+
+    private async Task HandleTaskUpdated(TaskDto task)
+    {
+        _showEditDialog = false;
+        _selectedTask = null;
+        await RefreshList();
+    }
+
+    private async Task HandleDeleteConfirmed()
+    {
+        if (_selectedTask != null)
+        {
+            await TaskService.DeleteTaskAsync(_selectedTask.Id);
+        }
+
+        _showDeleteDialog = false;
+        _selectedTask = null;
+        await RefreshList();
+    }
+
+    // === PUBLIC METHODS ===
     public async Task RefreshList()
     {
         if (_virtualizeComponent != null)
@@ -100,11 +175,5 @@
             await _virtualizeComponent.RefreshDataAsync();
         }
         StateHasChanged();
-    }
-
-    private async Task HandleNewTaskResult(TaskDto task)
-    {
-        _showNewTaskDialog = false;
-        await RefreshList();
     }
 }

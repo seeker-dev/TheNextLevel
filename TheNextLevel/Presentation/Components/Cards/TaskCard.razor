@@ -1,54 +1,39 @@
-﻿@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
-@using TheNextLevel.Presentation.Components.Buttons
-@using TheNextLevel.Presentation.Dialogs
 @using System.Text.Json
 @inject ITaskService TaskService
 @inject NavigationManager Navigation
 
-<div class="task-card @(IsCompleted ? "completed" : "")" style="cursor: pointer;">
+<div class="task-card @(_isCompleted ? "completed" : "")" style="cursor: pointer;">
     <div class="task-checkbox-container">
-        <input class="task-checkbox" type="checkbox" checked="@IsCompleted" @onchange="OnStatusChange">
+        <input class="task-checkbox" type="checkbox" checked="@_isCompleted" @onchange="OnStatusChange">
         <div class="task-details">
-            <div class="task-title @(IsCompleted ? "completed" : "")" @onclick="NavigateToDetail" @onclick:stopPropagation="true">@(Task?.Name ?? "Untitled")</div>
+            <div class="task-title @(_isCompleted ? "completed" : "")" @onclick="NavigateToDetail" @onclick:stopPropagation="true">@(Task?.Name ?? "Untitled")</div>
             @if (!string.IsNullOrEmpty(Task?.Description))
             {
                 <div class="task-description">@Task.Description</div>
             }
             <div class="task-meta">
-                <span class="task-status">@(Task?.IsCompleted == true ? "Completed" : "Pending")</span>
+                <span class="task-status">@(_isCompleted ? "Completed" : "Pending")</span>
             </div>
         </div>
-        @if (EditEnabled || DeleteEnabled)
+        @if (_editEnabled || _deleteEnabled)
         {
             <div class="task-card-actions">
-                @if (EditEnabled)
+                @if (_editEnabled)
                 {
-                    <button class="action-btn" title="Edit Task" @onclick="() => OnTaskEdit.InvokeAsync(Task!)" @onclick:stopPropagation="true">✏️</button>
+                    <button class="action-btn" title="Edit Task" @onclick="RequestEdit" @onclick:stopPropagation="true">✏️</button>
                 }
-                @if (DeleteEnabled)
+                @if (_deleteEnabled)
                 {
-                    <button class="action-btn action-btn-danger" title="Delete Task" @onclick="() => OnTaskDeleteRequest.InvokeAsync(Task!)" @onclick:stopPropagation="true">🗑️</button>
+                    <button class="action-btn action-btn-danger" title="Delete Task" @onclick="RequestDelete" @onclick:stopPropagation="true">🗑️</button>
                 }
             </div>
         }
     </div>
 </div>
 
-<EditTaskDialog 
-    Task="_editingTask" 
-    IsVisible="_showTaskDialog" 
-    OnClose="CloseTaskDialog" 
-    OnTaskSaved="HandleTaskSaved" />
-
-<ConfirmDeleteDialog 
-    IsVisible="_showDeleteConfirm" 
-    OnCancel="CancelDelete" 
-    OnConfirm="ConfirmDelete"
-    ItemName="@(_deletingTask?.Name ?? "this task")"
-    ItemType="Task"  />
-
-@code 
+@code
 {
     [Parameter]
     public TaskDto? Task { get; set; }
@@ -57,84 +42,52 @@
     public ProjectDto? Project { get; set; }
 
     [Parameter]
-    public bool EditEnabled { get; set; }
+    public EventCallback<TaskDto> OnEditRequested { get; set; }
 
     [Parameter]
-    public bool DeleteEnabled { get; set; }
+    public EventCallback<TaskDto> OnDeleteRequested { get; set; }
 
-    private bool IsCompleted => Task?.IsCompleted == true;
+    private bool _editEnabled => OnEditRequested.HasDelegate;
 
-    private bool IsSubtask => Task?.ParentTaskId != null;
+    private bool _deleteEnabled => OnDeleteRequested.HasDelegate;
 
-    private TaskDto? _editingTask = null;
-    private TaskDto? _deletingTask = null;
+    private bool _isCompleted => Task?.IsCompleted == true;
 
-    private bool _showTaskDialog = false;
-    private bool _showDeleteConfirm = false;
+    private bool _isSubtask => Task?.ParentTaskId != null;
+
+    private async Task RequestEdit()
+    {
+        if (Task != null)
+            await OnEditRequested.InvokeAsync(Task);
+    }
+
+    private async Task RequestDelete()
+    {
+        if (Task != null)
+            await OnDeleteRequested.InvokeAsync(Task);
+    }
 
     private async Task OnStatusChange(ChangeEventArgs e)
     {
         if (Task == null) return;
-        
+
         var isChecked = (bool)(e.Value ?? false);
-        
-        if (isChecked && !IsCompleted)
+
+        if (isChecked && !_isCompleted)
         {
             await TaskService.CompleteTaskAsync(Task.Id);
         }
-        else if (!isChecked && IsCompleted)
+        else if (!isChecked && _isCompleted)
         {
             await TaskService.ReopenTaskAsync(Task.Id);
         }
-    }
 
-    private EventCallback<TaskDto> OnTaskEdit => EventCallback.Factory.Create<TaskDto>(this, async (task) =>
-    {
-        _editingTask = task;
-        _showTaskDialog = true;
-    });
-
-    private EventCallback<TaskDto> OnTaskDeleteRequest => EventCallback.Factory.Create<TaskDto>(this, async (task) =>
-    {
-        _deletingTask = task;
-        _showDeleteConfirm = true;
-    });
-
-    private void CloseTaskDialog()
-    {
-        _showTaskDialog = false;
-        _editingTask = null;
-    }
-
-    private void CancelDelete()
-    {
-        _showDeleteConfirm = false;
-        _deletingTask = null;
-    }
-
-    private async Task HandleTaskSaved(TaskDto savedTask)
-    {
-        if (Task != null && Task.Id == savedTask.Id)
-        {
-            Task = savedTask;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private async Task ConfirmDelete()
-    {
-        if (_deletingTask != null)
-        {
-            await TaskService.DeleteTaskAsync(_deletingTask.Id);
-            // Optionally, raise an event or refresh the task list
-        }
-        _showDeleteConfirm = false;
-        _deletingTask = null;
+        Task.IsCompleted = isChecked;
     }
 
     private void NavigateToDetail()
     {
-        if (Task != null && Project != null && !IsSubtask)
+        if (Task != null && Project != null && !_isSubtask)
         {
             var projectJson = JsonSerializer.Serialize(Project);
             Navigation.NavigateTo($"/taskdetail/{Task.Id}",

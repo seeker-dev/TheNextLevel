@@ -6,10 +6,13 @@
 
 @inject ITaskService TaskService
 
-<div class="add-task-container">
-    <button class="filter-btn" @onclick="OpenAddTaskDialog">
-        Add New Subtask ➕
-    </button>
+<div class="subtask-grid-header controls-container">
+    <h3>Subtasks</h3>
+    <div class="add-task-container">
+        <button class="filter-btn" @onclick="OpenAddTaskDialog">
+            Add New Subtask ➕
+        </button>
+    </div>
 </div>
 
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">

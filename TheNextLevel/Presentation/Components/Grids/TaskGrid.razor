@@ -6,20 +6,28 @@
 
 @inject ITaskService TaskService
 
-<div class="filter-controls">
-    <button class="filter-btn @(_showCompleted ? "" : "active")" @onclick="ShowPending">
-        Active
-    </button>
-    <button class="filter-btn @(_showCompleted ? "active" : "")" @onclick="ShowCompleted">
-        Completed
-    </button>
-</div>
-
-<div class="add-task-container">
-    <button class="filter-btn" @onclick="OpenAddTaskDialog">
-        Add New Task ➕
-    </button>
-</div>
+@if (_isLoading)
+{
+    <div class="loading-indicator">Loading tasks...</div>
+}
+else
+{
+    <div class="filter-controls controls-container">
+        <div class="buttons-group">
+            <button class="filter-btn @(_showCompleted ? "" : "active")" @onclick="ShowPending">
+                Active
+            </button>
+            <button class="filter-btn @(_showCompleted ? "active" : "")" @onclick="ShowCompleted">
+                Completed
+            </button>
+        </div>
+        <div class="add-task-container">
+            <button class="filter-btn" @onclick="OpenAddTaskDialog">
+                Add New Task ➕
+            </button>
+        </div>        
+    </div>        
+}
 
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
@@ -84,6 +92,7 @@
     private NewTaskDialog? _newTaskDialog;
     private Virtualize<TaskDto>? _virtualizeComponent;
     private TaskDto? _selectedTask;
+    private bool _isLoading = false;
 
     // Dialog visibility flags
     private bool _showNewTaskDialog;
@@ -93,6 +102,12 @@
     // Filter state
     private bool _showCompleted;
     private int _totalCount;
+
+    protected override Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        return base.OnInitializedAsync();
+    }
 
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadTasksProvider(ItemsProviderRequest request)
     {
@@ -105,6 +120,8 @@
 
         try
         {
+            _isLoading = true;
+            
             var pagedResult = await TaskService.GetTasksByProjectPagedAsync(
                 projectId: Project.Id,
                 skip: request.StartIndex,
@@ -112,6 +129,10 @@
                 isCompleted: _showCompleted);
 
             _totalCount = pagedResult.TotalCount;
+
+            _isLoading = false;
+
+            StateHasChanged();
 
             return new ItemsProviderResult<TaskDto>(
                 pagedResult.Items,
@@ -123,6 +144,10 @@
             return new ItemsProviderResult<TaskDto>(
                 Array.Empty<TaskDto>(),
                 0);
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 

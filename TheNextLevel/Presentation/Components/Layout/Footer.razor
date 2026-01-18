@@ -14,18 +14,6 @@
     </div>
 </footer>
 
-<NewProjectDialog
-    IsVisible="_showProjectDialog"
-    ExistingProject="_editingProject"
-    OnResult="HandleProjectSaved"
-    OnCancel="CloseProjectDialog" />
-
-<NewTaskDialog
-    IsVisible="_showTaskDialog"
-    ExistingTask="_editingTask"
-    OnResult="HandleTaskSaved"
-    OnCancel="CloseTaskDialog" />
-
 @code {
     protected override void OnInitialized()
     {

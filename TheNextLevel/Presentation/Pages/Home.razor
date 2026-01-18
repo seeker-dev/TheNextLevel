@@ -12,42 +12,45 @@
 
 @page "/"
 <main class="main-content">
+    <h1 class="page-title">Projects</h1>
     @if (_isLoading)
     {
-        <p class="loading-text">Loading...</p>
+        <div class="loading-indicator">Loading projects...</div>
     }
     else
     {
-        <h1 class="page-title">Projects</h1>
-        <input type="text" placeholder="Filter projects..." @bind="filterText" @bind:event="oninput" @bind:after="OnFilterTextChangedDebounced" class="filter-input" />
-        <div class="add-container">
-            <button class="filter-btn" @onclick="OpenNewProjectDialog">
-                Add New Project ➕
-            </button>
-        </div>
-        <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
-            <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
-                <ItemContent>
-                    <ProjectCard Project="project" />
-                </ItemContent>
-                <Placeholder>
-                    <div class="loading-card">Loading...</div>
-                </Placeholder>
-                <EmptyContent>
-                    <div class="empty-project">
-                        <p>No projects found. Create your first project!</p>
-                    </div>
-                </EmptyContent>
-            </Virtualize>
+        <div class="controls-container">
+            <input type="text" placeholder="Filter projects..." @bind="filterText" @bind:event="oninput" @bind:after="OnFilterTextChangedDebounced" class="filter-input" />
+            <div class="add-container">
+                <button class="filter-btn" @onclick="OpenNewProjectDialog">
+                    Add New Project ➕
+                </button>
+            </div> 
         </div>
     }
-
-    <NewProjectDialog
-        IsVisible="_showNewProjectDialog"
-        ExistingProject="_editingProject"
-        OnResult="HandleProjectSaved"
-        OnCancel="CloseNewProjectDialog" />
+    <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
+        <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
+            <ItemContent>
+                <ProjectCard Project="project" />
+            </ItemContent>
+            <Placeholder>
+                <div class="loading-card">Loading...</div>
+            </Placeholder>
+            <EmptyContent>
+                <div class="empty-project">
+                    <p>No projects found. Create your first project!</p>
+                </div>
+            </EmptyContent>
+        </Virtualize>
+    </div>
 </main>
+
+<NewProjectDialog
+    IsVisible="_showNewProjectDialog"
+    ExistingProject="_editingProject"
+    OnResult="HandleProjectSaved"
+    OnCancel="CloseNewProjectDialog" />
+
 
 @code
 {
@@ -68,6 +71,12 @@
 
     // Disposal state
     private bool _disposed = false;
+
+    protected override Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        return base.OnInitializedAsync();
+    }
 
     private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjectsProvider(ItemsProviderRequest request)
     {
@@ -96,6 +105,10 @@
             return new ItemsProviderResult<ProjectDto>(
                 Array.Empty<ProjectDto>(),
                 0);
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 

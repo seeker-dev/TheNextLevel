@@ -140,3 +140,55 @@ body {
 .menu-item-danger:hover {
     background: rgba(220, 20, 60, 0.2);
 }
+
+/* Filter buttons */
+.filter-btn {
+    padding: 10px 20px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #8B4513;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.filter-btn:hover {
+    background: rgba(139, 69, 19, 0.2);
+    color: #cd853f;
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
+    color: #f5f5f5;
+    box-shadow: 0 2px 8px rgba(128, 0, 32, 0.3);
+}
+
+@media (max-width: 768px) {
+    .filter-btn {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .filter-btn {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+.controls-container {
+    display: flex;
+    /* flex-direction: column; */
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+    /* margin-bottom: 25px; */
+}
+
+.controls-container .filter-input {
+    flex: 1;
+}

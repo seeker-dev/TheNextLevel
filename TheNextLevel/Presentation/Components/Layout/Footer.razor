@@ -8,25 +8,11 @@
     <div class="footer-content">
         <nav class="footer-nav">
             <a href="/" class="footer-link @GetActiveClass("/")">Home</a>
-            <FooterMenu 
-                OnNewProject="OpenNewProjectDialog" 
-                OnNewTask="OpenNewTaskDialog" />
+
             <a href="/settings" class="footer-link @GetActiveClass("/settings")">Settings</a>
         </nav>
     </div>
 </footer>
-
-<NewProjectDialog
-    IsVisible="_showProjectDialog"
-    ExistingProject="_editingProject"
-    OnResult="HandleProjectSaved"
-    OnCancel="CloseProjectDialog" />
-
-<NewTaskDialog
-    IsVisible="_showTaskDialog"
-    ExistingTask="_editingTask"
-    OnResult="HandleTaskSaved"
-    OnCancel="CloseTaskDialog" />
 
 @code {
     protected override void OnInitialized()

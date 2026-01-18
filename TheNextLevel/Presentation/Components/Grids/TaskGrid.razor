@@ -1,25 +1,33 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using TheNextLevel.Application.DTOs
-@using TheNextLevel.Presentation.Components.Buttons
+@using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Presentation.Components.Cards
 @using TheNextLevel.Presentation.Dialogs
 
 @inject ITaskService TaskService
 
-<div class="filter-controls">
-    <button class="filter-btn @(_showCompleted ? "" : "active")" @onclick="ShowPending">
-        Pending
-    </button>
-    <button class="filter-btn @(_showCompleted ? "active" : "")" @onclick="ShowCompleted">
-        Completed
-    </button>
-</div>
-
-<div class="add-task-container">
-    <button class="filter-btn" @onclick="OpenAddTaskDialog">
-        Add New Task ➕
-    </button>
-</div>
+@if (_isLoading)
+{
+    <div class="loading-indicator">Loading tasks...</div>
+}
+else
+{
+    <div class="filter-controls controls-container">
+        <div class="buttons-group">
+            <button class="filter-btn @(_showCompleted ? "" : "active")" @onclick="ShowPending">
+                Active
+            </button>
+            <button class="filter-btn @(_showCompleted ? "active" : "")" @onclick="ShowCompleted">
+                Completed
+            </button>
+        </div>
+        <div class="add-task-container">
+            <button class="filter-btn" @onclick="OpenAddTaskDialog">
+                Add New Task ➕
+            </button>
+        </div>        
+    </div>        
+}
 
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
@@ -27,8 +35,8 @@
                 <TaskCard
                     Task="task"
                     Project="Project"
-                    EditEnabled="EditEnabled"
-                    DeleteEnabled="DeleteEnabled" />
+                    OnEditRequested="OpenEditDialog"
+                    OnDeleteRequested="OpenDeleteDialog" />
             </ItemContent>
             <Placeholder>
                 <div class="loading-card">Loading...</div>
@@ -47,10 +55,10 @@
                         <p class="empty-title">No completed tasks yet</p>
                         <p class="empty-subtitle">Tasks you complete will appear here</p>
                     }
-                    else 
+                    else
                     {
                         <div class="empty-icon">🎯</div>
-                        <p class="empty-title">No pending tasks</p>
+                        <p class="empty-title">No active tasks</p>
                         <p class="empty-subtitle">You're all caught up! Time to add something new?</p>
                     }
                 </div>
@@ -58,27 +66,48 @@
         </Virtualize>
 </div>
 
-<NewTaskDialog 
-    @ref="newTaskDialog" 
+<NewTaskDialog
+    @ref="_newTaskDialog"
     IsVisible="@_showNewTaskDialog"
     OnCancel="CloseNewTaskDialog"
-    OnResult="HandleNewTaskResult"  />
+    OnResult="HandleTaskCreated" />
+
+<EditTaskDialog
+    Task="@_selectedTask"
+    IsVisible="@_showEditDialog"
+    OnClose="CloseEditDialog"
+    OnTaskSaved="HandleTaskUpdated" />
+
+<ConfirmDeleteDialog
+    IsVisible="@_showDeleteDialog"
+    OnCancel="CloseDeleteDialog"
+    OnConfirm="HandleDeleteConfirmed"
+    ItemName="@(_selectedTask?.Name ?? "this task")"
+    ItemType="Task" />
 
 @code {
     [Parameter]
     public ProjectDto? Project { get; set; }
 
-    [Parameter]
-    public bool EditEnabled { get; set; }
-
-    [Parameter]
-    public bool DeleteEnabled { get; set; }
-
-    private NewTaskDialog? newTaskDialog;
+    private NewTaskDialog? _newTaskDialog;
     private Virtualize<TaskDto>? _virtualizeComponent;
-    private bool _showNewTaskDialog = false;
-    private bool _showCompleted = false;
-    private int _totalCount = 0;
+    private TaskDto? _selectedTask;
+    private bool _isLoading = false;
+
+    // Dialog visibility flags
+    private bool _showNewTaskDialog;
+    private bool _showEditDialog;
+    private bool _showDeleteDialog;
+
+    // Filter state
+    private bool _showCompleted;
+    private int _totalCount;
+
+    protected override Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        return base.OnInitializedAsync();
+    }
 
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadTasksProvider(ItemsProviderRequest request)
     {
@@ -91,6 +120,8 @@
 
         try
         {
+            _isLoading = true;
+            
             var pagedResult = await TaskService.GetTasksByProjectPagedAsync(
                 projectId: Project.Id,
                 skip: request.StartIndex,
@@ -98,6 +129,10 @@
                 isCompleted: _showCompleted);
 
             _totalCount = pagedResult.TotalCount;
+
+            _isLoading = false;
+
+            StateHasChanged();
 
             return new ItemsProviderResult<TaskDto>(
                 pagedResult.Items,
@@ -110,8 +145,13 @@
                 Array.Empty<TaskDto>(),
                 0);
         }
+        finally
+        {
+            _isLoading = false;
+        }
     }
 
+    // === FILTER CONTROLS ===
     private async Task ShowPending()
     {
         _showCompleted = false;
@@ -124,12 +164,81 @@
         await RefreshList();
     }
 
-    private async Task OpenAddTaskDialog()
+    // === OPEN DIALOGS ===
+    private void OpenAddTaskDialog()
     {
         _showNewTaskDialog = true;
         StateHasChanged();
     }
 
+    private void OpenEditDialog(TaskDto task)
+    {
+        _selectedTask = task;
+        _showEditDialog = true;
+        StateHasChanged();
+    }
+
+    private void OpenDeleteDialog(TaskDto task)
+    {
+        _selectedTask = task;
+        _showDeleteDialog = true;
+        StateHasChanged();
+    }
+
+    // === CLOSE DIALOGS ===
+    private void CloseNewTaskDialog()
+    {
+        _showNewTaskDialog = false;
+        StateHasChanged();
+    }
+
+    private void CloseEditDialog()
+    {
+        _showEditDialog = false;
+        _selectedTask = null;
+        StateHasChanged();
+    }
+
+    private void CloseDeleteDialog()
+    {
+        _showDeleteDialog = false;
+        _selectedTask = null;
+        StateHasChanged();
+    }
+
+    // === HANDLE RESULTS ===
+    private async Task HandleTaskCreated(TaskDto task)
+    {
+        _showNewTaskDialog = false;
+
+        if (task != null && task.ProjectId != Project?.Id)
+        {
+            await TaskService.AssignTaskToProjectAsync(task.Id, Project?.Id);
+        }
+
+        await RefreshList();
+    }
+
+    private async Task HandleTaskUpdated(TaskDto task)
+    {
+        _showEditDialog = false;
+        _selectedTask = null;
+        await RefreshList();
+    }
+
+    private async Task HandleDeleteConfirmed()
+    {
+        if (_selectedTask != null)
+        {
+            await TaskService.DeleteTaskAsync(_selectedTask.Id);
+        }
+
+        _showDeleteDialog = false;
+        _selectedTask = null;
+        await RefreshList();
+    }
+
+    // === PUBLIC METHODS ===
     public async Task RefreshList()
     {
         if (_virtualizeComponent != null)
@@ -137,23 +246,5 @@
             await _virtualizeComponent.RefreshDataAsync();
         }
         StateHasChanged();
-    }
-    private async Task CloseNewTaskDialog()
-    {
-        _showNewTaskDialog = false;
-        StateHasChanged();
-    }
-
-    private async Task HandleNewTaskResult(TaskDto task)
-    {
-        _showNewTaskDialog = false;
-
-        // Auto-assign the newly created task to this project
-        if (task != null && task.ProjectId != Project?.Id)
-        {
-            await TaskService.AssignTaskToProjectAsync(task.Id, Project?.Id);
-        }
-
-        await RefreshList();
     }
 }

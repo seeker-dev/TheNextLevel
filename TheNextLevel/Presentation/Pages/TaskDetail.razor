@@ -1,4 +1,4 @@
-@page "/taskdetail/{Id:int}"
+@page "/task/{Id:int}"
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Presentation.Components.Grids
 @using System.Text.Json
@@ -41,7 +41,6 @@
                     <p>@_task.Description</p>
                 </div>
 
-                <h3>Subtasks</h3>
                 <SubtaskGrid ParentTask="_task" />
             </div>
         }

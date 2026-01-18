@@ -7,23 +7,10 @@
             <h1 class="app-title" @onclick="@(() => Navigation.NavigateTo("/"))">The Next Level</h1>
         </div>
         
-        <nav class="header-nav">
-            <a href="/" class="nav-link @GetActiveClass("/")">Projects</a>
-            <a href="/tasks" class="nav-link @GetActiveClass("/tasks")">Tasks</a>
-        </nav>
-        
         <button class="menu-toggle" @onclick="ToggleMobileMenu">
             <span class="menu-icon"></span>
         </button>
     </div>
-    
-    @if (_showMobileMenu)
-    {
-        <div class="mobile-menu">
-            <a href="/" class="mobile-nav-link @GetActiveClass("/")" @onclick="CloseMobileMenu">Projects</a>
-            <a href="/tasks" class="mobile-nav-link @GetActiveClass("/tasks")" @onclick="CloseMobileMenu">Tasks</a>
-        </div>
-    }
 </header>
 
 @code {

@@ -5,6 +5,10 @@
     gap: 25px;
 }
 
+.page-title {
+    padding-bottom: 20px;
+}
+
 /* Filter Input Styles */
 .filter-input {
     width: 100%;

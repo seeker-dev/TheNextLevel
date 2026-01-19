@@ -30,40 +30,40 @@ else
 }
 
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
-        <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
-            <ItemContent>
-                <TaskCard
-                    Task="task"
-                    Project="Project"
-                    OnEditRequested="OpenEditDialog"
-                    OnDeleteRequested="OpenDeleteDialog" />
-            </ItemContent>
-            <Placeholder>
-                <div class="loading-card">Loading...</div>
-            </Placeholder>
-            <EmptyContent>
-                <div class="empty-state">
-                    @if (Project == null)
-                    {
-                        <div class="empty-icon">📁</div>
-                        <p class="empty-title">No project selected</p>
-                        <p class="empty-subtitle">Please select a project to view its tasks</p>
-                    }
-                    else if (_showCompleted)
-                    {
-                        <div class="empty-icon">✓</div>
-                        <p class="empty-title">No completed tasks yet</p>
-                        <p class="empty-subtitle">Tasks you complete will appear here</p>
-                    }
-                    else
-                    {
-                        <div class="empty-icon">🎯</div>
-                        <p class="empty-title">No active tasks</p>
-                        <p class="empty-subtitle">You're all caught up! Time to add something new?</p>
-                    }
-                </div>
-            </EmptyContent>
-        </Virtualize>
+    <Virtualize ItemsProvider="LoadTasksProvider" @ref="_virtualizeComponent" Context="task">
+        <ItemContent>
+            <TaskCard
+                Task="task"
+                Project="Project"
+                OnEditRequested="OpenEditDialog"
+                OnDeleteRequested="OpenDeleteDialog" />
+        </ItemContent>
+        <Placeholder>
+            <div class="loading-card">Loading...</div>
+        </Placeholder>
+        <EmptyContent>
+            <div class="empty-state">
+                @if (Project == null)
+                {
+                    <div class="empty-icon">📁</div>
+                    <p class="empty-title">No project selected</p>
+                    <p class="empty-subtitle">Please select a project to view its tasks</p>
+                }
+                else if (_showCompleted)
+                {
+                    <div class="empty-icon">✓</div>
+                    <p class="empty-title">No completed tasks yet</p>
+                    <p class="empty-subtitle">Tasks you complete will appear here</p>
+                }
+                else
+                {
+                    <div class="empty-icon">🎯</div>
+                    <p class="empty-title">No active tasks</p>
+                    <p class="empty-subtitle">You're all caught up! Time to add something new?</p>
+                }
+            </div>
+        </EmptyContent>
+    </Virtualize>
 </div>
 
 <NewTaskDialog

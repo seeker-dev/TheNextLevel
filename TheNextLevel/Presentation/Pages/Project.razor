@@ -27,6 +27,26 @@
         else if (_project != null)
         {
             <h1 class="project-page-title">@_project.Name</h1>
+            
+            <div class="project-action-buttons">
+                <button class="action-btn action-btn-primary" @onclick="ShowEditDialog">✏️</button>
+                <button title="Delete Project" class="action-btn action-btn-danger" @onclick="ShowDeleteDialog">🗑️</button>
+            </div>
+        }
+    </div>
+    <div class="description-section">
+        @if (_isLoading)
+        {
+            <p class="loading-text">Loading project description...</p>
+        }
+        else if (_errorMessage != null)
+        {
+            <p class="error-message">@_errorMessage</p>
+        }
+        else if (_project != null)
+        {
+            <h3>Description</h3>
+            <p>@_project.Description</p>
         }
     </div>
     <div class="tasks-section">
@@ -46,11 +66,26 @@
     </div>
 </main>
 
+<NewProjectDialog
+    IsVisible="@_isEditDialogVisible"
+    ExistingProject="@_project"
+    OnCancel="CloseEditDialog"
+    OnResult="HandleProjectUpdated" />
+
+<ConfirmDeleteDialog
+    IsVisible="@_isDeleteDialogVisible"
+    ItemName="@_project?.Name"
+    ItemType="project"
+    OnCancel="() => _isDeleteDialogVisible = false"
+    OnConfirm="OnDeleteConfirmed" />
+
 @code {
     [Parameter]
     public int Id { get; set; }
 
     private bool _isLoading = true;
+    private bool _isDeleteDialogVisible = false;
+    private bool _isEditDialogVisible = false;
     private ProjectDto? _project;
     private string? _errorMessage = null;
 
@@ -84,6 +119,45 @@
         }
     }
 
+    private void ShowDeleteDialog()
+    {
+        _isDeleteDialogVisible = true;
+    }
+    private void ShowEditDialog()
+    {
+        _isEditDialogVisible = true;
+    }
+    private void CloseEditDialog()
+    {
+        _isEditDialogVisible = false;
+    }
+    
+    private async Task OnDeleteConfirmed()
+    {
+        if (_project != null)
+        {
+            try
+            {
+                await ProjectService.DeleteProjectAsync(_project.Id);
+                Navigation.NavigateTo("/");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting project: {ex.Message}");
+                _errorMessage = "An error occurred while deleting the project.";
+            }
+        }
+
+        _isDeleteDialogVisible = false;
+    }
+    
+    private async Task HandleProjectUpdated(ProjectDto updatedProject)
+    {
+        _project = updatedProject;
+        CloseEditDialog();
+        StateHasChanged();
+    }
+    
     private async Task NavigateBack()
     {
         await JSRuntime.InvokeVoidAsync("history.back");

@@ -19,12 +19,6 @@ public class TaskService : ITaskService
         _accountContext = accountContext ?? throw new ArgumentNullException(nameof(accountContext));
     }
     
-    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetAllTasksAsync()
-    {
-        var tasks = await _taskRepository.GetAllAsync();
-        return tasks.ToDto();
-    }
-    
     public async System.Threading.Tasks.Task<TaskDto?> GetTaskByIdAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
@@ -94,18 +88,6 @@ public class TaskService : ITaskService
         }
 
         return true;
-    }
-
-    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByStatusAsync(bool isCompleted)
-    {
-        var tasks = await _taskRepository.GetByStatusAsync(isCompleted);
-        return tasks.ToDto();
-    }
-
-    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetTasksByProjectAsync(int projectId)
-    {
-        var tasks = await _taskRepository.GetTasksByProjectIdAsync(projectId);
-        return tasks.ToDto();
     }
 
     public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> GetUngroupedTasksAsync()
@@ -184,11 +166,5 @@ public class TaskService : ITaskService
             Items = subtasks.Items.ToDto(),
             TotalCount = subtasks.TotalCount
         };
-    }
-
-    public async System.Threading.Tasks.Task<bool> CanTaskHaveSubtasksAsync(int taskId)
-    {
-        var task = await _taskRepository.GetByIdAsync(taskId);
-        return task?.ParentTaskId == null;
     }
 }

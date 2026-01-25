@@ -102,7 +102,7 @@
             if (IsEditMode && ExistingProject != null)
             {
                 // Edit mode: update existing project
-                resultProject = await ProjectService.UpdateProjectAsync(
+                resultProject = await ProjectService.UpdateAsync(
                     ExistingProject.Id,
                     projectName.Trim(),
                     projectDescription?.Trim() ?? string.Empty
@@ -111,7 +111,7 @@
             else
             {
                 // Create mode: create new project
-                resultProject = await ProjectService.CreateProjectAsync(
+                resultProject = await ProjectService.CreateAsync(
                     projectName.Trim(),
                     projectDescription?.Trim() ?? string.Empty
                 );

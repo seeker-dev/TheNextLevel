@@ -89,7 +89,7 @@
 
         try
         {
-            var result = await TaskService.GetSubtasksByParentIdAsync(ParentTask.Id, request.StartIndex, request.Count);
+            var result = await TaskService.ListSubtasksByParentIdAsync(ParentTask.Id, request.StartIndex, request.Count);
             _totalCount = result.TotalCount;
 
             if (result.TotalCount == 0)
@@ -170,7 +170,7 @@
     {
         if (_selectedTask != null)
         {
-            await TaskService.DeleteTaskAsync(_selectedTask.Id);
+            await TaskService.DeleteAsync(_selectedTask.Id);
         }
 
         _showDeleteDialog = false;

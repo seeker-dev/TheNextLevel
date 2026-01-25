@@ -122,7 +122,7 @@ else
         {
             _isLoading = true;
             
-            var pagedResult = await TaskService.GetTasksByProjectPagedAsync(
+            var pagedResult = await TaskService.ListByProjectAsync(
                 projectId: Project.Id,
                 skip: request.StartIndex,
                 take: request.Count,
@@ -213,7 +213,7 @@ else
 
         if (task != null && task.ProjectId != Project?.Id)
         {
-            await TaskService.AssignTaskToProjectAsync(task.Id, Project?.Id);
+            await TaskService.AssignAsync(task.Id, Project?.Id);
         }
 
         await RefreshList();
@@ -230,7 +230,7 @@ else
     {
         if (_selectedTask != null)
         {
-            await TaskService.DeleteTaskAsync(_selectedTask.Id);
+            await TaskService.DeleteAsync(_selectedTask.Id);
         }
 
         _showDeleteDialog = false;

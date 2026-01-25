@@ -122,7 +122,7 @@
         isLoadingProjects = true;
         try
         {
-            var projectsList = await ProjectService.GetProjectsPagedAsync(0, 1000);
+            var projectsList = await ProjectService.ListAsync(0, 1000);
             projects = projectsList.Items.ToList();
             hasLoadedProjects = true;
         }
@@ -167,7 +167,7 @@
         await SaveTaskChangesAsync();
         if (Task != null)
         {
-            var updatedTask = await TaskService.GetTaskByIdAsync(Task.Id);
+            var updatedTask = await TaskService.GetByIdAsync(Task.Id);
             await OnTaskSaved.InvokeAsync(updatedTask);
         }
         await CloseDialog();
@@ -178,14 +178,14 @@
         // if task name changed, update it
         if (nameChanged || descriptionChanged)
         {
-            await TaskService.UpdateTaskAsync(Task!.Id, 
+            await TaskService.UpdateAsync(Task!.Id, 
                 new UpdateTaskRequest(taskTitle, taskDescription));
         }
 
         // if project changed, update it
         if (projectChanged)
         {
-            await TaskService.AssignTaskToProjectAsync(Task!.Id, selectedProjectId);
+            await TaskService.AssignAsync(Task!.Id, selectedProjectId);
         }
     }
 }

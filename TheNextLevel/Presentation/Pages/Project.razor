@@ -100,7 +100,7 @@
         {
             _isLoading = true;
             _errorMessage = null;
-            _project = await ProjectService.GetProjectByIdAsync(Id);
+            _project = await ProjectService.GetByIdAsync(Id);
 
             if (_project == null)
             {
@@ -138,7 +138,7 @@
         {
             try
             {
-                await ProjectService.DeleteProjectAsync(_project.Id);
+                await ProjectService.DeleteAsync(_project.Id);
                 Navigation.NavigateTo("/");
             }
             catch (Exception ex)

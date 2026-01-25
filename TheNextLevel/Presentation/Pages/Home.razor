@@ -84,7 +84,7 @@
         {
             _isLoading = true;
 
-            var pagedResult = await ProjectService.GetProjectsPagedAsync(
+            var pagedResult = await ProjectService.ListAsync(
                 skip: request.StartIndex,
                 take: request.Count,
                 filterText: string.IsNullOrWhiteSpace(filterText) ? null : filterText);

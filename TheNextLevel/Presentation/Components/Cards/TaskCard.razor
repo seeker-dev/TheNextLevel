@@ -75,11 +75,11 @@
 
         if (isChecked && !_isCompleted)
         {
-            await TaskService.CompleteTaskAsync(Task.Id);
+            await TaskService.CompleteAsync(Task.Id);
         }
         else if (!isChecked && _isCompleted)
         {
-            await TaskService.ReopenTaskAsync(Task.Id);
+            await TaskService.ReopenAsync(Task.Id);
         }
 
         Task.IsCompleted = isChecked;

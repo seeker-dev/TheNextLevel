@@ -76,7 +76,7 @@
         {
             _isLoading = true;
             _errorMessage = null;
-            _task = await TaskService.GetTaskByIdAsync(Id);
+            _task = await TaskService.GetByIdAsync(Id);
 
             if (_task == null)
             {
@@ -89,7 +89,7 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading task: {ex.Message}");
-            _errorMessage += "An error occurred while loading the task.";
+            _errorMessage = "An error occurred while loading the task.";
             _isLoading = false;
             StateHasChanged();
         }

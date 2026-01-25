@@ -14,11 +14,11 @@ public class ProjectService : IProjectService
 
     public ProjectService(IProjectRepository projectRepository, IAccountContext accountContext)
     {
-        _projectRepository = projectRepository;
+        _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
         _accountContext = accountContext ?? throw new ArgumentNullException(nameof(accountContext));
     }
 
-    public async Task<ProjectDto?> GetProjectByIdAsync(int id)
+    public async Task<ProjectDto?> GetByIdAsync(int id)
     {
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null)
@@ -27,7 +27,7 @@ public class ProjectService : IProjectService
         return project.ToDto();
     }
 
-    public async Task<ProjectDto> CreateProjectAsync(string name, string description)
+    public async Task<ProjectDto> CreateAsync(string name, string description)
     {
         var project = new Project(name, description);
         project.AccountId = _accountContext.GetCurrentAccountId();
@@ -37,7 +37,7 @@ public class ProjectService : IProjectService
         return createdProject.ToDto();
     }
 
-    public async Task<ProjectDto?> UpdateProjectAsync(int id, string name, string description)
+    public async Task<ProjectDto?> UpdateAsync(int id, string name, string description)
     {
         var project = await _projectRepository.GetByIdAsync(id);
         if (project == null)
@@ -51,12 +51,12 @@ public class ProjectService : IProjectService
         return updatedProject.ToDto();
     }
 
-    public async Task<bool> DeleteProjectAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
         return await _projectRepository.DeleteAsync(id);
     }
 
-    public async Task<PagedResult<ProjectDto>> GetProjectsPagedAsync(int skip, int take, string? filterText = null)
+    public async Task<PagedResult<ProjectDto>> ListAsync(int skip, int take, string? filterText = null)
     {
         var pagedResult = await _projectRepository.GetPagedAsync(skip, take, filterText);
 

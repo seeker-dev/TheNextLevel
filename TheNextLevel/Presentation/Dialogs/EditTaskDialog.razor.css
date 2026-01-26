@@ -1,0 +1,22 @@
+/* Project Selector Button Styles */
+.project-selector-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    cursor: pointer;
+}
+
+.project-selector-btn .placeholder {
+    color: #8B4513;
+    font-style: italic;
+}
+
+.project-selector-btn .selector-arrow {
+    color: #8B4513;
+    font-size: 0.8rem;
+}
+
+.project-selector-btn:hover {
+    border-color: #8B0000;
+}

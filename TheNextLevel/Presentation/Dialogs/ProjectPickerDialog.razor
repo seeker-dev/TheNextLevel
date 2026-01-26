@@ -1,0 +1,244 @@
+@using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Application.DTOs
+@inject IProjectService ProjectService
+@implements IDisposable
+
+@if (IsVisible)
+{
+    <div class="dialog-overlay visible" @onclick="Cancel">
+        <div class="dialog-container" @onclick:stopPropagation="true">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Select Project</h3>
+                <button class="dialog-btn-close" @onclick="Cancel" aria-label="Close">&times;</button>
+            </div>
+
+            <div class="dialog-body">
+                <div class="picker-search-container">
+                    <input type="text"
+                           class="picker-search-input"
+                           placeholder="Search projects..."
+                           @bind="searchText"
+                           @bind:event="oninput"
+                           @bind:after="OnSearchTextChanged" />
+                </div>
+
+                <div class="picker-list">
+                    @if (isLoading && projects.Count == 0)
+                    {
+                        <div class="dialog-loading">Loading projects...</div>
+                    }
+                    else
+                    {
+                        @if (AllowNoProject)
+                        {
+                            <div class="picker-item @(isNoProjectSelected ? "picker-item--selected" : "")"
+                                 @onclick="SelectNoProject">
+                                <span class="picker-item-name">No Project</span>
+                                @if (isNoProjectSelected)
+                                {
+                                    <span class="picker-item-check">✓</span>
+                                }
+                            </div>
+                        }
+
+                        @foreach (var project in projects)
+                        {
+                            <div class="picker-item @(selectedProject?.Id == project.Id ? "picker-item--selected" : "")"
+                                 @onclick="() => SelectProject(project)">
+                                <span class="picker-item-name">@project.Name</span>
+                                @if (selectedProject?.Id == project.Id)
+                                {
+                                    <span class="picker-item-check">✓</span>
+                                }
+                            </div>
+                        }
+
+                        @if (projects.Count == 0 && !isLoading && !AllowNoProject)
+                        {
+                            <div class="dialog-empty-state">No projects found</div>
+                        }
+
+                        @if (hasMoreItems)
+                        {
+                            <button class="picker-load-more" @onclick="LoadMore" disabled="@isLoading">
+                                @(isLoading ? "Loading..." : "Load More")
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+
+            <div class="dialog-footer">
+                <div class="dialog-footer-left">
+                    <span class="picker-result-count">@totalCount project(s)</span>
+                </div>
+                <div class="dialog-footer-right">
+                    <button class="dialog-btn dialog-btn-cancel" @onclick="Cancel">Cancel</button>
+                    <button class="dialog-btn dialog-btn-primary"
+                            @onclick="Confirm"
+                            disabled="@(!HasSelection)">
+                        Select
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public int? SelectedProjectId { get; set; }
+
+    [Parameter]
+    public bool AllowNoProject { get; set; } = true;
+
+    [Parameter]
+    public EventCallback<ProjectDto?> OnResult { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private List<ProjectDto> projects = new();
+    private ProjectDto? selectedProject;
+    private bool isNoProjectSelected = false;
+    private string searchText = string.Empty;
+    private bool isLoading = false;
+    private int totalCount = 0;
+    private int currentSkip = 0;
+    private const int PageSize = 20;
+    private bool hasMoreItems => currentSkip + projects.Count < totalCount;
+    private bool HasSelection => selectedProject != null || isNoProjectSelected;
+
+    private System.Threading.Timer? debounceTimer;
+    private const int DebounceDelayMs = 400;
+    private bool disposed = false;
+    private bool hasInitialized = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsVisible && !hasInitialized)
+        {
+            hasInitialized = true;
+            await InitializeDialog();
+        }
+        else if (!IsVisible)
+        {
+            hasInitialized = false;
+        }
+    }
+
+    private async Task InitializeDialog()
+    {
+        searchText = string.Empty;
+        currentSkip = 0;
+        projects.Clear();
+        selectedProject = null;
+        isNoProjectSelected = false;
+
+        await LoadProjects();
+
+        if (SelectedProjectId.HasValue)
+        {
+            selectedProject = projects.FirstOrDefault(p => p.Id == SelectedProjectId.Value);
+            if (selectedProject == null)
+            {
+                var project = await ProjectService.GetByIdAsync(SelectedProjectId.Value);
+                if (project != null)
+                {
+                    selectedProject = project;
+                }
+            }
+        }
+        else if (AllowNoProject)
+        {
+            isNoProjectSelected = true;
+        }
+    }
+
+    private async Task LoadProjects()
+    {
+        isLoading = true;
+        try
+        {
+            var result = await ProjectService.ListAsync(
+                currentSkip,
+                PageSize,
+                string.IsNullOrWhiteSpace(searchText) ? null : searchText);
+
+            if (currentSkip == 0)
+            {
+                projects = result.Items.ToList();
+            }
+            else
+            {
+                projects.AddRange(result.Items);
+            }
+
+            totalCount = result.TotalCount;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OnSearchTextChanged()
+    {
+        debounceTimer?.Dispose();
+        debounceTimer = new System.Threading.Timer(async _ =>
+        {
+            if (!disposed)
+            {
+                await InvokeAsync(async () =>
+                {
+                    if (!disposed)
+                    {
+                        currentSkip = 0;
+                        await LoadProjects();
+                        StateHasChanged();
+                    }
+                });
+            }
+        }, null, DebounceDelayMs, Timeout.Infinite);
+    }
+
+    private async Task LoadMore()
+    {
+        currentSkip += PageSize;
+        await LoadProjects();
+    }
+
+    private void SelectProject(ProjectDto project)
+    {
+        selectedProject = project;
+        isNoProjectSelected = false;
+    }
+
+    private void SelectNoProject()
+    {
+        selectedProject = null;
+        isNoProjectSelected = true;
+    }
+
+    private async Task Confirm()
+    {
+        if (HasSelection)
+        {
+            await OnResult.InvokeAsync(selectedProject);
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await OnCancel.InvokeAsync();
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        debounceTimer?.Dispose();
+    }
+}

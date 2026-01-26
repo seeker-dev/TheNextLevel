@@ -35,16 +35,18 @@
         else
         {
             <div class="dialog-form-group">
-                <label class="dialog-form-label">@(isLoadingProjects ? "Loading..." : "Select a project")</label>
-                <select class="dialog-form-input" @onfocus="OnProjectDropdownFocus" @bind="selectedProjectId">
-                    @if (projects != null)
+                <label class="dialog-form-label">Project</label>
+                <button type="button" class="dialog-form-input project-selector-btn" @onclick="OpenProjectPicker">
+                    @if (selectedProjectDto != null)
                     {
-                        @foreach (var project in projects)
-                        {
-                            <option value="@project.Id">@project.Name</option>
-                        }
+                        <span>@selectedProjectDto.Name</span>
                     }
-                </select>
+                    else
+                    {
+                        <span class="placeholder">No Project</span>
+                    }
+                    <span class="selector-arrow">▼</span>
+                </button>
             </div>
         }
         <div class="dialog-actions">
@@ -72,6 +74,13 @@
     </div>
 }
 
+<ProjectPickerDialog
+    IsVisible="showProjectPicker"
+    SelectedProjectId="selectedProjectId"
+    AllowNoProject="true"
+    OnResult="HandleProjectSelected"
+    OnCancel="CloseProjectPicker" />
+
 @code
 {
     [Parameter]
@@ -86,50 +95,54 @@
     [Parameter]
     public EventCallback<TaskDto> OnTaskSaved { get; set; }
 
-    private string noProjectSelectedText = "-- No Project --";
-
     private string taskTitle = string.Empty;
     private string taskDescription = string.Empty;
 
-    private List<ProjectDto>? projects;
     private int? selectedProjectId;
-    private bool isLoadingProjects = false;
-    private bool hasLoadedProjects = false;
+    private ProjectDto? selectedProjectDto;
     private bool showDiscardConfirmation = false;
+    private bool showProjectPicker = false;
 
     bool nameChanged => Task?.Name != taskTitle;
     bool descriptionChanged => Task?.Description != taskDescription;
     bool projectChanged => Task?.ProjectId != selectedProjectId;
     bool hasUnsavedChanges => nameChanged || descriptionChanged || projectChanged;
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (Task != null)
         {
             taskTitle = Task.Name;
             taskDescription = Task.Description ?? string.Empty;
             selectedProjectId = Task.ProjectId;
+
+            if (selectedProjectId.HasValue)
+            {
+                selectedProjectDto = await ProjectService.GetByIdAsync(selectedProjectId.Value);
+            }
+            else
+            {
+                selectedProjectDto = null;
+            }
         }
     }
 
-    private async Task OnProjectDropdownFocus()
+    private void OpenProjectPicker()
     {
-        if (hasLoadedProjects)
-        {
-            return;
-        }
+        showProjectPicker = true;
+    }
 
-        isLoadingProjects = true;
-        try
-        {
-            var projectsList = await ProjectService.ListAsync(0, 1000);
-            projects = projectsList.Items.ToList();
-            hasLoadedProjects = true;
-        }
-        finally
-        {
-            isLoadingProjects = false;
-        }
+    private void CloseProjectPicker()
+    {
+        showProjectPicker = false;
+    }
+
+    private async Task HandleProjectSelected(ProjectDto? project)
+    {
+        selectedProjectDto = project;
+        selectedProjectId = project?.Id;
+        showProjectPicker = false;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task OnCancelClick()

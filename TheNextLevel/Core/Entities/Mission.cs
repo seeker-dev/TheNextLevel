@@ -9,6 +9,8 @@ public class Mission
 
     public Mission(int id, int accountId, string title, string description)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
+
         Id = id;
         AccountId = accountId;
         Title = title;
@@ -18,6 +20,8 @@ public class Mission
 
     public void UpdateTitle(string newTitle)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(newTitle, nameof(newTitle));
+            
         Title = newTitle;
     }
 

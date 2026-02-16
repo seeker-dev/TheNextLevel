@@ -10,7 +10,6 @@ public class Project
     // Navigation property for related tasks
     public ICollection<Task> Tasks { get; set; } = new List<Task>();
 
-    // Parameterless constructor for EF Core
     public Project()
     {
     }

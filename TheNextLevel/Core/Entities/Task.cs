@@ -17,7 +17,6 @@ public class Task
     public Task? ParentTask { get; set; }
     public ICollection<Task> Subtasks { get; set; } = new List<Task>();
 
-    // Parameterless constructor for EF Core
     public Task()
     {
     }

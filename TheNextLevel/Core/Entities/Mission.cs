@@ -13,8 +13,8 @@ public class Mission
 
         Id = id;
         AccountId = accountId;
-        Title = title;
-        Description = description;
+        Title = title.Trim();
+        Description = description?.Trim() ?? string.Empty;
         IsCompleted = false;
     }
 
@@ -22,21 +22,27 @@ public class Mission
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(newTitle, nameof(newTitle));
             
-        Title = newTitle;
+        Title = newTitle.Trim();
     }
 
     public void UpdateDescription(string newDescription)
     {
-        Description = newDescription;
+        Description = newDescription?.Trim() ?? string.Empty;
     }
 
     public void Complete()
     {
-        IsCompleted = true;
+        if (!IsCompleted)
+        {
+            IsCompleted = true;
+        }
     }
 
     public void Reset()
     {
-        IsCompleted = false;
+        if (IsCompleted)
+        {
+            IsCompleted = false;
+        }
     }
 }

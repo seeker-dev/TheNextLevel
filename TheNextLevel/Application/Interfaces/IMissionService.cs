@@ -13,5 +13,5 @@ public interface IMissionService
     Task<bool> ResetAsync(int id);
     Task<PagedResult<ProjectDto>> ListProjectsAsync(int id, int skip, int take, string? filterText = null);
     Task<PagedResult<TaskDto>> ListTasksAsync(int id, int skip, int take, string? filterText = null);
-    Task<bool> AssignAsync(int id, int projectId);
+    Task AddToMissionAsync(int id, int projectId);
 }

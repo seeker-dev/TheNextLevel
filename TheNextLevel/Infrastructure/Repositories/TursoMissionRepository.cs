@@ -127,14 +127,150 @@ public class TursoMissionRepository : IMissionRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public System.Threading.Tasks.Task<PagedResult<Project>> ListProjectsAsync(int id, int skip, int take, string? filterText = null)
-        => throw new NotImplementedException("Requires Projects.MissionId column.");
+    public async System.Threading.Tasks.Task<PagedResult<Project>> ListProjectsAsync(int id, int skip, int take, string? filterText = null)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
 
-    public System.Threading.Tasks.Task<PagedResult<EntityTask>> ListTasksAsync(int id, int skip, int take, string? filterText = null)
-        => throw new NotImplementedException("Requires Projects.MissionId column.");
+        string countQuery;
+        string dataQuery;
+        object[] countParams;
+        object[] dataParams;
 
-    public System.Threading.Tasks.Task AddToMissionAsync(int id, int projectId)
-        => throw new NotImplementedException("Requires Projects.MissionId column.");
+        if (!string.IsNullOrWhiteSpace(filterText))
+        {
+            countQuery = "SELECT COUNT(*) as TotalCount FROM Projects WHERE MissionId = ? AND AccountId = ? AND Name LIKE ?";
+            dataQuery = "SELECT Id, AccountId, Name, Description FROM Projects WHERE MissionId = ? AND AccountId = ? AND Name LIKE ? ORDER BY Name LIMIT ? OFFSET ?";
+            countParams = new object[] { id, accountId, $"%{filterText}%" };
+            dataParams = new object[] { id, accountId, $"%{filterText}%", take, skip };
+        }
+        else
+        {
+            countQuery = "SELECT COUNT(*) as TotalCount FROM Projects WHERE MissionId = ? AND AccountId = ?";
+            dataQuery = "SELECT Id, AccountId, Name, Description FROM Projects WHERE MissionId = ? AND AccountId = ? ORDER BY Name LIMIT ? OFFSET ?";
+            countParams = new object[] { id, accountId };
+            dataParams = new object[] { id, accountId, take, skip };
+        }
+
+        var countResponse = await _client.QueryAsync(countQuery, countParams);
+        var totalCount = 0;
+        if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
+        {
+            var countColumns = countResponse.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+            totalCount = int.Parse(GetColumnValue(countResponse.Result.Rows[0], countColumns, "TotalCount"));
+        }
+
+        var dataResponse = await _client.QueryAsync(dataQuery, dataParams);
+
+        return new PagedResult<Project>
+        {
+            Items = MapToProjects(dataResponse).ToList(),
+            TotalCount = totalCount
+        };
+    }
+
+    public async System.Threading.Tasks.Task<PagedResult<EntityTask>> ListTasksAsync(int id, int skip, int take, string? filterText = null)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+
+        string countQuery;
+        string dataQuery;
+        object[] countParams;
+        object[] dataParams;
+
+        if (!string.IsNullOrWhiteSpace(filterText))
+        {
+            countQuery = "SELECT COUNT(*) as TotalCount FROM Tasks t INNER JOIN Projects p ON t.ProjectId = p.Id WHERE p.MissionId = ? AND t.AccountId = ? AND t.Name LIKE ?";
+            dataQuery = "SELECT t.Id, t.AccountId, t.Name, t.Description, t.IsCompleted, t.ProjectId, t.ParentTaskId FROM Tasks t INNER JOIN Projects p ON t.ProjectId = p.Id WHERE p.MissionId = ? AND t.AccountId = ? AND t.Name LIKE ? ORDER BY t.Name LIMIT ? OFFSET ?";
+            countParams = new object[] { id, accountId, $"%{filterText}%" };
+            dataParams = new object[] { id, accountId, $"%{filterText}%", take, skip };
+        }
+        else
+        {
+            countQuery = "SELECT COUNT(*) as TotalCount FROM Tasks t INNER JOIN Projects p ON t.ProjectId = p.Id WHERE p.MissionId = ? AND t.AccountId = ?";
+            dataQuery = "SELECT t.Id, t.AccountId, t.Name, t.Description, t.IsCompleted, t.ProjectId, t.ParentTaskId FROM Tasks t INNER JOIN Projects p ON t.ProjectId = p.Id WHERE p.MissionId = ? AND t.AccountId = ? ORDER BY t.Name LIMIT ? OFFSET ?";
+            countParams = new object[] { id, accountId };
+            dataParams = new object[] { id, accountId, take, skip };
+        }
+
+        var countResponse = await _client.QueryAsync(countQuery, countParams);
+        var totalCount = 0;
+        if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
+        {
+            var countColumns = countResponse.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+            totalCount = int.Parse(GetColumnValue(countResponse.Result.Rows[0], countColumns, "TotalCount"));
+        }
+
+        var dataResponse = await _client.QueryAsync(dataQuery, dataParams);
+
+        return new PagedResult<EntityTask>
+        {
+            Items = MapToTasks(dataResponse).ToList(),
+            TotalCount = totalCount
+        };
+    }
+
+    public async System.Threading.Tasks.Task AddToMissionAsync(int id, int projectId)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        await _client.ExecuteAsync(
+            "UPDATE Projects SET MissionId = ? WHERE Id = ? AND AccountId = ?",
+            id, projectId, accountId);
+    }
+
+    private IEnumerable<Project> MapToProjects(TursoResponse response)
+    {
+        if (response.Result?.Rows == null)
+            return Enumerable.Empty<Project>();
+
+        var projects = new List<Project>();
+        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+
+        foreach (var row in response.Result.Rows)
+        {
+            projects.Add(new Project
+            {
+                Id = int.Parse(GetColumnValue(row, columns, "Id")),
+                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
+                Name = GetColumnValue(row, columns, "Name"),
+                Description = GetColumnValue(row, columns, "Description")
+            });
+        }
+
+        return projects;
+    }
+
+    private IEnumerable<EntityTask> MapToTasks(TursoResponse response)
+    {
+        if (response.Result?.Rows == null)
+            return Enumerable.Empty<EntityTask>();
+
+        var tasks = new List<EntityTask>();
+        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+
+        foreach (var row in response.Result.Rows)
+        {
+            tasks.Add(new EntityTask
+            {
+                Id = int.Parse(GetColumnValue(row, columns, "Id")),
+                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
+                Name = GetColumnValue(row, columns, "Name"),
+                Description = GetColumnValue(row, columns, "Description"),
+                IsCompleted = GetColumnValue(row, columns, "IsCompleted") == "1",
+                ProjectId = ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
+                ParentTaskId = ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId"))
+            });
+        }
+
+        return tasks;
+    }
+
+    private int? ParseNullableInt(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+            return null;
+
+        return int.TryParse(value, out var result) ? result : null;
+    }
 
     private IEnumerable<Mission> MapToMissions(TursoResponse response)
     {

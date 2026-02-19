@@ -57,10 +57,12 @@ namespace TheNextLevel
             // Register application services
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<IProjectService, ProjectService>();
+            builder.Services.AddScoped<IMissionService, MissionService>();
 
             // Register repositories based on database mode
             builder.Services.AddScoped<ITaskRepository, TursoTaskRepository>();
             builder.Services.AddScoped<IProjectRepository, TursoProjectRepository>();
+            builder.Services.AddScoped<IMissionRepository, TursoMissionRepository>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

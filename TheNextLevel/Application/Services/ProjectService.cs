@@ -10,12 +10,10 @@ namespace TheNextLevel.Application.Services;
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
-    private readonly IAccountContext _accountContext;
 
-    public ProjectService(IProjectRepository projectRepository, IAccountContext accountContext)
+    public ProjectService(IProjectRepository projectRepository)
     {
         _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
-        _accountContext = accountContext ?? throw new ArgumentNullException(nameof(accountContext));
     }
 
     public async Task<ProjectDto?> GetByIdAsync(int id)
@@ -27,13 +25,9 @@ public class ProjectService : IProjectService
         return project.ToDto();
     }
 
-    public async Task<ProjectDto> CreateAsync(string name, string description)
+    public async Task<ProjectDto> CreateAsync(string name, string description, int missionId)
     {
-        var project = new Project(name, description);
-        project.AccountId = _accountContext.GetCurrentAccountId();
-
-        var createdProject = await _projectRepository.AddAsync(project);
-
+        var createdProject = await _projectRepository.AddAsync(name, description, missionId);
         return createdProject.ToDto();
     }
 

@@ -113,7 +113,8 @@
                 // Create mode: create new project
                 resultProject = await ProjectService.CreateAsync(
                     projectName.Trim(),
-                    projectDescription?.Trim() ?? string.Empty
+                    projectDescription?.Trim() ?? string.Empty,
+                    0
                 );
             }
 

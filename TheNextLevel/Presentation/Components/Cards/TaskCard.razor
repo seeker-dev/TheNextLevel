@@ -82,7 +82,9 @@
             await TaskService.ReopenAsync(Task.Id);
         }
 
-        Task.IsCompleted = isChecked;
+        StateHasChanged();
+
+        //Task.IsCompleted = isChecked;
     }
 
     private void NavigateToDetail()

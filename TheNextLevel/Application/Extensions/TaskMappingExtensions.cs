@@ -9,7 +9,6 @@ public static class TaskMappingExtensions
     {
         return new TaskDto(
             task.Id,
-            task.AccountId,
             task.Name,
             task.Description ?? string.Empty,
             task.IsCompleted,

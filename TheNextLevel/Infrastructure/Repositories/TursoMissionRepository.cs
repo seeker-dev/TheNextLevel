@@ -167,6 +167,47 @@ public class TursoMissionRepository : IMissionRepository
             TotalCount = totalCount
         };
     }
+    
+    public async System.Threading.Tasks.Task<PagedResult<ProjectWithMission>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+
+        string countQuery;
+        string dataQuery;
+        object[] countParams;
+        object[] dataParams;
+
+        if (!string.IsNullOrWhiteSpace(filterText))
+        {
+            countQuery = "SELECT COUNT(*) as TotalCount FROM Projects WHERE MissionId != ? AND AccountId = ? AND Name LIKE ?";
+            dataQuery = "SELECT p.Id, p.AccountId, p.Name, p.Description, m.Title FROM Projects p INNER JOIN Missions m ON p.MissionId = m.Id WHERE p.MissionId != ? AND p.AccountId = ? AND p.Name LIKE ? ORDER BY p.Name LIMIT ? OFFSET ?";
+            countParams = new object[] { id, accountId, $"%{filterText}%" };
+            dataParams = new object[] { id, accountId, $"%{filterText}%", take, skip };
+        }
+        else
+        {
+            countQuery = "SELECT COUNT(*) as TotalCount FROM Projects WHERE MissionId != ? AND AccountId = ?";
+            dataQuery = "SELECT p.Id, p.AccountId, p.Name, p.Description, m.Title FROM Projects p INNER JOIN Missions m ON p.MissionId = m.Id WHERE p.MissionId != ? AND p.AccountId = ? ORDER BY p.Name LIMIT ? OFFSET ?";
+            countParams = new object[] { id, accountId };
+            dataParams = new object[] { id, accountId, take, skip };
+        }
+
+        var countResponse = await _client.QueryAsync(countQuery, countParams);
+        var totalCount = 0;
+        if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
+        {
+            var countColumns = countResponse.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+            totalCount = int.Parse(GetColumnValue(countResponse.Result.Rows[0], countColumns, "TotalCount"));
+        }
+
+        var dataResponse = await _client.QueryAsync(dataQuery, dataParams);
+
+        return new PagedResult<ProjectWithMission>
+        {
+            Items = MapToProjectsWithMission(dataResponse).ToList(),
+            TotalCount = totalCount
+        };
+    }
 
     public async System.Threading.Tasks.Task<PagedResult<EntityTask>> ListTasksAsync(int id, int skip, int take, string? filterText = null)
     {
@@ -295,6 +336,29 @@ public class TursoMissionRepository : IMissionRepository
         }
 
         return missions;
+    }
+
+    private IEnumerable<ProjectWithMission> MapToProjectsWithMission(TursoResponse response)
+    {
+        if (response.Result?.Rows == null)
+            return Enumerable.Empty<ProjectWithMission>();
+
+        var projects = new List<ProjectWithMission>();
+        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+
+        foreach (var row in response.Result.Rows)
+        {
+            projects.Add(new ProjectWithMission
+            {
+                Id = int.Parse(GetColumnValue(row, columns, "Id")),
+                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
+                Name = GetColumnValue(row, columns, "Name"),
+                Description = GetColumnValue(row, columns, "Description"),
+                MissionTitle = GetColumnValue(row, columns, "Title")
+            });
+        }
+
+        return projects;
     }
 
     private string GetColumnValue(TursoValue[] row, string[] columns, string columnName)

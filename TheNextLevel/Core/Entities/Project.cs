@@ -36,3 +36,17 @@ public class Project
         Description = newDescription?.Trim() ?? string.Empty;
     }
 }
+
+public class ProjectWithMission : Project
+{
+    public string MissionTitle { get; set; } = string.Empty;
+
+    public ProjectWithMission() : base()
+    {
+    }
+
+    public ProjectWithMission(string name, string description, string missionTitle) : base(name, description)
+    {
+        MissionTitle = missionTitle.Trim();
+    }
+}

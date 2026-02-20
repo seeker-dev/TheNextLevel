@@ -65,7 +65,26 @@ public class MissionService : IMissionService
 
     public async Task<PagedResult<ProjectDto>> ListProjectsAsync(int id, int skip, int take, string? filterText = null)
     {
-        throw new NotImplementedException();
+        var pagedProjects = await _missionRepository.ListProjectsAsync(id, skip, take, filterText);
+        var projectDtos = pagedProjects.Items.Select(p => new ProjectDto(p.Id, p.AccountId, p.Name, p.Description ?? string.Empty)).ToList();
+
+        return new PagedResult<ProjectDto>
+        {
+            Items = projectDtos,
+            TotalCount = pagedProjects.TotalCount
+        };
+    }
+
+    public async Task<PagedResult<ProjectDto>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null)
+    {
+        var pagedProjects = await _missionRepository.ListEligibleProjectsAsync(id, skip, take, filterText);
+        var projectDtos = pagedProjects.Items.Select(p => new ProjectDto(p.Id, p.AccountId, p.Name, p.Description ?? string.Empty)).ToList();
+
+        return new PagedResult<ProjectDto>
+        {
+            Items = projectDtos,
+            TotalCount = pagedProjects.TotalCount
+        };
     }
 
     public async Task<PagedResult<TaskDto>> ListTasksAsync(int id, int skip, int take, string? filterText = null)

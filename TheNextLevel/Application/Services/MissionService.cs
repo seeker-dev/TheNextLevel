@@ -66,7 +66,7 @@ public class MissionService : IMissionService
     public async Task<PagedResult<ProjectDto>> ListProjectsAsync(int id, int skip, int take, string? filterText = null)
     {
         var pagedProjects = await _missionRepository.ListProjectsAsync(id, skip, take, filterText);
-        var projectDtos = pagedProjects.Items.Select(p => new ProjectDto(p.Id, p.AccountId, p.Name, p.Description ?? string.Empty)).ToList();
+        var projectDtos = pagedProjects.Items.Select(p => new ProjectDto(p.Id, p.Name, p.Description ?? string.Empty)).ToList();
 
         return new PagedResult<ProjectDto>
         {
@@ -78,7 +78,7 @@ public class MissionService : IMissionService
     public async Task<PagedResult<ProjectDto>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null)
     {
         var pagedProjects = await _missionRepository.ListEligibleProjectsAsync(id, skip, take, filterText);
-        var projectDtos = pagedProjects.Items.Select(p => new ProjectDto(p.Id, p.AccountId, p.Name, p.Description ?? string.Empty)).ToList();
+        var projectDtos = pagedProjects.Items.Select(p => new ProjectDto(p.Id, p.Name, p.Description ?? string.Empty, p.MissionTitle)).ToList();
 
         return new PagedResult<ProjectDto>
         {
@@ -90,7 +90,7 @@ public class MissionService : IMissionService
     public async Task<PagedResult<TaskDto>> ListTasksAsync(int id, int skip, int take, string? filterText = null)
     {
         var pagedTasks = await _missionRepository.ListTasksAsync(id, skip, take, filterText);
-        var taskDtos = pagedTasks.Items.Select(t => new TaskDto(t.Id, t.AccountId, t.Name, t.Description, t.IsCompleted)).ToList();
+        var taskDtos = pagedTasks.Items.Select(t => new TaskDto(t.Id, t.Name, t.Description, t.IsCompleted)).ToList();
 
         return new PagedResult<TaskDto>
         {

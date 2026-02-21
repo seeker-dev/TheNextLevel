@@ -6,21 +6,17 @@ public class Project
     public int AccountId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
+    public int MissionId { get; set; }
 
-    // Navigation property for related tasks
-    public ICollection<Task> Tasks { get; set; } = new List<Task>();
-
-    public Project()
+    public Project(int id, int accountId, string name, string? description, int missionId)
     {
-    }
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
 
-    public Project(string name, string description) : this()
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Project name cannot be empty", nameof(name));
-            
+        Id = id;
+        AccountId = accountId;
         Name = name.Trim();
         Description = description?.Trim() ?? string.Empty;
+        MissionId = missionId;
     }
     
     public void UpdateName(string newName)
@@ -41,11 +37,11 @@ public class ProjectWithMission : Project
 {
     public string MissionTitle { get; set; } = string.Empty;
 
-    public ProjectWithMission() : base()
+    public ProjectWithMission() : base(0, 0, string.Empty, string.Empty, 0)
     {
     }
 
-    public ProjectWithMission(string name, string description, string missionTitle) : base(name, description)
+    public ProjectWithMission(string name, string description, string missionTitle) : base(0, 0, name, description, 0)
     {
         MissionTitle = missionTitle.Trim();
     }

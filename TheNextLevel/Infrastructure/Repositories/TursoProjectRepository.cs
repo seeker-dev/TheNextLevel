@@ -56,29 +56,31 @@ public class TursoProjectRepository : IProjectRepository
         if (project != null)
         {
             // Load tasks for this project
-            var tasks = await _taskRepository.GetTasksByProjectIdsAsync(new[] { project.Id });
-            project.Tasks = tasks.ToList();
+            //var tasks = await _taskRepository.GetTasksByProjectIdsAsync(new[] { project.Id });
+            //project.Tasks = tasks.ToList();
         }
 
         return project;
     }
 
-    public async Task<Project> AddAsync(Project project)
+    public async Task<Project> AddAsync(string name, string description, int missionId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
-            "INSERT INTO Projects (AccountId, Name, Description) VALUES (?, ?, ?)",
+            "INSERT INTO Projects (AccountId, Name, Description, MissionId) VALUES (?, ?, ?, ?)",
             accountId,
-            project.Name,
-            project.Description ?? string.Empty);
+            name,
+            description ?? string.Empty,
+            missionId);
 
         // Set the database-generated ID
         if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var id))
         {
-            project.Id = id;
+            var project = new Project(id, accountId, name, description, missionId);
+            return project;
         }
 
-        return project;
+        throw new InvalidOperationException("Failed to create project.");
     }
 
     public async Task<Project> UpdateAsync(Project project)
@@ -97,8 +99,9 @@ public class TursoProjectRepository : IProjectRepository
     public async Task<bool> DeleteAsync(int id)
     {
         var response = await _client.ExecuteAsync(
-            "DELETE FROM Projects WHERE Id = ?",
-            id);
+            "DELETE FROM Projects WHERE Id = ? AND AccountId = ?",
+            id,
+            _accountContext.GetCurrentAccountId());
 
         return response.Result?.AffectedRowCount > 0;
     }
@@ -116,12 +119,12 @@ public class TursoProjectRepository : IProjectRepository
 
         if (!string.IsNullOrWhiteSpace(filterText))
         {
-            query = "SELECT Id, AccountId, Name, Description FROM Projects WHERE AccountId = ? AND Name LIKE ? ORDER BY Name desc LIMIT ? OFFSET ?";
+            query = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE AccountId = ? AND Name LIKE ? ORDER BY Name desc LIMIT ? OFFSET ?";
             parameters = new object[] { accountId, $"%{filterText}%", take, skip };
         }
         else
         {
-            query = "SELECT Id, AccountId, Name, Description FROM Projects WHERE AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?";
+            query = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?";
             parameters = new object[] { accountId, take, skip };
         }
 
@@ -131,6 +134,7 @@ public class TursoProjectRepository : IProjectRepository
 
         if (items.Any())
         {
+            /*
             // Batch load tasks for all projects
             var projectIds = items.Select(p => p.Id).ToList();
             var tasks = await _taskRepository.GetTasksByProjectIdsAsync(projectIds);
@@ -149,6 +153,7 @@ public class TursoProjectRepository : IProjectRepository
                     project.Tasks = projectTasks;
                 }
             }
+            */
         }
 
         return new PagedResult<Project>
@@ -168,13 +173,13 @@ public class TursoProjectRepository : IProjectRepository
 
         foreach (var row in response.Result.Rows)
         {
-            var project = new Project
-            {
-                Id = int.Parse(GetColumnValue(row, columns, "Id")),
-                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
-                Name = GetColumnValue(row, columns, "Name"),
-                Description = GetColumnValue(row, columns, "Description")
-            };
+            var id = int.Parse(GetColumnValue(row, columns, "Id"));
+            var accountId = int.Parse(GetColumnValue(row, columns, "AccountId"));
+            var name = GetColumnValue(row, columns, "Name");
+            var description = GetColumnValue(row, columns, "Description");
+            var missionId = int.Parse(GetColumnValue(row, columns, "MissionId"));
+            
+            var project = new Project(id, accountId, name, description, missionId);
             projects.Add(project);
         }
 

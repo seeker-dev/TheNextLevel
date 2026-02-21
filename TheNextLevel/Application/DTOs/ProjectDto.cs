@@ -1,28 +1,5 @@
 namespace TheNextLevel.Application.DTOs;
+public record ProjectDto(int Id, string Name, string Description, string? MissionTitle = null);
 
-public class ProjectDto
-{
-    public int Id { get; set; }
-    public int AccountId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public string? MissionTitle { get; set; }
-    public IEnumerable<TaskDto> Tasks { get; set; } = [];
-
-    public ProjectDto(int id, int accountId, string name, string description, IEnumerable<TaskDto> tasks)
-    {
-        Id = id;
-        AccountId = accountId;
-        Name = name;
-        Description = description;
-        Tasks = tasks;
-    }
-
-    public ProjectDto(int id, int accountId, string name, string description)
-    {
-        Id = id;
-        AccountId = accountId;
-        Name = name;
-        Description = description;
-    }
-}
+public record CreateProjectDto(string Name, string Description, int? MissionId = null);
+public record UpdateProjectDto(int Id, string Name, string Description, int? MissionId = null);

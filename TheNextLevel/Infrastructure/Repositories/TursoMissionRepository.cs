@@ -268,13 +268,13 @@ public class TursoMissionRepository : IMissionRepository
 
         foreach (var row in response.Result.Rows)
         {
-            projects.Add(new Project
-            {
-                Id = int.Parse(GetColumnValue(row, columns, "Id")),
-                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
-                Name = GetColumnValue(row, columns, "Name"),
-                Description = GetColumnValue(row, columns, "Description")
-            });
+            projects.Add(new Project(
+                int.Parse(GetColumnValue(row, columns, "Id")),
+                int.Parse(GetColumnValue(row, columns, "AccountId")),
+                GetColumnValue(row, columns, "Name"),
+                GetColumnValue(row, columns, "Description"),
+                int.Parse(GetColumnValue(row, columns, "MissionId"))
+            ));
         }
 
         return projects;
@@ -354,6 +354,7 @@ public class TursoMissionRepository : IMissionRepository
                 AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
                 Name = GetColumnValue(row, columns, "Name"),
                 Description = GetColumnValue(row, columns, "Description"),
+                MissionId = int.Parse(GetColumnValue(row, columns, "MissionId")),
                 MissionTitle = GetColumnValue(row, columns, "Title")
             });
         }

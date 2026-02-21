@@ -6,179 +6,24 @@
 @using TheNextLevel.Presentation.Components.Buttons
 @using TheNextLevel.Presentation.Components.Cards
 
-@inject IProjectService ProjectService
-@inject ITaskService TaskService
-@implements IDisposable
-
 @page "/"
 <main class="main-content">
-    <h1 class="page-title">Projects</h1>
-    @if (_isLoading)
-    {
-        <div class="loading-indicator">Loading projects...</div>
-    }
-    else
-    {
-        <div class="controls-container">
-            <input type="text" placeholder="Filter projects..." @bind="filterText" @bind:event="oninput" @bind:after="OnFilterTextChangedDebounced" class="filter-input" />
-            <div class="add-container">
-                <button class="filter-btn" @onclick="OpenNewProjectDialog">
-                    Add New Project ➕
-                </button>
-            </div> 
-        </div>
-    }
-    <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
-        <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_virtualizeComponent" Context="project">
-            <ItemContent>
-                <ProjectCard Project="project" />
-            </ItemContent>
-            <Placeholder>
-                <div class="loading-card">Loading...</div>
-            </Placeholder>
-            <EmptyContent>
-                <div class="empty-project">
-                    <p>No projects found. Create your first project!</p>
-                </div>
-            </EmptyContent>
-        </Virtualize>
+    <!-- Temp link to missions page -->
+    <h1 class="page-title">Welcome to The Next Level!</h1>
+    <p class="intro-text">Your journey to mastering project management starts here. Explore your projects, manage your tasks, and embark on exciting missions to level up your skills.</p>
+    <div class="missions-link">
+        <a href="/missions" class="missions-btn">Explore Missions ➡️</a>
     </div>
 </main>
 
-<NewProjectDialog
-    IsVisible="_showNewProjectDialog"
-    ExistingProject="_editingProject"
-    OnResult="HandleProjectSaved"
-    OnCancel="CloseNewProjectDialog" />
-
-
 @code
 {
-    // Virtualize component 
-    private Virtualize<ProjectDto>? _virtualizeComponent;
     private bool _isLoading = false;
-    private int _totalCount = 0;
     private bool _isRefreshing = false;
-
-    // Dialog state
-    private bool _showNewProjectDialog = false;
-    private ProjectDto? _editingProject = null;
-
-    // Filter state
-    private string filterText = string.Empty;
-    private System.Threading.Timer? _debounceTimer;
-    private const int DebounceDelayMs = 400; // Wait 400ms after last keystroke
-
-    // Disposal state
-    private bool _disposed = false;
 
     protected override Task OnInitializedAsync()
     {
         _isLoading = true;
         return base.OnInitializedAsync();
-    }
-
-    private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjectsProvider(ItemsProviderRequest request)
-    {
-        try
-        {
-            _isLoading = true;
-
-            var pagedResult = await ProjectService.ListAsync(
-                skip: request.StartIndex,
-                take: request.Count,
-                filterText: string.IsNullOrWhiteSpace(filterText) ? null : filterText);
-
-            _totalCount = pagedResult.TotalCount;
-
-            _isLoading = false;
-
-            StateHasChanged();
-
-            return new ItemsProviderResult<ProjectDto>(
-                pagedResult.Items,
-                pagedResult.TotalCount);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error loading projects: {ex.Message}");
-            return new ItemsProviderResult<ProjectDto>(
-                Array.Empty<ProjectDto>(),
-                0);
-        }
-        finally
-        {
-            _isLoading = false;
-        }
-    }
-
-    private void OnFilterTextChangedDebounced()
-    {
-        // Cancel previous timer if it exists
-        _debounceTimer?.Dispose();
-
-        // Create new timer that will fire after the debounce delay
-        _debounceTimer = new System.Threading.Timer(async _ =>
-        {
-            if (!_disposed)
-            {
-                await InvokeAsync(async () =>
-                {
-                    if (!_disposed)
-                    {
-                        await RefreshList();
-                    }
-                });
-            }
-        }, null, DebounceDelayMs, Timeout.Infinite);
-    }
-
-    private void OpenNewProjectDialog()
-    {
-        _editingProject = null;  // null = create mode
-        _showNewProjectDialog = true;
-    }
-
-    private void CloseNewProjectDialog()
-    {
-        _showNewProjectDialog = false;
-        _editingProject = null;  // reset state
-    }
-
-    private async Task HandleProjectSaved(ProjectDto savedProject)
-    {
-        CloseNewProjectDialog();
-        await RefreshList();
-    }
-
-    private async Task HandleProjectDeleted(ProjectDto project)
-    {
-        await RefreshList();
-    }
-
-    private async Task RefreshList()
-    {
-        if (_isRefreshing) return; // Prevent concurrent refreshes
-
-        try
-        {
-            _isRefreshing = true;
-
-            if (_virtualizeComponent != null)
-            {
-                await _virtualizeComponent.RefreshDataAsync();
-            }
-            StateHasChanged();
-        }
-        finally
-        {
-            _isRefreshing = false;
-        }
-    }
-
-    public void Dispose()
-    {
-        _disposed = true;
-        _debounceTimer?.Dispose();
     }
 }

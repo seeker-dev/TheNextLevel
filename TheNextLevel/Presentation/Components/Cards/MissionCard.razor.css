@@ -1,0 +1,32 @@
+.mission-card-wrapper {
+    position: relative;
+    border-radius: 16px;
+    padding: 10px;
+}
+
+.mission-card {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 280px;
+    padding: 30px;
+}
+
+.mission-content {
+    position: relative;
+    z-index: 3;
+}
+
+.mission-name {
+    font-size: 2rem;
+    font-weight: 400;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+}

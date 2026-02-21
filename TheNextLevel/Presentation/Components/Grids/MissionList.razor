@@ -1,0 +1,65 @@
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Core.DTOs
+@using TheNextLevel.Presentation.Components.Cards
+
+@inject IMissionService MissionService
+
+<div class="mission-list-container">
+    @if (_isLoading)
+    {
+        <div class="loading-indicator">Loading missions...</div>
+    }
+    else
+    {
+        <Virtualize ItemsProvider="LoadMissionsProvider" @ref="_missionList" Context="mission">
+            <ItemContent>
+                <MissionCard Mission="mission" />
+            </ItemContent>
+            <Placeholder>
+                <div class="loading-card">Loading mission...</div>
+            </Placeholder>
+            <EmptyContent>
+                <div class="empty-state">
+                    <div class="empty-icon">No missions available</div>
+                </div>
+            </EmptyContent>
+        </Virtualize>
+    }
+</div>
+
+@code {
+    private bool _isLoading = true;
+    private Virtualize<MissionDto?> _missionList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoading = false;
+    }
+
+    private async ValueTask<ItemsProviderResult<MissionDto?>> LoadMissionsProvider(ItemsProviderRequest request)
+    {
+        // var missions = await MissionService.ListAsync(request.StartIndex, request.Count);
+        // For demo purposes, we'll return dummy data
+        var missions = new PagedResult<MissionDto>
+        {
+            Items = Enumerable.Range(request.StartIndex, request.Count).Select(i => new MissionDto
+            (
+                i,
+                $"Mission {i + 1}",
+                $"Description for Mission {i + 1}",
+                false
+            )).ToList(),
+            TotalCount = 5 // Assume there are 5 missions total
+        };
+        return new ItemsProviderResult<MissionDto?>(missions.Items, missions.TotalCount);
+    }
+
+    public async Task RefreshMissionsAsync()
+    {
+        if (_missionList != null)
+        {
+            await _missionList.RefreshDataAsync();
+        }
+    }
+}

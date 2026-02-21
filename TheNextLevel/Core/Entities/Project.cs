@@ -18,17 +18,4 @@ public class Project
         Description = description?.Trim() ?? string.Empty;
         MissionId = missionId;
     }
-    
-    public void UpdateName(string newName)
-    {
-        if (string.IsNullOrWhiteSpace(newName))
-            throw new ArgumentException("Project name cannot be empty", nameof(newName));
-            
-        Name = newName.Trim();
-    }
-    
-    public void UpdateDescription(string newDescription)
-    {
-        Description = newDescription?.Trim() ?? string.Empty;
-    }
 }

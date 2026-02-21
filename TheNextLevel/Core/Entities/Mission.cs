@@ -18,31 +18,11 @@ public class Mission
         IsCompleted = false;
     }
 
-    public void UpdateTitle(string newTitle)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(newTitle, nameof(newTitle));
-            
-        Title = newTitle.Trim();
-    }
-
-    public void UpdateDescription(string newDescription)
-    {
-        Description = newDescription?.Trim() ?? string.Empty;
-    }
-
     public void Complete()
     {
         if (!IsCompleted)
         {
             IsCompleted = true;
-        }
-    }
-
-    public void Reset()
-    {
-        if (IsCompleted)
-        {
-            IsCompleted = false;
         }
     }
 }

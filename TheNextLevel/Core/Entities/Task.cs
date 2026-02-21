@@ -22,32 +22,4 @@ public class Task
         ProjectId = projectId;
         ParentTaskId = parentTaskId;
     }
-
-    public void UpdateName(string newName)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(newName, nameof(newName));
-        Name = newName.Trim();
-    }
-
-    public void UpdateDescription(string newDescription)
-    {
-        Description = newDescription?.Trim() ?? string.Empty;
-    }
-
-    public void AssignToProject(int? projectId)
-    {
-        ProjectId = projectId;
-    }
-
-    public void MarkComplete()
-    {
-        if (!IsCompleted)
-            IsCompleted = true;
-    }
-
-    public void Reopen()
-    {
-        if (IsCompleted)
-            IsCompleted = false;
-    }
 }

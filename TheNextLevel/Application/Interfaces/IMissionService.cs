@@ -12,7 +12,7 @@ public interface IMissionService
     Task<bool> CompleteAsync(int id);
     Task<bool> ResetAsync(int id);
     Task<PagedResult<ProjectDto>> ListProjectsAsync(int id, int skip, int take, string? filterText = null);
-    Task<PagedResult<ProjectDto>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null);
+    Task<PagedResult<EligibleProjectDto>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null);
     Task<PagedResult<TaskDto>> ListTasksAsync(int id, int skip, int take, string? filterText = null);
     Task AddToMissionAsync(int id, int projectId);
 }

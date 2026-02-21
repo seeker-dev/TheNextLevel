@@ -81,7 +81,7 @@ public class TursoMissionRepository : IMissionRepository
         if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var insertedId))
             id = insertedId;
 
-        return new Mission(id, accountId, title, description);
+        return new Mission(id, accountId, title, description, isCompleted: false);
     }
 
     public async System.Threading.Tasks.Task<Mission> UpdateAsync(int id, string title, string description)
@@ -326,10 +326,9 @@ public class TursoMissionRepository : IMissionRepository
                 id: int.Parse(GetColumnValue(row, columns, "Id")),
                 accountId: int.Parse(GetColumnValue(row, columns, "AccountId")),
                 title: GetColumnValue(row, columns, "Title"),
-                description: GetColumnValue(row, columns, "Description"));
-
-            if (GetColumnValue(row, columns, "IsCompleted") == "1")
-                mission.Complete();
+                description: GetColumnValue(row, columns, "Description"),
+                isCompleted: GetColumnValue(row, columns, "IsCompleted") == "1"
+                );
 
             missions.Add(mission);
         }

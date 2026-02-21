@@ -7,7 +7,7 @@ public class Mission
     public string Description { get; private set; }
     public bool IsCompleted { get; private set; }
 
-    public Mission(int id, int accountId, string title, string description)
+    public Mission(int id, int accountId, string title, string description, bool isCompleted)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(title, nameof(title));
 
@@ -15,14 +15,6 @@ public class Mission
         AccountId = accountId;
         Title = title.Trim();
         Description = description?.Trim() ?? string.Empty;
-        IsCompleted = false;
-    }
-
-    public void Complete()
-    {
-        if (!IsCompleted)
-        {
-            IsCompleted = true;
-        }
+        IsCompleted = isCompleted;
     }
 }

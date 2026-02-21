@@ -7,15 +7,8 @@ public class Task
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public bool IsCompleted { get; set; }
-
-    // Project relationship
     public int? ProjectId { get; set; }
-    public Project? Project { get; set; }
-
-    // Subtask relationship
     public int? ParentTaskId { get; set; }
-    public Task? ParentTask { get; set; }
-    public ICollection<Task> Subtasks { get; set; } = new List<Task>();
 
     public Task()
     {

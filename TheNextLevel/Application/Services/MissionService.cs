@@ -75,14 +75,14 @@ public class MissionService : IMissionService
         };
     }
 
-    public async Task<PagedResult<ProjectDto>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null)
+    public async Task<PagedResult<EligibleProjectDto>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null)
     {
         var pagedProjects = await _missionRepository.ListEligibleProjectsAsync(id, skip, take, filterText);
-        var projectDtos = pagedProjects.Items.Select(p => new ProjectDto(p.Id, p.Name, p.Description ?? string.Empty, p.MissionTitle)).ToList();
+        var dtos = pagedProjects.Items.Select(p => new EligibleProjectDto(p.Id, p.Name, p.Description ?? string.Empty, p.MissionTitle)).ToList();
 
-        return new PagedResult<ProjectDto>
+        return new PagedResult<EligibleProjectDto>
         {
-            Items = projectDtos,
+            Items = dtos,
             TotalCount = pagedProjects.TotalCount
         };
     }

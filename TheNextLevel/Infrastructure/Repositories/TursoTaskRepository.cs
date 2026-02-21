@@ -35,41 +35,71 @@ public class TursoTaskRepository : ITaskRepository
         return tasks.FirstOrDefault();
     }
 
-    public async System.Threading.Tasks.Task<Core.Entities.Task> AddAsync(Core.Entities.Task task)
+    public async System.Threading.Tasks.Task<Core.Entities.Task> AddAsync(string name, string description, int? projectId = null, int? parentTaskId = null)
     {
         var accountId = _accountContext.GetCurrentAccountId();
+        var trimmedName = name.Trim();
+        var trimmedDescription = description?.Trim() ?? string.Empty;
+
         var response = await _client.ExecuteAsync(
             "INSERT INTO Tasks (AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId) VALUES (?, ?, ?, ?, ?, ?)",
             accountId,
-            task.Name,
-            task.Description,
-            task.IsCompleted ? 1 : 0,
-            task.ProjectId.HasValue ? (object)task.ProjectId.Value : null,
-            task.ParentTaskId.HasValue ? (object)task.ParentTaskId.Value : null);
+            trimmedName,
+            trimmedDescription,
+            0,
+            projectId.HasValue ? (object)projectId.Value : null,
+            parentTaskId.HasValue ? (object)parentTaskId.Value : null);
 
-        // Set the database-generated ID
         if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var id))
-        {
-            task.Id = id;
-        }
+            return new Core.Entities.Task(id, accountId, trimmedName, trimmedDescription, false, projectId, parentTaskId);
 
-        return task;
+        throw new InvalidOperationException("Failed to create task.");
     }
 
-    public async System.Threading.Tasks.Task<Core.Entities.Task> UpdateAsync(Core.Entities.Task task)
+    public async System.Threading.Tasks.Task<bool> UpdateAsync(int id, string name, string description)
     {
         var accountId = _accountContext.GetCurrentAccountId();
-        await _client.ExecuteAsync(
-            "UPDATE Tasks SET Name = ?, Description = ?, IsCompleted = ?, ProjectId = ?, ParentTaskId = ? WHERE Id = ? AND AccountId = ?",
-            task.Name,
-            task.Description,
-            task.IsCompleted ? 1 : 0,
-            task.ProjectId.HasValue ? (object)task.ProjectId.Value : null,
-            task.ParentTaskId.HasValue ? (object)task.ParentTaskId.Value : null,
-            task.Id,
+        var response = await _client.ExecuteAsync(
+            "UPDATE Tasks SET Name = ?, Description = ? WHERE Id = ? AND AccountId = ?",
+            name.Trim(),
+            description?.Trim() ?? string.Empty,
+            id,
             accountId);
 
-        return task;
+        return response.Result?.AffectedRowCount > 0;
+    }
+
+    public async System.Threading.Tasks.Task<bool> CompleteAsync(int id)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        var response = await _client.ExecuteAsync(
+            "UPDATE Tasks SET IsCompleted = 1 WHERE Id = ? AND AccountId = ?",
+            id, accountId);
+
+        return response.Result?.AffectedRowCount > 0;
+    }
+
+    public async System.Threading.Tasks.Task<bool> ReopenAsync(int id)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        var response = await _client.ExecuteAsync(
+            "UPDATE Tasks SET IsCompleted = 0 WHERE Id = ? AND AccountId = ?",
+            id, accountId);
+
+        return response.Result?.AffectedRowCount > 0;
+    }
+
+    public async System.Threading.Tasks.Task<bool> AssignToProjectAsync(int id, int? projectId)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        object projectIdParam = projectId.HasValue ? projectId.Value : null!;
+        var response = await _client.ExecuteAsync(
+            "UPDATE Tasks SET ProjectId = ? WHERE Id = ? AND AccountId = ?",
+            projectIdParam,
+            id,
+            accountId);
+
+        return response.Result?.AffectedRowCount > 0;
     }
 
     public async System.Threading.Tasks.Task<bool> DeleteAsync(int id)
@@ -208,17 +238,15 @@ public class TursoTaskRepository : ITaskRepository
 
         foreach (var row in response.Result.Rows)
         {
-            var task = new Core.Entities.Task
-            {
-                Id = int.Parse(GetColumnValue(row, columns, "Id")),
-                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
-                Name = GetColumnValue(row, columns, "Name"),
-                Description = GetColumnValue(row, columns, "Description"),
-                IsCompleted = GetColumnValue(row, columns, "IsCompleted") == "1",
-                ProjectId = ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
-                ParentTaskId = ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId"))
-            };
-            tasks.Add(task);
+            tasks.Add(new Core.Entities.Task(
+                id: int.Parse(GetColumnValue(row, columns, "Id")),
+                accountId: int.Parse(GetColumnValue(row, columns, "AccountId")),
+                name: GetColumnValue(row, columns, "Name"),
+                description: GetColumnValue(row, columns, "Description"),
+                isCompleted: GetColumnValue(row, columns, "IsCompleted") == "1",
+                projectId: ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
+                parentTaskId: ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId"))
+            ));
         }
 
         return tasks;

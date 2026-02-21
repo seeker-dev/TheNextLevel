@@ -81,7 +81,7 @@ public class TursoMissionRepository : IMissionRepository
         if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var insertedId))
             id = insertedId;
 
-        return new Mission(id, accountId, title, description);
+        return new Mission(id, accountId, title, description, isCompleted: false);
     }
 
     public async System.Threading.Tasks.Task<Mission> UpdateAsync(int id, string title, string description)
@@ -168,7 +168,7 @@ public class TursoMissionRepository : IMissionRepository
         };
     }
     
-    public async System.Threading.Tasks.Task<PagedResult<ProjectWithMission>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null)
+    public async System.Threading.Tasks.Task<PagedResult<EligibleProjectProjection>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
@@ -202,9 +202,9 @@ public class TursoMissionRepository : IMissionRepository
 
         var dataResponse = await _client.QueryAsync(dataQuery, dataParams);
 
-        return new PagedResult<ProjectWithMission>
+        return new PagedResult<EligibleProjectProjection>
         {
-            Items = MapToProjectsWithMission(dataResponse).ToList(),
+            Items = MapToEligibleProjectProjections(dataResponse).ToList(),
             TotalCount = totalCount
         };
     }
@@ -290,16 +290,15 @@ public class TursoMissionRepository : IMissionRepository
 
         foreach (var row in response.Result.Rows)
         {
-            tasks.Add(new EntityTask
-            {
-                Id = int.Parse(GetColumnValue(row, columns, "Id")),
-                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
-                Name = GetColumnValue(row, columns, "Name"),
-                Description = GetColumnValue(row, columns, "Description"),
-                IsCompleted = GetColumnValue(row, columns, "IsCompleted") == "1",
-                ProjectId = ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
-                ParentTaskId = ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId"))
-            });
+            tasks.Add(new EntityTask(
+                id: int.Parse(GetColumnValue(row, columns, "Id")),
+                accountId: int.Parse(GetColumnValue(row, columns, "AccountId")),
+                name: GetColumnValue(row, columns, "Name"),
+                description: GetColumnValue(row, columns, "Description"),
+                isCompleted: GetColumnValue(row, columns, "IsCompleted") == "1",
+                projectId: ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
+                parentTaskId: ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId"))
+            ));
         }
 
         return tasks;
@@ -327,10 +326,9 @@ public class TursoMissionRepository : IMissionRepository
                 id: int.Parse(GetColumnValue(row, columns, "Id")),
                 accountId: int.Parse(GetColumnValue(row, columns, "AccountId")),
                 title: GetColumnValue(row, columns, "Title"),
-                description: GetColumnValue(row, columns, "Description"));
-
-            if (GetColumnValue(row, columns, "IsCompleted") == "1")
-                mission.Complete();
+                description: GetColumnValue(row, columns, "Description"),
+                isCompleted: GetColumnValue(row, columns, "IsCompleted") == "1"
+                );
 
             missions.Add(mission);
         }
@@ -338,28 +336,26 @@ public class TursoMissionRepository : IMissionRepository
         return missions;
     }
 
-    private IEnumerable<ProjectWithMission> MapToProjectsWithMission(TursoResponse response)
+    private IEnumerable<EligibleProjectProjection> MapToEligibleProjectProjections(TursoResponse response)
     {
         if (response.Result?.Rows == null)
-            return Enumerable.Empty<ProjectWithMission>();
+            return Enumerable.Empty<EligibleProjectProjection>();
 
-        var projects = new List<ProjectWithMission>();
+        var projections = new List<EligibleProjectProjection>();
         var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
 
         foreach (var row in response.Result.Rows)
         {
-            projects.Add(new ProjectWithMission
-            {
-                Id = int.Parse(GetColumnValue(row, columns, "Id")),
-                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
-                Name = GetColumnValue(row, columns, "Name"),
-                Description = GetColumnValue(row, columns, "Description"),
-                MissionId = int.Parse(GetColumnValue(row, columns, "MissionId")),
-                MissionTitle = GetColumnValue(row, columns, "Title")
-            });
+            projections.Add(new EligibleProjectProjection(
+                Id: int.Parse(GetColumnValue(row, columns, "Id")),
+                AccountId: int.Parse(GetColumnValue(row, columns, "AccountId")),
+                Name: GetColumnValue(row, columns, "Name"),
+                Description: GetColumnValue(row, columns, "Description"),
+                MissionTitle: GetColumnValue(row, columns, "Title")
+            ));
         }
 
-        return projects;
+        return projections;
     }
 
     private string GetColumnValue(TursoValue[] row, string[] columns, string columnName)

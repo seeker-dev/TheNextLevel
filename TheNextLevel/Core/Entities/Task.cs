@@ -2,70 +2,24 @@ namespace TheNextLevel.Core.Entities;
 
 public class Task
 {
-    public int Id { get; set; }
-    public int AccountId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
-    public bool IsCompleted { get; set; }
+    public int Id { get; private set; }
+    public int AccountId { get; private set; }
+    public string Name { get; private set; }
+    public string Description { get; private set; }
+    public bool IsCompleted { get; private set; }
+    public int? ProjectId { get; private set; }
+    public int? ParentTaskId { get; private set; }
 
-    // Project relationship
-    public int? ProjectId { get; set; }
-    public Project? Project { get; set; }
-
-    // Subtask relationship
-    public int? ParentTaskId { get; set; }
-    public Task? ParentTask { get; set; }
-    public ICollection<Task> Subtasks { get; set; } = new List<Task>();
-
-    public Task()
+    public Task(int id, int accountId, string name, string description, bool isCompleted, int? projectId, int? parentTaskId)
     {
-    }
+        ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
 
-    public Task(string name, string description) : this()
-    {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Task name cannot be empty", nameof(name));
-
+        Id = id;
+        AccountId = accountId;
         Name = name.Trim();
         Description = description?.Trim() ?? string.Empty;
-    }
-
-    public Task(string name, string description, int? projectId) : this(name, description)
-    {
+        IsCompleted = isCompleted;
         ProjectId = projectId;
-    }
-
-    public Task(string name, string description, int? projectId, int? parentTaskId) : this(name, description, projectId)
-    {
         ParentTaskId = parentTaskId;
-    }
-
-    public void UpdateName(string newName)
-    {
-        if (string.IsNullOrWhiteSpace(newName))
-            throw new ArgumentException("Task name cannot be empty", nameof(newName));
-
-        Name = newName.Trim();
-    }
-    
-    public void UpdateDescription(string newDescription)
-    {
-        Description = newDescription?.Trim() ?? string.Empty;
-    }
-    
-    public void MarkComplete()
-    {
-        if (!IsCompleted)
-        {
-            IsCompleted = true;
-        }
-    }
-    
-    public void Reopen()
-    {
-        if (IsCompleted)
-        {
-            IsCompleted = false;
-        }
     }
 }

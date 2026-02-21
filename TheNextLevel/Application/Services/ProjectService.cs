@@ -1,7 +1,6 @@
 using TheNextLevel.Application.DTOs;
 using TheNextLevel.Application.Extensions;
 using TheNextLevel.Application.Interfaces;
-using TheNextLevel.Core.Entities;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Core.DTOs;
 
@@ -33,16 +32,8 @@ public class ProjectService : IProjectService
 
     public async Task<ProjectDto?> UpdateAsync(int id, string name, string description)
     {
-        var project = await _projectRepository.GetByIdAsync(id);
-        if (project == null)
-            return null;
-
-        project.UpdateName(name);
-        project.UpdateDescription(description);
-
-        var updatedProject = await _projectRepository.UpdateAsync(project);
-
-        return updatedProject.ToDto();
+        var updatedProject = await _projectRepository.UpdateAsync(id, name, description);
+        return updatedProject?.ToDto();
     }
 
     public async Task<bool> DeleteAsync(int id)

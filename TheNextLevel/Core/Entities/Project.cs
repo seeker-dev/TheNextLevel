@@ -2,11 +2,11 @@ namespace TheNextLevel.Core.Entities;
 
 public class Project
 {
-    public int Id { get; set; }
-    public int AccountId { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-    public int MissionId { get; set; }
+    public int Id { get; private set; }
+    public int AccountId { get; private set; }
+    public string Name { get; private set; }
+    public string? Description { get; private set; }
+    public int MissionId { get; private set; }
 
     public Project(int id, int accountId, string name, string? description, int missionId)
     {

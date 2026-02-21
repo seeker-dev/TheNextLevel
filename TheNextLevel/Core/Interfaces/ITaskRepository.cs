@@ -6,8 +6,11 @@ public interface ITaskRepository
 {
     System.Threading.Tasks.Task<IEnumerable<Entities.Task>> GetAllAsync();
     System.Threading.Tasks.Task<Entities.Task?> GetByIdAsync(int id);
-    System.Threading.Tasks.Task<Entities.Task> AddAsync(Entities.Task task);
-    System.Threading.Tasks.Task<Entities.Task> UpdateAsync(Entities.Task task);
+    System.Threading.Tasks.Task<Entities.Task> AddAsync(string name, string description, int? projectId = null, int? parentTaskId = null);
+    System.Threading.Tasks.Task<bool> UpdateAsync(int id, string name, string description);
+    System.Threading.Tasks.Task<bool> CompleteAsync(int id);
+    System.Threading.Tasks.Task<bool> ReopenAsync(int id);
+    System.Threading.Tasks.Task<bool> AssignToProjectAsync(int id, int? projectId);
     System.Threading.Tasks.Task<bool> DeleteAsync(int id);
     System.Threading.Tasks.Task<IEnumerable<Entities.Task>> GetByStatusAsync(bool isCompleted);
     System.Threading.Tasks.Task<IEnumerable<Entities.Task>> GetTasksByProjectIdAsync(int projectId);

@@ -10,15 +10,13 @@ public class TaskService : ITaskService
 {
     private readonly ITaskRepository _taskRepository;
     private readonly IProjectRepository _projectRepository;
-    private readonly IAccountContext _accountContext;
 
-    public TaskService(ITaskRepository taskRepository, IProjectRepository projectRepository, IAccountContext accountContext)
+    public TaskService(ITaskRepository taskRepository, IProjectRepository projectRepository)
     {
         _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
         _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
-        _accountContext = accountContext ?? throw new ArgumentNullException(nameof(accountContext));
     }
-    
+
     public async System.Threading.Tasks.Task<TaskDto?> GetByIdAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
@@ -27,23 +25,13 @@ public class TaskService : ITaskService
 
     public async System.Threading.Tasks.Task<int> CreateAsync(CreateTaskRequest request)
     {
-        var task = new Core.Entities.Task(request.Name, request.Description);
-        task.AccountId = _accountContext.GetCurrentAccountId();
-
-        await _taskRepository.AddAsync(task);
+        var task = await _taskRepository.AddAsync(request.Name, request.Description);
         return task.Id;
     }
 
     public async System.Threading.Tasks.Task<bool> UpdateAsync(int id, UpdateTaskRequest request)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
-        if (task == null) return false;
-
-        task.UpdateName(request.Name);
-        task.UpdateDescription(request.Description);
-
-        await _taskRepository.UpdateAsync(task);
-        return true;
+        return await _taskRepository.UpdateAsync(id, request.Name, request.Description);
     }
 
     public async System.Threading.Tasks.Task<bool> DeleteAsync(int id)
@@ -53,18 +41,10 @@ public class TaskService : ITaskService
 
     public async System.Threading.Tasks.Task<bool> CompleteAsync(int id)
     {
-        var task = await _taskRepository.GetByIdAsync(id);
-        if (task == null) return false;
+        var completed = await _taskRepository.CompleteAsync(id);
+        if (!completed) return false;
 
-        task.MarkComplete();
-        await _taskRepository.UpdateAsync(task);
-
-        // Auto-complete all subtasks if this is a parent task
-        if (task.ParentTaskId == null)
-        {
-            await _taskRepository.BulkCompleteSubtasksAsync(id);
-        }
-
+        await _taskRepository.BulkCompleteSubtasksAsync(id);
         return true;
     }
 
@@ -73,18 +53,14 @@ public class TaskService : ITaskService
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
 
-        task.Reopen();
-        await _taskRepository.UpdateAsync(task);
+        await _taskRepository.ReopenAsync(id);
 
         // If reopening a subtask, reopen parent if completed
         if (task.ParentTaskId.HasValue)
         {
             var parentTask = await _taskRepository.GetByIdAsync(task.ParentTaskId.Value);
-            if (parentTask != null && parentTask.IsCompleted)
-            {
-                parentTask.Reopen();
-                await _taskRepository.UpdateAsync(parentTask);
-            }
+            if (parentTask?.IsCompleted == true)
+                await _taskRepository.ReopenAsync(parentTask.Id);
         }
 
         return true;
@@ -98,9 +74,6 @@ public class TaskService : ITaskService
 
     public async System.Threading.Tasks.Task<bool> AssignAsync(int taskId, int? projectId)
     {
-        var task = await _taskRepository.GetByIdAsync(taskId);
-        if (task == null) return false;
-
         // If assigning to a project, verify the project exists
         if (projectId.HasValue)
         {
@@ -108,11 +81,7 @@ public class TaskService : ITaskService
             if (project == null) return false;
         }
 
-        // Update the task's project assignment
-        task.ProjectId = projectId;
-        await _taskRepository.UpdateAsync(task);
-
-        return true;
+        return await _taskRepository.AssignToProjectAsync(taskId, projectId);
     }
 
     public async System.Threading.Tasks.Task<PagedResult<TaskDto>> ListAsync(int skip, int take, bool isCompleted = false)
@@ -141,7 +110,7 @@ public class TaskService : ITaskService
     {
         // Validate parent task exists
         var parentTask = await _taskRepository.GetByIdAsync(request.ParentTaskId);
-        if (parentTask == null)
+        if (parentTask is null)
             throw new InvalidOperationException("Parent task not found");
 
         // Enforce single-level nesting
@@ -149,18 +118,14 @@ public class TaskService : ITaskService
             throw new InvalidOperationException("Cannot create subtask under another subtask. Only single-level nesting is supported.");
 
         // Create subtask without project association - subtasks belong to their parent task, not directly to projects
-        var subtask = new Core.Entities.Task(request.Name, request.Description);
-        subtask.AccountId = _accountContext.GetCurrentAccountId();
-        subtask.ParentTaskId = request.ParentTaskId;
-
-        await _taskRepository.AddAsync(subtask);
+        var subtask = await _taskRepository.AddAsync(request.Name, request.Description, parentTaskId: request.ParentTaskId);
         return subtask.Id;
     }
 
     public async System.Threading.Tasks.Task<PagedResult<TaskDto>> ListSubtasksByParentIdAsync(int parentTaskId, int skip, int take)
     {
         var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(parentTaskId, skip, take);
-        
+
         return new PagedResult<TaskDto>
         {
             Items = subtasks.Items.ToDto(),

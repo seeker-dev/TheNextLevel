@@ -290,16 +290,15 @@ public class TursoMissionRepository : IMissionRepository
 
         foreach (var row in response.Result.Rows)
         {
-            tasks.Add(new EntityTask
-            {
-                Id = int.Parse(GetColumnValue(row, columns, "Id")),
-                AccountId = int.Parse(GetColumnValue(row, columns, "AccountId")),
-                Name = GetColumnValue(row, columns, "Name"),
-                Description = GetColumnValue(row, columns, "Description"),
-                IsCompleted = GetColumnValue(row, columns, "IsCompleted") == "1",
-                ProjectId = ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
-                ParentTaskId = ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId"))
-            });
+            tasks.Add(new EntityTask(
+                id: int.Parse(GetColumnValue(row, columns, "Id")),
+                accountId: int.Parse(GetColumnValue(row, columns, "AccountId")),
+                name: GetColumnValue(row, columns, "Name"),
+                description: GetColumnValue(row, columns, "Description"),
+                isCompleted: GetColumnValue(row, columns, "IsCompleted") == "1",
+                projectId: ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
+                parentTaskId: ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId"))
+            ));
         }
 
         return tasks;

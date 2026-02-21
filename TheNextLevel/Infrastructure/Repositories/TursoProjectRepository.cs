@@ -48,7 +48,7 @@ public class TursoProjectRepository : IProjectRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description FROM Projects WHERE Id = ? AND AccountId = ?",
+            "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE Id = ? AND AccountId = ?",
             id, accountId);
 
         var project = MapToProjects(response).FirstOrDefault();
@@ -83,17 +83,17 @@ public class TursoProjectRepository : IProjectRepository
         throw new InvalidOperationException("Failed to create project.");
     }
 
-    public async Task<Project> UpdateAsync(Project project)
+    public async Task<Project?> UpdateAsync(int id, string name, string description)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         await _client.ExecuteAsync(
             "UPDATE Projects SET Name = ?, Description = ? WHERE Id = ? AND AccountId = ?",
-            project.Name,
-            project.Description ?? string.Empty,
-            project.Id,
+            name.Trim(),
+            description?.Trim() ?? string.Empty,
+            id,
             accountId);
 
-        return project;
+        return await GetByIdAsync(id);
     }
 
     public async Task<bool> DeleteAsync(int id)

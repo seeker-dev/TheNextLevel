@@ -50,6 +50,12 @@ public class MissionService : IMissionService
 
     public async System.Threading.Tasks.Task<bool> DeleteAsync(int id)
     {
+        var projects = await _missionRepository.ListProjectsAsync(id, 0, 1);
+        var tasks = await _missionRepository.ListTasksAsync(id, 0, 1);
+
+        if (projects.TotalCount > 0 || tasks.TotalCount > 0)
+            return false; // Cannot delete mission with associated projects or tasks
+
         return await _missionRepository.DeleteAsync(id);
     }
 

@@ -38,13 +38,13 @@ public class MissionService : IMissionService
 
     public async System.Threading.Tasks.Task<MissionDto> CreateAsync(CreateMissionDto mission)
     {
-        var addedMission = await _missionRepository.AddAsync(mission.Title, mission.Description);
+        var addedMission = await _missionRepository.AddAsync(mission.Name, mission.Description);
         return new MissionDto(addedMission.Id, addedMission.Title, addedMission.Description, addedMission.IsCompleted);
     }
 
     public async System.Threading.Tasks.Task<MissionDto> UpdateAsync(UpdateMissionDto mission)
     {
-        var updatedMission = await _missionRepository.UpdateAsync(mission.Id, mission.Title, mission.Description);
+        var updatedMission = await _missionRepository.UpdateAsync(mission.Id, mission.Name, mission.Description);
         return new MissionDto(updatedMission.Id, updatedMission.Title, updatedMission.Description, updatedMission.IsCompleted);
     }
 

@@ -2,6 +2,7 @@
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Core.DTOs
 @using TheNextLevel.Presentation.Components.Cards
+@using TheNextLevel.Presentation.Dialogs
 
 @inject IMissionService MissionService
 
@@ -12,6 +13,10 @@
     }
     else
     {
+        <div class="button-container">
+            <button class="add-mission-btn" @onclick="OpenCreateModal">Add Mission ➕</button>
+            <button class="refresh-missions-btn" @onclick="RefreshMissionsAsync">Refresh Missions 🔄</button>
+        </div>
         <Virtualize ItemsProvider="LoadMissionsProvider" @ref="_missionList" Context="mission">
             <ItemContent>
                 <MissionCard Mission="mission" />
@@ -28,9 +33,16 @@
     }
 </div>
 
+<CreateModal
+    IsVisible="@_showCreateModal"
+    ItemType="ModalType.Mission"
+    OnResult="HandleMissionCreated"
+    OnCancel="CloseCreateModal" />
+
 @code {
     private bool _isLoading = true;
     private Virtualize<MissionDto?> _missionList;
+    private bool _showCreateModal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -39,20 +51,34 @@
 
     private async ValueTask<ItemsProviderResult<MissionDto?>> LoadMissionsProvider(ItemsProviderRequest request)
     {
-        // var missions = await MissionService.ListAsync(request.StartIndex, request.Count);
-        // For demo purposes, we'll return dummy data
-        var missions = new PagedResult<MissionDto>
+        try
         {
-            Items = Enumerable.Range(request.StartIndex, request.Count).Select(i => new MissionDto
-            (
-                i,
-                $"Mission {i + 1}",
-                $"Description for Mission {i + 1}",
-                false
-            )).ToList(),
-            TotalCount = 5 // Assume there are 5 missions total
-        };
-        return new ItemsProviderResult<MissionDto?>(missions.Items, missions.TotalCount);
+            _isLoading = true;
+            var result = await MissionService.ListAsync(request.StartIndex, request.Count, null);
+            var missions = result?.Items ?? [];
+            var totalCount = result?.TotalCount ?? 0;
+            return new ItemsProviderResult<MissionDto?>(missions, totalCount);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading missions: {ex.Message}");
+            return new ItemsProviderResult<MissionDto?>([], 0);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OpenCreateModal()
+    {
+        _showCreateModal = true;
+    }
+
+    private void CloseCreateModal()
+    {
+        _showCreateModal = false;
     }
 
     public async Task RefreshMissionsAsync()
@@ -61,5 +87,15 @@
         {
             await _missionList.RefreshDataAsync();
         }
+    }
+
+    private async Task HandleMissionCreated(IItemDto? newMission)
+    {
+        if (newMission is MissionDto missionDto)
+        {
+            // Optionally, you can add the new mission to the list or refresh the entire list
+            await RefreshMissionsAsync();
+        }
+        _showCreateModal = false;
     }
 }

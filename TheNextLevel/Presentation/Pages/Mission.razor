@@ -1,6 +1,7 @@
 @page "/missions/{Id:int}"
 @using TheNextLevel.Presentation.Components.Buttons
 @using TheNextLevel.Presentation.Dialogs
+@using TheNextLevel.Presentation.Components.Grids
 @inject IMissionService MissionService
 @inject NavigationManager NavigationManager
 
@@ -38,6 +39,21 @@
         {
             <h3>Description</h3>
             <p>@_mission.Description</p>
+        }
+    </div>
+    <div class="projects-section">
+        @if (_isLoading)
+        {
+            <p class="loading-text">Loading projects...</p>
+        }
+        else if (_errorMessage != null)
+        {
+            <p class="error-message">@_errorMessage</p>
+        }
+        else if (_mission != null)
+        {
+            <ProjectList
+                Mission="@_mission"/>
         }
     </div>
 </main>

@@ -101,6 +101,16 @@
 
     private async Task OnDeleteConfirmed()
     {
+        var result = await MissionService.ListProjectsAsync(Id, 0, 1);
+        // if there are projects in this mission, block deletion and show error message
+        if (_mission != null && result.Items.Any())
+        {
+            _errorMessage = "Cannot delete mission with existing projects. Please remove or reassign projects before deleting.";
+            _isDeleteDialogVisible = false;
+            StateHasChanged();
+            return;
+        }
+
         try
         {
             if (_mission != null)

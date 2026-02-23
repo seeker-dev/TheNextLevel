@@ -1,6 +1,6 @@
 @inject NavigationManager Navigation
 <div class="mission-card-wrapper">
-    <div class="mission-card" @onclick="@( () => Navigation.NavigateTo($"/mission/{Mission?.Id}"))">
+    <div class="mission-card" @onclick="@( () => Navigation.NavigateTo($"/missions/{Mission?.Id}"))">
         <div class="mission-content">
             <h3 class="mission-name">@Mission?.Name</h3>
         </div>

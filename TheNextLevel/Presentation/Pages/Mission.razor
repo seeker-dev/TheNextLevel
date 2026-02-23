@@ -1,0 +1,123 @@
+@page "/missions/{Id:int}"
+@using TheNextLevel.Presentation.Components.Buttons
+@using TheNextLevel.Presentation.Dialogs
+@inject IMissionService MissionService
+@inject NavigationManager NavigationManager
+
+<main class="main-content">
+    <div class="mission-page-header custom-bg">
+        <button class="back-button" @onclick="NavigateBack">←</button>
+        @if (_isLoading)
+        {
+            <p class="loading-text">Loading...</p>
+        }
+        else if (_errorMessage != null)
+        {
+            <p class="error-message">@_errorMessage</p>
+        }
+        else if (_mission != null)
+        {
+            <h1 class="mission-page-title">@_mission.Name</h1>
+            
+            <div class="mission-action-buttons">
+                <!-- <button class="action-btn action-btn-primary" @onclick="ShowEditDialog">✏️</button> -->
+                <button title="Delete Mission" tooltip="Delete Mission" class="action-btn action-btn-danger" @onclick="ShowDeleteDialog">🗑️</button>
+            </div>
+        }
+    </div>
+    <div class="description-section">
+        @if (_isLoading)
+        {
+            <p class="loading-text">Loading mission description...</p>
+        }
+        else if (_errorMessage != null)
+        {
+            <p class="error-message">@_errorMessage</p>
+        }
+        else if (_mission != null)
+        {
+            <h3>Description</h3>
+            <p>@_mission.Description</p>
+        }
+    </div>
+</main>
+
+<EditModal />
+
+<ConfirmDeleteDialog
+    IsVisible="@_isDeleteDialogVisible"
+    ItemName="@_mission?.Name"
+    ItemType="mission"
+    OnCancel="() => _isDeleteDialogVisible = false"
+    OnConfirm="OnDeleteConfirmed" />
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private MissionDto? _mission;
+    private bool _isLoading = true;
+    private string? _errorMessage;
+    private bool _isDeleteDialogVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadMissionAsync();
+    }
+
+    private async Task LoadMissionAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = null;
+            _mission = await MissionService.GetByIdAsync(Id);
+
+            if (_mission == null)
+            {
+                _errorMessage = "Mission not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading mission: {ex.Message}");
+            _errorMessage = "Failed to load mission. Please try again later.";
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/missions");
+    }
+
+    private void ShowDeleteDialog()
+    {
+        _isDeleteDialogVisible = true;
+    }
+
+    private async Task OnDeleteConfirmed()
+    {
+        try
+        {
+            if (_mission != null)
+            {
+                await MissionService.DeleteAsync(_mission.Id);
+                NavigationManager.NavigateTo("/missions");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error deleting mission: {ex.Message}");
+            _errorMessage = "Failed to delete mission. Please try again later.";
+        }
+        finally
+        {
+            _isDeleteDialogVisible = false;
+            StateHasChanged();
+        }
+    }
+}

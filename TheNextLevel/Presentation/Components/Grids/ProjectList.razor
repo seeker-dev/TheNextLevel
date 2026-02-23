@@ -1,0 +1,64 @@
+@using TheNextLevel.Presentation.Components.Cards
+@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Application.Interfaces
+@inject IMissionService MissionService
+
+<div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
+    <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_projectList" Context="project">
+        <ItemContent>
+            <ProjectCard Project="project" />
+        </ItemContent>
+        <Placeholder>
+            <div class="loading-card">Loading...</div>
+        </Placeholder>
+        <EmptyContent>
+            <div class="empty-project">
+                <p>No projects found. Create your first project!</p>
+            </div>
+        </EmptyContent>
+    </Virtualize>
+</div>
+
+@code {
+    [Parameter]
+    public MissionDto? Mission { get; set; }
+
+    private bool _isLoading = false;
+    private bool _isInitialLoad = false;
+    private Virtualize<ProjectDto>? _projectList;
+    private int _totalCount = 0;
+
+    private async ValueTask<ItemsProviderResult<ProjectDto?>> LoadProjectsProvider(ItemsProviderRequest request)
+    {
+        try
+        {
+            _isLoading = true;
+            //var result = await MissionService.ListProjectsAsync(Mission?.Id ?? 0, request.StartIndex, request.Count);
+            //var projects = result?.Items ?? Array.Empty<ProjectDto>();
+            // Placeholder data until the API is implemented
+            var projects = new List<ProjectDto>
+            {
+                new ProjectDto(1, "Project Alpha", ""),
+                new ProjectDto(2, "Project Beta", ""),
+                new ProjectDto(3, "Project Gamma", ""),
+                new ProjectDto(4, "Project Delta", ""),
+                new ProjectDto(5, "Project Epsilon", "")
+            }.Skip(request.StartIndex).Take(request.Count).ToArray();
+            
+            //var totalCount = result?.TotalCount ?? 0;
+            _totalCount = 5; // Placeholder total count until the API is implemented
+            return new ItemsProviderResult<ProjectDto?>(projects, _totalCount);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading projects: {ex.Message}");
+            return new ItemsProviderResult<ProjectDto?>(Array.Empty<ProjectDto>(), 0);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+    
+}

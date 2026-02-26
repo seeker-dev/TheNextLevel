@@ -139,14 +139,14 @@ public class TursoMissionRepository : IMissionRepository
         if (!string.IsNullOrWhiteSpace(filterText))
         {
             countQuery = "SELECT COUNT(*) as TotalCount FROM Projects WHERE MissionId = ? AND AccountId = ? AND Name LIKE ?";
-            dataQuery = "SELECT Id, AccountId, Name, Description FROM Projects WHERE MissionId = ? AND AccountId = ? AND Name LIKE ? ORDER BY Name LIMIT ? OFFSET ?";
+            dataQuery = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE MissionId = ? AND AccountId = ? AND Name LIKE ? ORDER BY Name LIMIT ? OFFSET ?";
             countParams = new object[] { id, accountId, $"%{filterText}%" };
             dataParams = new object[] { id, accountId, $"%{filterText}%", take, skip };
         }
         else
         {
             countQuery = "SELECT COUNT(*) as TotalCount FROM Projects WHERE MissionId = ? AND AccountId = ?";
-            dataQuery = "SELECT Id, AccountId, Name, Description FROM Projects WHERE MissionId = ? AND AccountId = ? ORDER BY Name LIMIT ? OFFSET ?";
+            dataQuery = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE MissionId = ? AND AccountId = ? ORDER BY Name LIMIT ? OFFSET ?";
             countParams = new object[] { id, accountId };
             dataParams = new object[] { id, accountId, take, skip };
         }

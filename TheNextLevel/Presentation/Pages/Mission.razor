@@ -21,7 +21,7 @@
             <h1 class="mission-page-title">@_mission.Name</h1>
             
             <div class="mission-action-buttons">
-                <!-- <button class="action-btn action-btn-primary" @onclick="ShowEditDialog">✏️</button> -->
+                <button title="Edit Mission" tooltip="Edit Mission" class="action-btn action-btn-primary" @onclick="ShowEditDialog">✏️</button>
                 <button title="Delete Mission" tooltip="Delete Mission" class="action-btn action-btn-danger" @onclick="ShowDeleteDialog">🗑️</button>
             </div>
         }
@@ -58,7 +58,11 @@
     </div>
 </main>
 
-<EditModal />
+<EditModal 
+    Item="@_mission"
+    @ref="_editModal"
+    OnResult="HandleMissionEdited"
+    OnCancel="HideEditDialog" />
 
 <ConfirmDeleteDialog
     IsVisible="@_isDeleteDialogVisible"
@@ -74,6 +78,7 @@
     private bool _isLoading = true;
     private string? _errorMessage;
     private bool _isDeleteDialogVisible = false;
+    private EditModal? _editModal;
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,6 +118,25 @@
     private void ShowDeleteDialog()
     {
         _isDeleteDialogVisible = true;
+    }
+
+    private void ShowEditDialog()
+    {
+        _editModal?.ShowDialog();
+    }
+
+    private void HideEditDialog()
+    {
+        _editModal?.HideDialog();
+    }
+
+    private void HandleMissionEdited(IItemDto? updatedMission)
+    {
+        if (updatedMission is MissionDto missionDto)
+        {
+            _mission = missionDto;
+            StateHasChanged();
+        }
     }
 
     private async Task OnDeleteConfirmed()

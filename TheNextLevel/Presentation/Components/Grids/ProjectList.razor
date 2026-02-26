@@ -2,6 +2,12 @@
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @inject IMissionService MissionService
+@if (_isLoading)
+{
+    <div class="loading-container">
+        <p class="loading-text">Loading projects...</p>
+    </div>
+}
 
 <div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
     <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_projectList" Context="project">
@@ -24,7 +30,6 @@
     public MissionDto? Mission { get; set; }
 
     private bool _isLoading = false;
-    private bool _isInitialLoad = false;
     private Virtualize<ProjectDto>? _projectList;
     private int _totalCount = 0;
 
@@ -33,20 +38,10 @@
         try
         {
             _isLoading = true;
-            //var result = await MissionService.ListProjectsAsync(Mission?.Id ?? 0, request.StartIndex, request.Count);
-            //var projects = result?.Items ?? Array.Empty<ProjectDto>();
-            // Placeholder data until the API is implemented
-            var projects = new List<ProjectDto>
-            {
-                new ProjectDto(1, "Project Alpha", ""),
-                new ProjectDto(2, "Project Beta", ""),
-                new ProjectDto(3, "Project Gamma", ""),
-                new ProjectDto(4, "Project Delta", ""),
-                new ProjectDto(5, "Project Epsilon", "")
-            }.Skip(request.StartIndex).Take(request.Count).ToArray();
+            var result = await MissionService.ListProjectsAsync(Mission?.Id ?? 0, request.StartIndex, request.Count);
+            var projects = result?.Items ?? Array.Empty<ProjectDto>();
             
-            //var totalCount = result?.TotalCount ?? 0;
-            _totalCount = 5; // Placeholder total count until the API is implemented
+            _totalCount = result?.TotalCount ?? 0;
             return new ItemsProviderResult<ProjectDto?>(projects, _totalCount);
         }
         catch (Exception ex)
@@ -59,6 +54,11 @@
             _isLoading = false;
             StateHasChanged();
         }
+    }
+
+    public async Task RefreshAsync()
+    {
+        await _projectList.RefreshDataAsync();
     }
     
 }

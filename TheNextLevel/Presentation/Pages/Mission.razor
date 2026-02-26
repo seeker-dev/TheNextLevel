@@ -23,6 +23,9 @@
             <div class="mission-action-buttons">
                 <button title="Edit Mission" tooltip="Edit Mission" class="action-btn action-btn-primary" @onclick="ShowEditDialog">✏️</button>
                 <button title="Delete Mission" tooltip="Delete Mission" class="action-btn action-btn-danger" @onclick="ShowDeleteDialog">🗑️</button>
+                <button class="action-btn action-btn-primary" @onclick="OpenNewProjectDialog">
+                    Add New Project ➕
+                </button>
             </div>
         }
     </div>
@@ -53,6 +56,7 @@
         else if (_mission != null)
         {
             <ProjectList
+                @ref="_projectList"
                 Mission="@_mission"/>
         }
     </div>
@@ -71,6 +75,14 @@
     OnCancel="() => _isDeleteDialogVisible = false"
     OnConfirm="OnDeleteConfirmed" />
 
+<NewProjectDialog
+    @ref="_newProjectDialog"
+    IsVisible="_showNewProjectDialog"
+    ExistingProject="_editingProject"
+    Mission="@_mission"
+    OnResult="HandleProjectSaved"
+    OnCancel="CloseNewProjectDialog" />
+
 @code {
     [Parameter]
     public int Id { get; set; }
@@ -78,7 +90,13 @@
     private bool _isLoading = true;
     private string? _errorMessage;
     private bool _isDeleteDialogVisible = false;
+
     private EditModal? _editModal;
+    private NewProjectDialog? _newProjectDialog;
+    private ProjectList? _projectList;
+
+    private bool _showNewProjectDialog = false;
+    private ProjectDto? _editingProject = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -169,5 +187,33 @@
             _isDeleteDialogVisible = false;
             StateHasChanged();
         }
+    }
+
+    private void OpenNewProjectDialog()
+    {
+        _editingProject = null;  // null = create mode
+        _showNewProjectDialog = true;
+    }
+
+    private void CloseNewProjectDialog()
+    {
+        _showNewProjectDialog = false;
+        _editingProject = null;  // reset state
+    }
+
+    private async Task HandleProjectSaved(ProjectDto savedProject)
+    {
+        CloseNewProjectDialog();
+        await RefreshListAsync();
+    }
+
+    private async Task HandleProjectDeleted(ProjectDto project)
+    {
+        await RefreshListAsync();
+    }
+
+    private async Task RefreshListAsync()
+    {
+        await _projectList.RefreshAsync();
     }
 }

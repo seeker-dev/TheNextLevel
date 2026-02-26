@@ -48,6 +48,9 @@
     public bool IsVisible { get; set; }
 
     [Parameter]
+    public required MissionDto Mission { get; set; }
+
+    [Parameter]
     public EventCallback<ProjectDto> OnResult { get; set; }
 
     [Parameter]
@@ -114,7 +117,7 @@
                 resultProject = await ProjectService.CreateAsync(
                     projectName.Trim(),
                     projectDescription?.Trim() ?? string.Empty,
-                    0
+                    Mission.Id
                 );
             }
 

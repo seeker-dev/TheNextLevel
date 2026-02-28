@@ -89,13 +89,12 @@ public class TursoTaskRepository : ITaskRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async System.Threading.Tasks.Task<bool> AssignToProjectAsync(int id, int? projectId)
+    public async System.Threading.Tasks.Task<bool> AssignToProjectAsync(int id, int projectId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
-        object projectIdParam = projectId.HasValue ? projectId.Value : null!;
         var response = await _client.ExecuteAsync(
             "UPDATE Tasks SET ProjectId = ? WHERE Id = ? AND AccountId = ?",
-            projectIdParam,
+            projectId,
             id,
             accountId);
 
@@ -127,16 +126,6 @@ public class TursoTaskRepository : ITaskRepository
         var response = await _client.QueryAsync(
             "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId = ? AND AccountId = ? AND ParentTaskId IS NULL",
             projectId, accountId);
-
-        return MapToTasks(response);
-    }
-
-    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetUngroupedTasksAsync()
-    {
-        var accountId = _accountContext.GetCurrentAccountId();
-        var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId IS NULL AND AccountId = ? AND ParentTaskId IS NULL",
-            accountId);
 
         return MapToTasks(response);
     }
@@ -294,15 +283,6 @@ public class TursoTaskRepository : ITaskRepository
             Items = items,
             TotalCount = totalCount
         };
-    }
-
-    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetRootTasksAsync()
-    {
-        var accountId = _accountContext.GetCurrentAccountId();
-        var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ParentTaskId IS NULL AND AccountId = ?",
-            accountId);
-        return MapToTasks(response);
     }
 
     public async System.Threading.Tasks.Task<int> GetSubtaskCountAsync(int parentTaskId)

@@ -250,12 +250,12 @@ public class TursoMissionRepository : IMissionRepository
         };
     }
 
-    public async System.Threading.Tasks.Task AddToMissionAsync(int id, int projectId)
+    public async System.Threading.Tasks.Task MoveProjectAsync(int missionId, int projectId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         await _client.ExecuteAsync(
             "UPDATE Projects SET MissionId = ? WHERE Id = ? AND AccountId = ?",
-            id, projectId, accountId);
+            missionId, projectId, accountId);
     }
 
     private IEnumerable<Project> MapToProjects(TursoResponse response)

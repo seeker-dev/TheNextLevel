@@ -105,8 +105,8 @@ public class MissionService : IMissionService
         };
     }
 
-    public async Task AddToMissionAsync(int id, int projectId)
+    public async Task MoveProjectAsync(int missionId, int projectId)
     {
-        await _missionRepository.AddToMissionAsync(id, projectId);
+        await _missionRepository.MoveProjectAsync(missionId, projectId);
     }
 }

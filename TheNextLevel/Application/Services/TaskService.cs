@@ -25,7 +25,7 @@ public class TaskService : ITaskService
 
     public async System.Threading.Tasks.Task<int> CreateAsync(CreateTaskRequest request)
     {
-        var task = await _taskRepository.AddAsync(request.Name, request.Description);
+        var task = await _taskRepository.AddAsync(request.Name, request.Description, projectId: request.ProjectId);
         return task.Id;
     }
 
@@ -66,20 +66,10 @@ public class TaskService : ITaskService
         return true;
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> ListUngroupedAsync()
+    public async System.Threading.Tasks.Task<bool> AssignAsync(int taskId, int projectId)
     {
-        var tasks = await _taskRepository.GetUngroupedTasksAsync();
-        return tasks.ToDto();
-    }
-
-    public async System.Threading.Tasks.Task<bool> AssignAsync(int taskId, int? projectId)
-    {
-        // If assigning to a project, verify the project exists
-        if (projectId.HasValue)
-        {
-            var project = await _projectRepository.GetByIdAsync(projectId.Value);
-            if (project == null) return false;
-        }
+        var project = await _projectRepository.GetByIdAsync(projectId);
+        if (project == null) return false;
 
         return await _taskRepository.AssignToProjectAsync(taskId, projectId);
     }

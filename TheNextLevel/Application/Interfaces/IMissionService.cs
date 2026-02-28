@@ -14,5 +14,5 @@ public interface IMissionService
     Task<PagedResult<ProjectDto>> ListProjectsAsync(int id, int skip, int take, string? filterText = null);
     Task<PagedResult<EligibleProjectDto>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null);
     Task<PagedResult<TaskDto>> ListTasksAsync(int id, int skip, int take, string? filterText = null);
-    Task AddToMissionAsync(int id, int projectId);
+    Task MoveProjectAsync(int missionId, int projectId);
 }

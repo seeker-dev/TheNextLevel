@@ -48,6 +48,9 @@
 	public bool IsVisible { get; set; }
 
 	[Parameter]
+	public int? ProjectId { get; set; }
+
+	[Parameter]
 	public int? ParentTaskId { get; set; }
 
 	[Parameter]
@@ -95,11 +98,12 @@
 				var subtaskId = await TaskService.CreateSubtaskAsync(createSubtaskRequest);
 				resultTask = await TaskService.GetByIdAsync(subtaskId);
 			}
-			else
+			else if (ProjectId.HasValue)
 			{
 				var createRequest = new CreateTaskRequest(
 					taskTitle.Trim(),
-					taskDescription?.Trim() ?? string.Empty
+					taskDescription?.Trim() ?? string.Empty,
+					ProjectId.Value
 				);
 
 				var taskId = await TaskService.CreateAsync(createRequest);

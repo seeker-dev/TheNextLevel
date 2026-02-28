@@ -69,6 +69,7 @@ else
 <NewTaskDialog
     @ref="_newTaskDialog"
     IsVisible="@_showNewTaskDialog"
+    ProjectId="@Project?.Id"
     OnCancel="CloseNewTaskDialog"
     OnResult="HandleTaskCreated" />
 
@@ -210,12 +211,6 @@ else
     private async Task HandleTaskCreated(TaskDto task)
     {
         _showNewTaskDialog = false;
-
-        if (task != null && task.ProjectId != Project?.Id)
-        {
-            await TaskService.AssignAsync(task.Id, Project?.Id);
-        }
-
         await RefreshList();
     }
 

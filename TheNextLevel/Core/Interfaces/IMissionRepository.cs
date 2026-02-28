@@ -14,5 +14,5 @@ public interface IMissionRepository
     System.Threading.Tasks.Task<PagedResult<Project>> ListProjectsAsync(int id, int skip, int take, string? filterText = null);
     System.Threading.Tasks.Task<PagedResult<EligibleProjectProjection>> ListEligibleProjectsAsync(int id, int skip, int take, string? filterText = null);
     System.Threading.Tasks.Task<PagedResult<Task>> ListTasksAsync(int id, int skip, int take, string? filterText = null);
-    System.Threading.Tasks.Task AddToMissionAsync(int id, int projectId);
+    System.Threading.Tasks.Task MoveProjectAsync(int missionId, int projectId);
 }

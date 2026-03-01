@@ -11,6 +11,8 @@ public interface IProjectRepository
     Task<Project> CreateAsync(int missionId, string title, string description);
     Task<Project?> UpdateAsync(int id, string name, string description);
     Task<bool> DeleteAsync(int id);
+    Task<bool> CompleteAsync(int id);
+    Task<bool> ResetAsync(int id);
     Task<int> CountAsync(string? filterText = null);
     System.Threading.Tasks.Task MoveAsync(int projectId, int newMissionId);
 }

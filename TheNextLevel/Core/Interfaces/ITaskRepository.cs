@@ -12,14 +12,14 @@ public interface ITaskRepository
     Task<bool> DeleteAsync(int id);
     Task<bool> CompleteAsync(int id);
     Task<bool> ResetAsync(int id);
-    Task MoveAsync(int taskId, int newProjectId);
+    Task<bool> MoveAsync(int taskId, int newProjectId);
     
     
     Task<PagedResult<Entities.Task>> ListSubtasksByParentIdAsync(int parentId, int skip, int take);
     Task<Entities.Task> CreateSubtaskAsync(int parentId, string name, string description);
     Task<bool> UpdateSubtaskAsync(int id, int parentId, string name, string description);
-    Task<bool> DeleteSubtaskAsync(int id);
+    Task<bool> DeleteSubtaskAsync(int id, int parentId);
     Task<int> CountSubtasksAsync(int parentId);
     Task<int> BulkCompleteSubtasksAsync(int parentId);
-    Task MoveSubtaskAsync(int taskId, int newParentId);
+    Task<bool> MoveSubtaskAsync(int taskId, int newParentId);
 }

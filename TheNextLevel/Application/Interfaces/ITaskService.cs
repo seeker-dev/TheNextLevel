@@ -13,11 +13,11 @@ public interface ITaskService
     Task<bool> DeleteAsync(int id);
     Task<bool> CompleteAsync(int id);
     Task<bool> ResetAsync(int id);
-    Task MoveAsync(int taskId, int newProjectId);
+    Task<bool> MoveAsync(int taskId, int newProjectId);
 
     Task<PagedResult<TaskDto>> ListSubtasksByParentIdAsync(int parentTaskId, int skip, int take);
     Task<TaskDto> CreateSubtaskAsync(CreateSubtaskRequest request);
-    Task<bool> UpdateSubtaskAsync(int id, string name, string description);
-    Task<bool> DeleteSubtaskAsync(int id);
+    Task<bool> UpdateSubtaskAsync(int id, int parentId, string name, string description);
+    Task<bool> DeleteSubtaskAsync(int id, int parentId);
     Task<int> BulkCompleteSubtasksAsync(int parentId);
 }

@@ -80,7 +80,7 @@ public class TursoTaskRepository : ITaskRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async Task MoveAsync(int taskId, int newProjectId)
+    public async Task<bool> MoveAsync(int taskId, int newProjectId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
@@ -211,7 +211,7 @@ public class TursoTaskRepository : ITaskRepository
         var accountId = _accountContext.GetCurrentAccountId();
         var countResponse = await _client.QueryAsync(
             "SELECT COUNT(*) as Count FROM Tasks WHERE ParentTaskId = ? AND AccountId = ?",
-            parentTaskId, accountId);
+            parentId, accountId);
         var totalCount = 0;
 
         if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
@@ -222,7 +222,7 @@ public class TursoTaskRepository : ITaskRepository
 
         var dataResponse = await _client.QueryAsync(
             "SELECT Id, AccountId, Name, Description, IsCompleted, ParentTaskId FROM Tasks WHERE ParentTaskId = ? AND AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?",
-            parentTaskId, accountId, take, skip);
+            parentId, accountId, take, skip);
 
         var items = MapToTasks(dataResponse);
 
@@ -267,16 +267,16 @@ public class TursoTaskRepository : ITaskRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async Task<bool> DeleteSubtaskAsync(int id)
+    public async Task<bool> DeleteSubtaskAsync(int id, int parentId)
     {
+        var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
-            "DELETE FROM Tasks WHERE Id = ? AND AccountId = ?",
-            id,
-            _accountContext.GetCurrentAccountId());
+            "DELETE FROM Tasks WHERE Id = ? AND ParentTaskId = ? AND AccountId = ?",
+            id, parentId, accountId);
 
         return response.Result?.AffectedRowCount > 0;
     }
-
+    
     public async Task<int> CountSubtasksAsync(int parentId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
@@ -303,12 +303,13 @@ public class TursoTaskRepository : ITaskRepository
         return response.Result?.AffectedRowCount ?? 0;
     }
 
-    public async Task MoveSubtaskAsync(int taskId, int newParentId)
+    public async Task<bool> MoveSubtaskAsync(int taskId, int newParentId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
-        await _client.ExecuteAsync(
+        var response = await _client.ExecuteAsync(
             "UPDATE Tasks SET ParentTaskId = ? WHERE Id = ? AND AccountId = ? AND ParentTaskId IS NOT NULL",
             newParentId, taskId, accountId);
 
+        return response.Result?.AffectedRowCount > 0;
     }
 }

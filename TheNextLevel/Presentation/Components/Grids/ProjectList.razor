@@ -2,6 +2,7 @@
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @inject IMissionService MissionService
+@inject IProjectService ProjectService
 @if (_isLoading)
 {
     <div class="loading-container">
@@ -38,7 +39,7 @@
         try
         {
             _isLoading = true;
-            var result = await MissionService.ListProjectsAsync(Mission?.Id ?? 0, request.StartIndex, request.Count);
+            var result = await ProjectService.ListByMissionAsync(Mission?.Id ?? 0, request.StartIndex, request.Count);
             var projects = result?.Items ?? Array.Empty<ProjectDto>();
             
             _totalCount = result?.TotalCount ?? 0;

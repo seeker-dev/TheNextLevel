@@ -69,6 +69,7 @@ else
 <NewTaskDialog
     @ref="_newTaskDialog"
     IsVisible="@_showNewTaskDialog"
+    ProjectId="@Project?.Id"
     OnCancel="CloseNewTaskDialog"
     OnResult="HandleTaskCreated" />
 
@@ -125,8 +126,7 @@ else
             var pagedResult = await TaskService.ListByProjectAsync(
                 projectId: Project.Id,
                 skip: request.StartIndex,
-                take: request.Count,
-                isCompleted: _showCompleted);
+                take: request.Count);
 
             _totalCount = pagedResult.TotalCount;
 
@@ -210,12 +210,6 @@ else
     private async Task HandleTaskCreated(TaskDto task)
     {
         _showNewTaskDialog = false;
-
-        if (task != null && task.ProjectId != Project?.Id)
-        {
-            await TaskService.AssignAsync(task.Id, Project?.Id);
-        }
-
         await RefreshList();
     }
 

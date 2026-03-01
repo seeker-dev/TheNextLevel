@@ -7,8 +7,9 @@ public class Project
     public string Name { get; private set; }
     public string? Description { get; private set; }
     public int MissionId { get; private set; }
+    public bool IsCompleted { get; private set; }
 
-    public Project(int id, int accountId, string name, string? description, int missionId)
+    public Project(int id, int accountId, string name, string? description, int missionId, bool isCompleted = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
 
@@ -17,5 +18,6 @@ public class Project
         Name = name.Trim();
         Description = description?.Trim() ?? string.Empty;
         MissionId = missionId;
+        IsCompleted = isCompleted;
     }
 }

@@ -98,13 +98,13 @@
 
             if (Item is ProjectDto)
             {
-                var result = await MissionService.ListAsync(_currentPage, _pageSize, null);
+                var result = await MissionService.ListAsync(_currentPage, _pageSize);
                 items = result?.Items;
                 _totalCount = result?.TotalCount ?? 0;
             }
             else if (Item is TaskDto)
             {
-                var result = await ProjectService.ListAsync(_currentPage, _pageSize, null);
+                var result = await ProjectService.ListAsync(_currentPage, _pageSize);
                 items = result?.Items;
                 _totalCount = result?.TotalCount ?? 0;
             }
@@ -153,13 +153,12 @@
         var mission = (MissionDto)Item!;
         var updateRequest = new UpdateMissionDto
         (
-            mission.Id,
             itemName,
             itemDescription,
             mission.IsCompleted
         );
 
-        var result = await MissionService.UpdateAsync(updateRequest);
+        var result = await MissionService.UpdateAsync(mission.Id, updateRequest);
         if (result is not null)
         {
             await OnResult.InvokeAsync(result);

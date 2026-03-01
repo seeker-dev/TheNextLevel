@@ -3,6 +3,7 @@
 @using TheNextLevel.Presentation.Dialogs
 @using TheNextLevel.Presentation.Components.Grids
 @inject IMissionService MissionService
+@inject IProjectService ProjectService
 @inject NavigationManager NavigationManager
 
 <main class="main-content">
@@ -159,7 +160,7 @@
 
     private async Task OnDeleteConfirmed()
     {
-        var result = await MissionService.ListProjectsAsync(Id, 0, 1);
+        var result = await ProjectService.ListByMissionAsync(Id, 0, 1);
         // if there are projects in this mission, block deletion and show error message
         if (_mission != null && result.Items.Any())
         {

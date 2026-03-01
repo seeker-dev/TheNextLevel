@@ -24,16 +24,34 @@ public class ProjectService : IProjectService
         return project.ToDto();
     }
 
-    public async Task<ProjectDto> CreateAsync(string name, string description, int missionId)
+    public async Task<PagedResult<ProjectDto>> ListByMissionAsync(int missionId, int skip, int take)
     {
-        var createdProject = await _projectRepository.AddAsync(name, description, missionId);
+        var pagedProjects = await _projectRepository.ListByMissionIdAsync(missionId, skip, take);
+        var projectDtos = pagedProjects.Items.Select(p => p.ToDto()).ToList();
+
+        return new PagedResult<ProjectDto>
+        {
+            Items = projectDtos,
+            TotalCount = pagedProjects.TotalCount
+        };
+    }
+
+    public async Task<ProjectDto> CreateAsync(CreateProjectDto project)
+    {
+        var createdProject = await _projectRepository.CreateAsync(project.MissionId, project.Name, project.Description);
+
+        ArgumentNullException.ThrowIfNull(createdProject, nameof(createdProject));
+
         return createdProject.ToDto();
     }
 
-    public async Task<ProjectDto?> UpdateAsync(int id, string name, string description)
+    public async Task<ProjectDto> UpdateAsync(int id, UpdateProjectDto project)
     {
-        var updatedProject = await _projectRepository.UpdateAsync(id, name, description);
-        return updatedProject?.ToDto();
+        var updatedProject = await _projectRepository.UpdateAsync(id, project.Name, project.Description);
+
+        ArgumentNullException.ThrowIfNull(updatedProject, nameof(updatedProject));
+
+        return updatedProject.ToDto();
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -41,9 +59,19 @@ public class ProjectService : IProjectService
         return await _projectRepository.DeleteAsync(id);
     }
 
-    public async Task<PagedResult<ProjectDto>> ListAsync(int skip, int take, string? filterText = null)
+    public async Task<bool> CompleteAsync(int id)
     {
-        var pagedResult = await _projectRepository.GetPagedAsync(skip, take, filterText);
+        return await _projectRepository.CompleteAsync(id);
+    }
+
+    public async Task<bool> ResetAsync(int id)
+    {
+        return await _projectRepository.ResetAsync(id);
+    }
+
+    public async Task<PagedResult<ProjectDto>> ListAsync(int skip, int take)
+    {
+        var pagedResult = await _projectRepository.ListAsync(skip, take);
 
         return new PagedResult<ProjectDto>
         {

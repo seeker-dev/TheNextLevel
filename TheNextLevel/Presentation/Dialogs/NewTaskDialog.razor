@@ -48,6 +48,9 @@
 	public bool IsVisible { get; set; }
 
 	[Parameter]
+	public int? ProjectId { get; set; }
+
+	[Parameter]
 	public int? ParentTaskId { get; set; }
 
 	[Parameter]
@@ -87,23 +90,24 @@
 			if (ParentTaskId.HasValue)
 			{
 				var createSubtaskRequest = new CreateSubtaskRequest(
-					taskTitle.Trim(),
-					taskDescription?.Trim() ?? string.Empty,
-					ParentTaskId.Value
-				);
-
-				var subtaskId = await TaskService.CreateSubtaskAsync(createSubtaskRequest);
-				resultTask = await TaskService.GetByIdAsync(subtaskId);
-			}
-			else
-			{
-				var createRequest = new CreateTaskRequest(
+					ParentTaskId.Value,
 					taskTitle.Trim(),
 					taskDescription?.Trim() ?? string.Empty
 				);
 
-				var taskId = await TaskService.CreateAsync(createRequest);
-				resultTask = await TaskService.GetByIdAsync(taskId);
+				var subtask = await TaskService.CreateSubtaskAsync(createSubtaskRequest);
+				resultTask = await TaskService.GetByIdAsync(subtask.Id);
+			}
+			else if (ProjectId.HasValue)
+			{
+				var createRequest = new CreateTaskRequest(
+					ProjectId.Value,
+					taskTitle.Trim(),
+					taskDescription?.Trim() ?? string.Empty
+				);
+
+				var task = await TaskService.CreateAsync(createRequest);
+				resultTask = await TaskService.GetByIdAsync(task.Id);
 			}
 
 			if (resultTask != null)

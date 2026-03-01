@@ -10,7 +10,9 @@ public static class ProjectMappingExtensions
         return new ProjectDto(
             project.Id,
             project.Name,
-            project.Description ?? string.Empty
+            project.Description ?? string.Empty,
+            project.MissionId,
+            project.IsCompleted
         );
     }
 

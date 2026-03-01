@@ -8,40 +8,12 @@ namespace TheNextLevel.Infrastructure.Repositories;
 public class TursoProjectRepository : IProjectRepository
 {
     private readonly TursoClient _client;
-    private readonly ITaskRepository _taskRepository;
     private readonly IAccountContext _accountContext;
 
-    public TursoProjectRepository(TursoClient client, ITaskRepository taskRepository, IAccountContext accountContext)
+    public TursoProjectRepository(TursoClient client, IAccountContext accountContext)
     {
         _client = client;
-        _taskRepository = taskRepository;
         _accountContext = accountContext;
-    }
-
-    public async Task<int> GetTotalProjectsCountAsync(string? filterText = null)
-    {
-        var accountId = _accountContext.GetCurrentAccountId();
-
-        string query;
-        object[] parameters;
-
-        if (!string.IsNullOrWhiteSpace(filterText))
-        {
-            query = "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ? AND Name LIKE ?";
-            parameters = new object[] { accountId, $"%{filterText}%" };
-        }
-        else
-        {
-            query = "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ?";
-            parameters = new object[] { accountId };
-        }
-
-        var response = await _client.QueryAsync(query, parameters);
-        if (response.Result?.Rows == null || response.Result.Rows.Length == 0)
-            return 0;
-
-        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
-        return int.Parse(GetColumnValue(response.Result.Rows[0], columns, "TotalCount"));
     }
 
     public async Task<Project?> GetByIdAsync(int id)
@@ -51,19 +23,76 @@ public class TursoProjectRepository : IProjectRepository
             "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE Id = ? AND AccountId = ?",
             id, accountId);
 
-        var project = MapToProjects(response).FirstOrDefault();
-
-        if (project != null)
-        {
-            // Load tasks for this project
-            //var tasks = await _taskRepository.GetTasksByProjectIdsAsync(new[] { project.Id });
-            //project.Tasks = tasks.ToList();
-        }
-
-        return project;
+        return MapToProjects(response).FirstOrDefault();
     }
 
-    public async Task<Project> AddAsync(string name, string description, int missionId)
+    public async Task<PagedResult<Project>> ListAsync(int skip, int take)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+
+        // Get total count with filter
+        var totalCount = await CountAsync();
+
+        // Get paged data with filter
+        string query;
+        object[] parameters;
+
+        /*if (!string.IsNullOrWhiteSpace(filterText))
+        {
+            query = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE AccountId = ? AND Name LIKE ? ORDER BY Name desc LIMIT ? OFFSET ?";
+            parameters = new object[] { accountId, $"%{filterText}%", take, skip };
+        }
+        else
+        {*/
+            query = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?";
+            parameters = new object[] { accountId, take, skip };
+        //}
+
+        var response = await _client.QueryAsync(query, parameters);
+
+        var items = MapToProjects(response).ToList();
+
+        return new PagedResult<Project>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
+    }
+
+    public async Task<PagedResult<Project>> ListByMissionIdAsync(int missionId, int skip, int take)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+
+        // Get total count with filter
+        var totalCount = await CountAsync();
+
+        // Get paged data with filter
+        string query;
+        object[] parameters;
+
+        /*if (!string.IsNullOrWhiteSpace(filterText))
+        {
+            query = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE AccountId = ? AND MissionId = ? AND Name LIKE ? ORDER BY Name desc LIMIT ? OFFSET ?";
+            parameters = new object[] { accountId, missionId, $"%{filterText}%", take, skip };
+        }
+        else
+        {*/
+            query = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE AccountId = ? AND MissionId = ? ORDER BY Name desc LIMIT ? OFFSET ?";
+            parameters = new object[] { accountId, missionId, take, skip };
+        //}
+
+        var response = await _client.QueryAsync(query, parameters);
+
+        var items = MapToProjects(response).ToList();
+
+        return new PagedResult<Project>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
+    }
+
+    public async Task<Project> CreateAsync(int missionId, string name, string description)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
@@ -106,61 +135,48 @@ public class TursoProjectRepository : IProjectRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async Task<PagedResult<Project>> GetPagedAsync(int skip, int take, string? filterText = null)
+    public async Task<bool> CompleteAsync(int id)
+    {
+        throw new NotImplementedException("CompleteAsync is not implemented for projects yet.");
+    }
+
+    public async Task<bool> ResetAsync(int id)
+    {
+        throw new NotImplementedException("ResetAsync is not implemented for projects yet.");
+    }
+
+    public async Task<int> CountAsync(string? filterText = null)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
-        // Get total count with filter
-        var totalCount = await GetTotalProjectsCountAsync(filterText);
-
-        // Get paged data with filter
         string query;
         object[] parameters;
 
         if (!string.IsNullOrWhiteSpace(filterText))
         {
-            query = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE AccountId = ? AND Name LIKE ? ORDER BY Name desc LIMIT ? OFFSET ?";
-            parameters = new object[] { accountId, $"%{filterText}%", take, skip };
+            query = "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ? AND Name LIKE ?";
+            parameters = new object[] { accountId, $"%{filterText}%" };
         }
         else
         {
-            query = "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?";
-            parameters = new object[] { accountId, take, skip };
+            query = "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ?";
+            parameters = new object[] { accountId };
         }
 
         var response = await _client.QueryAsync(query, parameters);
+        if (response.Result?.Rows == null || response.Result.Rows.Length == 0)
+            return 0;
 
-        var items = MapToProjects(response).ToList();
+        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+        return int.Parse(GetColumnValue(response.Result.Rows[0], columns, "TotalCount"));
+    }
 
-        if (items.Any())
-        {
-            /*
-            // Batch load tasks for all projects
-            var projectIds = items.Select(p => p.Id).ToList();
-            var tasks = await _taskRepository.GetTasksByProjectIdsAsync(projectIds);
-
-            // Group tasks by project (filter out tasks with null ProjectId)
-            var tasksByProject = tasks
-                .Where(t => t.ProjectId.HasValue)
-                .GroupBy(t => t.ProjectId!.Value)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            // Assign tasks to projects
-            foreach (var project in items)
-            {
-                if (tasksByProject.TryGetValue(project.Id, out var projectTasks))
-                {
-                    project.Tasks = projectTasks;
-                }
-            }
-            */
-        }
-
-        return new PagedResult<Project>
-        {
-            Items = items,
-            TotalCount = totalCount
-        };
+    public async System.Threading.Tasks.Task MoveAsync(int missionId, int projectId)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        await _client.ExecuteAsync(
+            "UPDATE Projects SET MissionId = ? WHERE Id = ? AND AccountId = ?",
+            missionId, projectId, accountId);
     }
 
     private IEnumerable<Project> MapToProjects(TursoResponse response)

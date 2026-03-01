@@ -17,29 +17,33 @@ public class TaskService : ITaskService
         _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
     }
 
-    public async System.Threading.Tasks.Task<TaskDto?> GetByIdAsync(int id)
+    public async Task<TaskDto?> GetByIdAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         return task?.ToDto();
     }
 
-    public async System.Threading.Tasks.Task<int> CreateAsync(CreateTaskRequest request)
+    public async Task<TaskDto> CreateAsync(CreateTaskRequest request)
     {
-        var task = await _taskRepository.AddAsync(request.Name, request.Description);
-        return task.Id;
+        var task = await _taskRepository.CreateAsync(request.ProjectId, request.Name, request.Description);
+        return task.ToDto();
     }
 
-    public async System.Threading.Tasks.Task<bool> UpdateAsync(int id, UpdateTaskRequest request)
+    public async Task<TaskDto> UpdateAsync(int id, UpdateTaskRequest request)
     {
-        return await _taskRepository.UpdateAsync(id, request.Name, request.Description);
+        var updated = await _taskRepository.UpdateAsync(id, request.Name, request.Description);
+        if (!updated) throw new InvalidOperationException("Task not found");
+
+        var task = await _taskRepository.GetByIdAsync(id);
+        return task!.ToDto();
     }
 
-    public async System.Threading.Tasks.Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
         return await _taskRepository.DeleteAsync(id);
     }
 
-    public async System.Threading.Tasks.Task<bool> CompleteAsync(int id)
+    public async Task<bool> CompleteAsync(int id)
     {
         var completed = await _taskRepository.CompleteAsync(id);
         if (!completed) return false;
@@ -48,45 +52,35 @@ public class TaskService : ITaskService
         return true;
     }
 
-    public async System.Threading.Tasks.Task<bool> ReopenAsync(int id)
+    public async Task<bool> ResetAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
 
-        await _taskRepository.ReopenAsync(id);
+        await _taskRepository.ResetAsync(id);
 
-        // If reopening a subtask, reopen parent if completed
+        // If resetting a subtask, reset parent if completed
         if (task.ParentTaskId.HasValue)
         {
             var parentTask = await _taskRepository.GetByIdAsync(task.ParentTaskId.Value);
             if (parentTask?.IsCompleted == true)
-                await _taskRepository.ReopenAsync(parentTask.Id);
+                await _taskRepository.ResetAsync(parentTask.Id);
         }
 
         return true;
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<TaskDto>> ListUngroupedAsync()
+    public async Task<bool> MoveAsync(int taskId, int projectId)
     {
-        var tasks = await _taskRepository.GetUngroupedTasksAsync();
-        return tasks.ToDto();
+        var project = await _projectRepository.GetByIdAsync(projectId);
+        if (project == null) return false;
+
+        return await _taskRepository.MoveAsync(taskId, projectId);
     }
 
-    public async System.Threading.Tasks.Task<bool> AssignAsync(int taskId, int? projectId)
+    public async Task<PagedResult<TaskDto>> ListAsync(int skip, int take)
     {
-        // If assigning to a project, verify the project exists
-        if (projectId.HasValue)
-        {
-            var project = await _projectRepository.GetByIdAsync(projectId.Value);
-            if (project == null) return false;
-        }
-
-        return await _taskRepository.AssignToProjectAsync(taskId, projectId);
-    }
-
-    public async System.Threading.Tasks.Task<PagedResult<TaskDto>> ListAsync(int skip, int take, bool isCompleted = false)
-    {
-        var pagedResult = await _taskRepository.GetPagedAsync(skip, take, isCompleted);
+        var pagedResult = await _taskRepository.ListAsync(skip, take);
 
         return new PagedResult<TaskDto>
         {
@@ -95,9 +89,9 @@ public class TaskService : ITaskService
         };
     }
 
-    public async System.Threading.Tasks.Task<PagedResult<TaskDto>> ListByProjectAsync(int projectId, int skip, int take, bool isCompleted = false)
+    public async Task<PagedResult<TaskDto>> ListByProjectAsync(int projectId, int skip, int take)
     {
-        var pagedResult = await _taskRepository.GetPagedByProjectIdAsync(projectId, skip, take, isCompleted);
+        var pagedResult = await _taskRepository.ListByProjectIdAsync(projectId, skip, take);
 
         return new PagedResult<TaskDto>
         {
@@ -106,7 +100,18 @@ public class TaskService : ITaskService
         };
     }
 
-    public async System.Threading.Tasks.Task<int> CreateSubtaskAsync(CreateSubtaskRequest request)
+    public async Task<PagedResult<TaskDto>> ListSubtasksByParentIdAsync(int parentTaskId, int skip, int take)
+    {
+        var subtasks = await _taskRepository.ListSubtasksByParentIdAsync(parentTaskId, skip, take);
+
+        return new PagedResult<TaskDto>
+        {
+            Items = subtasks.Items.ToDto(),
+            TotalCount = subtasks.TotalCount
+        };
+    }
+
+    public async Task<TaskDto> CreateSubtaskAsync(CreateSubtaskRequest request)
     {
         // Validate parent task exists
         var parentTask = await _taskRepository.GetByIdAsync(request.ParentTaskId);
@@ -118,18 +123,22 @@ public class TaskService : ITaskService
             throw new InvalidOperationException("Cannot create subtask under another subtask. Only single-level nesting is supported.");
 
         // Create subtask without project association - subtasks belong to their parent task, not directly to projects
-        var subtask = await _taskRepository.AddAsync(request.Name, request.Description, parentTaskId: request.ParentTaskId);
-        return subtask.Id;
+        var subtask = await _taskRepository.CreateSubtaskAsync(parentTask.Id, request.Name, request.Description);
+        return subtask.ToDto();
     }
 
-    public async System.Threading.Tasks.Task<PagedResult<TaskDto>> ListSubtasksByParentIdAsync(int parentTaskId, int skip, int take)
+    public async Task<bool> UpdateSubtaskAsync(int id, int parentId, string name, string description)
     {
-        var subtasks = await _taskRepository.GetSubtasksByParentIdAsync(parentTaskId, skip, take);
+        return await _taskRepository.UpdateSubtaskAsync(id, parentId, name, description);
+    }
 
-        return new PagedResult<TaskDto>
-        {
-            Items = subtasks.Items.ToDto(),
-            TotalCount = subtasks.TotalCount
-        };
+     public async Task<bool> DeleteSubtaskAsync(int id, int parentId)
+     {
+         return await _taskRepository.DeleteSubtaskAsync(id, parentId);
+     }
+
+    public async Task<int> BulkCompleteSubtasksAsync(int parentId)
+    {
+        return await _taskRepository.BulkCompleteSubtasksAsync(parentId);
     }
 }

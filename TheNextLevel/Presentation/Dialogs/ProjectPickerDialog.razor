@@ -165,8 +165,7 @@
         {
             var result = await ProjectService.ListAsync(
                 currentSkip,
-                PageSize,
-                string.IsNullOrWhiteSpace(searchText) ? null : searchText);
+                PageSize);
 
             if (currentSkip == 0)
             {

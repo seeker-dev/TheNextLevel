@@ -94,13 +94,13 @@
 
             if (ItemType == ModalType.Project)
             {
-                var result = await MissionService.ListAsync(_currentPage, _pageSize, null);
+                var result = await MissionService.ListAsync(_currentPage, _pageSize);
                 items = result?.Items;
                 _totalCount = result?.TotalCount ?? 0;
             }
             else if (ItemType == ModalType.Task)
             {
-                var result = await ProjectService.ListAsync(_currentPage, _pageSize, null);
+                var result = await ProjectService.ListAsync(_currentPage, _pageSize);
                 items = result?.Items;
                 _totalCount = result?.TotalCount ?? 0;
             }

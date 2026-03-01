@@ -79,7 +79,7 @@
         }
         else if (!isChecked && _isCompleted)
         {
-            await TaskService.ReopenAsync(Task.Id);
+            await TaskService.ResetAsync(Task.Id);
         }
 
         StateHasChanged();

@@ -15,16 +15,7 @@ public class TursoTaskRepository : ITaskRepository
         _accountContext = accountContext;
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetAllAsync()
-    {
-        var accountId = _accountContext.GetCurrentAccountId();
-        var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE AccountId = ?",
-            accountId);
-        return MapToTasks(response);
-    }
-
-    public async System.Threading.Tasks.Task<Core.Entities.Task?> GetByIdAsync(int id)
+    public async Task<Core.Entities.Task?> GetByIdAsync(int id)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
@@ -35,7 +26,7 @@ public class TursoTaskRepository : ITaskRepository
         return tasks.FirstOrDefault();
     }
 
-    public async System.Threading.Tasks.Task<Core.Entities.Task> AddAsync(string name, string description, int? projectId = null, int? parentTaskId = null)
+    public async Task<Core.Entities.Task> CreateAsync(int projectId, string name, string description)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var trimmedName = name.Trim();
@@ -47,16 +38,16 @@ public class TursoTaskRepository : ITaskRepository
             trimmedName,
             trimmedDescription,
             0,
-            projectId.HasValue ? (object)projectId.Value : null,
-            parentTaskId.HasValue ? (object)parentTaskId.Value : null);
+            projectId,
+            DBNull.Value);
 
         if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var id))
-            return new Core.Entities.Task(id, accountId, trimmedName, trimmedDescription, false, projectId, parentTaskId);
+            return new Core.Entities.Task(id, accountId, trimmedName, trimmedDescription, false, projectId, null);
 
         throw new InvalidOperationException("Failed to create task.");
     }
 
-    public async System.Threading.Tasks.Task<bool> UpdateAsync(int id, string name, string description)
+    public async Task<bool> UpdateAsync(int id, string name, string description)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
@@ -69,7 +60,7 @@ public class TursoTaskRepository : ITaskRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async System.Threading.Tasks.Task<bool> CompleteAsync(int id)
+    public async Task<bool> CompleteAsync(int id)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
@@ -79,7 +70,7 @@ public class TursoTaskRepository : ITaskRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async System.Threading.Tasks.Task<bool> ReopenAsync(int id)
+    public async Task<bool> ResetAsync(int id)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
@@ -89,55 +80,34 @@ public class TursoTaskRepository : ITaskRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async System.Threading.Tasks.Task<bool> AssignToProjectAsync(int id, int projectId)
+    public async Task MoveAsync(int taskId, int newProjectId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
             "UPDATE Tasks SET ProjectId = ? WHERE Id = ? AND AccountId = ?",
-            projectId,
-            id,
-            accountId);
+            newProjectId, taskId, accountId);
 
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async System.Threading.Tasks.Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var response = await _client.ExecuteAsync(
-            "DELETE FROM Tasks WHERE Id = ?",
-            id);
+            "DELETE FROM Tasks WHERE Id = ? AND AccountId = ?",
+            id,
+            _accountContext.GetCurrentAccountId());
 
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetByStatusAsync(bool isCompleted)
-    {
-        var accountId = _accountContext.GetCurrentAccountId();
-        var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL",
-            isCompleted ? 1 : 0, accountId);
-
-        return MapToTasks(response);
-    }
-
-    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdAsync(int projectId)
-    {
-        var accountId = _accountContext.GetCurrentAccountId();
-        var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId = ? AND AccountId = ? AND ParentTaskId IS NULL",
-            projectId, accountId);
-
-        return MapToTasks(response);
-    }
-
-    public async System.Threading.Tasks.Task<PagedResult<Core.Entities.Task>> GetPagedAsync(int skip, int take, bool isCompleted = false)
+    public async Task<PagedResult<Core.Entities.Task>> ListAsync(int skip, int take)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
         // Get total count
         var countResponse = await _client.QueryAsync(
-            "SELECT COUNT(*) as Count FROM Tasks WHERE IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL",
-            isCompleted ? 1 : 0, accountId);
+            "SELECT COUNT(*) as Count FROM Tasks WHERE AccountId = ? AND ParentTaskId IS NULL",
+            accountId);
         var totalCount = 0;
 
         if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
@@ -148,8 +118,7 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get paged data
         var dataResponse = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
-            isCompleted ? 1 : 0,
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
             accountId,
             take,
             skip);
@@ -163,34 +132,14 @@ public class TursoTaskRepository : ITaskRepository
         };
     }
 
-    public async System.Threading.Tasks.Task<IEnumerable<Core.Entities.Task>> GetTasksByProjectIdsAsync(IEnumerable<int> projectIds)
-    {
-        var accountId = _accountContext.GetCurrentAccountId();
-        var projectIdList = projectIds.ToList();
-
-        if (!projectIdList.Any())
-            return Enumerable.Empty<Core.Entities.Task>();
-
-        // Build dynamic query with placeholders for IN clause
-        var placeholders = string.Join(",", projectIdList.Select(_ => "?"));
-        var query = $"SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId IN ({placeholders}) AND AccountId = ?";
-
-        // Execute query with project IDs as parameters
-        var parameters = projectIdList.Cast<object>().ToList();
-        parameters.Add(accountId);
-        var response = await _client.QueryAsync(query, parameters.ToArray());
-
-        return MapToTasks(response);
-    }
-
-    public async System.Threading.Tasks.Task<PagedResult<Core.Entities.Task>> GetPagedByProjectIdAsync(int projectId, int skip, int take, bool isCompleted = false)
+    public async Task<PagedResult<Core.Entities.Task>> ListByProjectIdAsync(int projectId, int skip, int take)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
         // Get total count
         var countResponse = await _client.QueryAsync(
-            "SELECT COUNT(*) as Count FROM Tasks WHERE ProjectId = ? AND IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL",
-            projectId, isCompleted ? 1 : 0, accountId);
+            "SELECT COUNT(*) as Count FROM Tasks WHERE ProjectId = ? AND AccountId = ? AND ParentTaskId IS NULL",
+            projectId, accountId);
         var totalCount = 0;
 
         if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
@@ -201,9 +150,8 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get paged data
         var dataResponse = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId = ? AND IsCompleted = ? AND AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
+            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId FROM Tasks WHERE ProjectId = ? AND AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
             projectId,
-            isCompleted ? 1 : 0,
             accountId,
             take,
             skip);
@@ -258,7 +206,7 @@ public class TursoTaskRepository : ITaskRepository
         return int.TryParse(value, out var result) ? result : null;
     }
 
-    public async System.Threading.Tasks.Task<PagedResult<Core.Entities.Task>> GetSubtasksByParentIdAsync(int parentTaskId, int skip, int take)
+    public async Task<PagedResult<Core.Entities.Task>> ListSubtasksByParentIdAsync(int parentId, int skip, int take)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var countResponse = await _client.QueryAsync(
@@ -285,12 +233,56 @@ public class TursoTaskRepository : ITaskRepository
         };
     }
 
-    public async System.Threading.Tasks.Task<int> GetSubtaskCountAsync(int parentTaskId)
+    public async Task<Core.Entities.Task> CreateSubtaskAsync(int parentId, string name, string description)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        var trimmedName = name.Trim();
+        var trimmedDescription = description?.Trim() ?? string.Empty;
+
+        var response = await _client.ExecuteAsync(
+            "INSERT INTO Tasks (AccountId, Name, Description, IsCompleted, ParentTaskId) VALUES (?, ?, ?, ?, ?)",
+            accountId,
+            trimmedName,
+            trimmedDescription,
+            0,
+            parentId);
+
+        if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var id))
+            return new Core.Entities.Task(id, accountId, trimmedName, trimmedDescription, false, null, parentId);
+
+        throw new InvalidOperationException("Failed to create subtask.");
+    }
+
+    public async Task<bool> UpdateSubtaskAsync(int id, int parentId, string name, string description)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        var response = await _client.ExecuteAsync(
+            "UPDATE Tasks SET Name = ?, Description = ? WHERE Id = ? AND ParentTaskId = ? AND AccountId = ?",
+            name.Trim(),
+            description?.Trim() ?? string.Empty,
+            id,
+            parentId,
+            accountId);
+
+        return response.Result?.AffectedRowCount > 0;
+    }
+
+    public async Task<bool> DeleteSubtaskAsync(int id)
+    {
+        var response = await _client.ExecuteAsync(
+            "DELETE FROM Tasks WHERE Id = ? AND AccountId = ?",
+            id,
+            _accountContext.GetCurrentAccountId());
+
+        return response.Result?.AffectedRowCount > 0;
+    }
+
+    public async Task<int> CountSubtasksAsync(int parentId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
             "SELECT COUNT(*) as Count FROM Tasks WHERE ParentTaskId = ? AND AccountId = ?",
-            parentTaskId, accountId);
+            parentId, accountId);
 
         if (response.Result?.Rows != null && response.Result.Rows.Length > 0)
         {
@@ -301,13 +293,22 @@ public class TursoTaskRepository : ITaskRepository
         return 0;
     }
 
-    public async System.Threading.Tasks.Task<int> BulkCompleteSubtasksAsync(int parentTaskId)
+    public async Task<int> BulkCompleteSubtasksAsync(int parentId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
             "UPDATE Tasks SET IsCompleted = 1 WHERE ParentTaskId = ? AND AccountId = ? AND IsCompleted = 0",
-            parentTaskId, accountId);
+            parentId, accountId);
 
         return response.Result?.AffectedRowCount ?? 0;
+    }
+
+    public async Task MoveSubtaskAsync(int taskId, int newParentId)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        await _client.ExecuteAsync(
+            "UPDATE Tasks SET ParentTaskId = ? WHERE Id = ? AND AccountId = ? AND ParentTaskId IS NOT NULL",
+            newParentId, taskId, accountId);
+
     }
 }

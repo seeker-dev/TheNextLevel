@@ -17,7 +17,7 @@ public interface ITaskRepository
     
     Task<PagedResult<Entities.Task>> ListSubtasksByParentIdAsync(int parentId, int skip, int take);
     Task<Entities.Task> CreateSubtaskAsync(int parentId, string name, string description);
-    Task<bool> UpdateSubtaskAsync(int id, string name, string description);
+    Task<bool> UpdateSubtaskAsync(int id, int parentId, string name, string description);
     Task<bool> DeleteSubtaskAsync(int id);
     Task<int> CountSubtasksAsync(int parentId);
     Task<int> BulkCompleteSubtasksAsync(int parentId);

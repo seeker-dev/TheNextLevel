@@ -3,6 +3,7 @@
 
 @inject IMissionService MissionService
 @inject IProjectService ProjectService
+@inject ITaskService TaskService
 
 @if (IsVisible)
 {
@@ -35,7 +36,7 @@
                     {
                         @foreach (var item in _parentItems)
                         {
-                            <option value="@item.Id">@item.Name</option>
+                            <option value="@item.Id" @onclick="() => Select(item)">@item.Name</option>
                         }
                     }
                 </select>
@@ -63,8 +64,8 @@
     private bool _isLoading = false;
     private List<IItemDto> _parentItems = [];
     private string _parentLabel => ItemType == ModalType.Task ? "project" : "mission";
-    private IItemDto? selectedItem;
-    private bool HasSelection => selectedItem is not null;
+    private IItemDto? selectedParent;
+    private bool HasSelection => selectedParent is not null;
 
     // Pagination
     private int _currentPage = 1;
@@ -127,7 +128,7 @@
 
     private void Select(IItemDto item)
     {
-        selectedItem = item;
+        selectedParent = item;
     }
 
     private async Task Confirm()
@@ -142,14 +143,14 @@
         {
             await CreateMission();            
         }
-        //else if (ItemType == ModalType.Project)
-        //{
-        //    await CreateProject();
-        //}
-        //else if (ItemType == ModalType.Task)
-        //{
-        //    await CreateTask();
-        //}
+        else if (ItemType == ModalType.Project)
+        {
+            await CreateProject();
+        }
+        else if (ItemType == ModalType.Task)
+        {
+            await CreateTask();
+        }
     }
 
     private async Task Cancel()
@@ -161,26 +162,47 @@
     {
         var createRequest = new CreateMissionDto(itemName.Trim(), itemDescription.Trim());
         var newMission = await MissionService.CreateAsync(createRequest);
-        //var newMissionCreated = await MissionService.GetByIdAsync(newMission.Id) != null;
-        await OnResult.InvokeAsync(newMission);
+        var newMissionCreated = await MissionService.GetByIdAsync(newMission.Id) != null;
+        if (newMissionCreated)
+        {
+            await OnResult.InvokeAsync(newMission);
+        }
     }
 
-    private void CreateProject()
+    private async Task CreateProject()
     {
-        /*var createRequest = new CreateProjectDto(itemName.Trim(), itemDescription.Trim());
-        var projectId = await ProjectService.CreateAsync(createRequest);
-        var newProject = await ProjectService.GetByIdAsync(projectId);
-        await OnResult.InvokeAsync(newProject);*/
+        if (selectedParent is null)
+        {
+            // Show validation error (not implemented here)
+            return;
+        }
+
+        var createRequest = new CreateProjectDto(selectedParent.Id, itemName.Trim(), itemDescription.Trim());
+        var newProject = await ProjectService.CreateAsync(createRequest);
+        var newProjectCreated = await ProjectService.GetByIdAsync(newProject.Id) != null;
+        if (newProjectCreated)
+        {
+            await OnResult.InvokeAsync(newProject);
+        }
     }
 
-    private void CreateTask()
+    private async Task CreateTask()
     {
-        /*var createRequest = new CreateTaskRequest(itemName.Trim(), itemDescription.Trim());
-        var taskId = await TaskService.CreateAsync(createRequest);
-        var newTask = await TaskService.GetByIdAsync(taskId);
-        await OnResult.InvokeAsync(newTask);*/
+        if (selectedParent is null)
+        {
+            // Show validation error (not implemented here)
+            return;
+        }
+
+        var createRequest = new CreateTaskRequest(selectedParent.Id, itemName.Trim(), itemDescription.Trim());
+        var task = await TaskService.CreateAsync(createRequest);
+        var newTask = await TaskService.GetByIdAsync(task.Id);
+        if (newTask is not null)
+        {
+            await OnResult.InvokeAsync(newTask);
+        }
     }
 
-    private bool HasSelectedParent => (ItemType == ModalType.Project || ItemType == ModalType.Task) && selectedItem is not null;
+    private bool HasSelectedParent => (ItemType == ModalType.Project || ItemType == ModalType.Task) && selectedParent is not null;
     private bool HasValidMission => ItemType == ModalType.Mission && !string.IsNullOrWhiteSpace(itemName);
 }

@@ -66,12 +66,11 @@ else
     </Virtualize>
 </div>
 
-<NewTaskDialog
-    @ref="_newTaskDialog"
+<CreateModal
     IsVisible="@_showNewTaskDialog"
-    ProjectId="@Project?.Id"
-    OnCancel="CloseNewTaskDialog"
-    OnResult="HandleTaskCreated" />
+    ItemType="ModalType.Task"
+    OnResult="HandleTaskCreated"
+    OnCancel="CloseNewTaskDialog" />
 
 <EditTaskDialog
     Task="@_selectedTask"
@@ -90,7 +89,6 @@ else
     [Parameter]
     public ProjectDto? Project { get; set; }
 
-    private NewTaskDialog? _newTaskDialog;
     private Virtualize<TaskDto>? _virtualizeComponent;
     private TaskDto? _selectedTask;
     private bool _isLoading = false;
@@ -207,7 +205,7 @@ else
     }
 
     // === HANDLE RESULTS ===
-    private async Task HandleTaskCreated(TaskDto task)
+    private async Task HandleTaskCreated(IItemDto? task)
     {
         _showNewTaskDialog = false;
         await RefreshList();

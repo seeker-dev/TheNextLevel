@@ -54,7 +54,7 @@
         try
         {
             _isLoading = true;
-            var result = await MissionService.ListAsync(request.StartIndex, request.Count, null);
+            var result = await MissionService.ListAsync(request.StartIndex, request.Count);
             var missions = result?.Items ?? [];
             var totalCount = result?.TotalCount ?? 0;
             return new ItemsProviderResult<MissionDto?>(missions, totalCount);

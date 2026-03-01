@@ -104,21 +104,31 @@
 
             if (IsEditMode && ExistingProject != null)
             {
+                var updateRequest = new UpdateProjectDto
+                (
+                    projectName.Trim(),
+                    projectDescription?.Trim() ?? string.Empty,
+                    Mission.Id,
+                    ExistingProject.IsCompleted
+                );
+
                 // Edit mode: update existing project
                 resultProject = await ProjectService.UpdateAsync(
                     ExistingProject.Id,
-                    projectName.Trim(),
-                    projectDescription?.Trim() ?? string.Empty
+                    updateRequest
                 );
             }
             else
             {
-                // Create mode: create new project
-                resultProject = await ProjectService.CreateAsync(
+                var createRequest = new CreateProjectDto
+                (
+                    Mission.Id,
                     projectName.Trim(),
-                    projectDescription?.Trim() ?? string.Empty,
-                    Mission.Id
+                    projectDescription?.Trim() ?? string.Empty
                 );
+                
+                // Create mode: create new project
+                resultProject = await ProjectService.CreateAsync(createRequest);
             }
 
             if (resultProject != null)

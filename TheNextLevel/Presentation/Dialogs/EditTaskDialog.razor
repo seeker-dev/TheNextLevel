@@ -192,13 +192,13 @@
         if (nameChanged || descriptionChanged)
         {
             await TaskService.UpdateAsync(Task!.Id, 
-                new UpdateTaskRequest(taskTitle, taskDescription));
+                new UpdateTaskRequest(taskTitle, taskDescription, Task!.IsCompleted, selectedProjectId.Value));
         }
 
         // if project changed, update it
         if (projectChanged)
         {
-            await TaskService.AssignAsync(Task!.Id, selectedProjectId);
+            await TaskService.MoveAsync(Task!.Id, selectedProjectId.Value);
         }
     }
 }

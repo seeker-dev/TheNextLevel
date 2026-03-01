@@ -90,24 +90,24 @@
 			if (ParentTaskId.HasValue)
 			{
 				var createSubtaskRequest = new CreateSubtaskRequest(
+					ParentTaskId.Value,
 					taskTitle.Trim(),
-					taskDescription?.Trim() ?? string.Empty,
-					ParentTaskId.Value
+					taskDescription?.Trim() ?? string.Empty
 				);
 
-				var subtaskId = await TaskService.CreateSubtaskAsync(createSubtaskRequest);
-				resultTask = await TaskService.GetByIdAsync(subtaskId);
+				var subtask = await TaskService.CreateSubtaskAsync(createSubtaskRequest);
+				resultTask = await TaskService.GetByIdAsync(subtask.Id);
 			}
 			else if (ProjectId.HasValue)
 			{
 				var createRequest = new CreateTaskRequest(
+					ProjectId.Value,
 					taskTitle.Trim(),
-					taskDescription?.Trim() ?? string.Empty,
-					ProjectId.Value
+					taskDescription?.Trim() ?? string.Empty
 				);
 
-				var taskId = await TaskService.CreateAsync(createRequest);
-				resultTask = await TaskService.GetByIdAsync(taskId);
+				var task = await TaskService.CreateAsync(createRequest);
+				resultTask = await TaskService.GetByIdAsync(task.Id);
 			}
 
 			if (resultTask != null)

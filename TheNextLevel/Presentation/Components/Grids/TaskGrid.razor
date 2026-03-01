@@ -126,8 +126,7 @@ else
             var pagedResult = await TaskService.ListByProjectAsync(
                 projectId: Project.Id,
                 skip: request.StartIndex,
-                take: request.Count,
-                isCompleted: _showCompleted);
+                take: request.Count);
 
             _totalCount = pagedResult.TotalCount;
 

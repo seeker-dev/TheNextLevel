@@ -2,7 +2,6 @@
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Core.DTOs
 @using TheNextLevel.Presentation.Components.Cards
-@using TheNextLevel.Presentation.Dialogs
 
 @inject IMissionService MissionService
 
@@ -14,7 +13,6 @@
     else
     {
         <div class="button-container">
-            <button class="add-mission-btn" @onclick="OpenCreateModal">Add Mission ➕</button>
             <button class="refresh-missions-btn" @onclick="RefreshMissionsAsync">Refresh Missions 🔄</button>
         </div>
         <Virtualize ItemsProvider="LoadMissionsProvider" @ref="_missionList" Context="mission">
@@ -33,16 +31,9 @@
     }
 </div>
 
-<CreateModal
-    IsVisible="@_showCreateModal"
-    ItemType="ModalType.Mission"
-    OnResult="HandleMissionCreated"
-    OnCancel="CloseCreateModal" />
-
 @code {
     private bool _isLoading = true;
     private Virtualize<MissionDto?> _missionList;
-    private bool _showCreateModal = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,16 +62,6 @@
         }
     }
 
-    private void OpenCreateModal()
-    {
-        _showCreateModal = true;
-    }
-
-    private void CloseCreateModal()
-    {
-        _showCreateModal = false;
-    }
-
     public async Task RefreshMissionsAsync()
     {
         if (_missionList != null)
@@ -89,13 +70,4 @@
         }
     }
 
-    private async Task HandleMissionCreated(IItemDto? newMission)
-    {
-        if (newMission is MissionDto missionDto)
-        {
-            // Optionally, you can add the new mission to the list or refresh the entire list
-            await RefreshMissionsAsync();
-        }
-        _showCreateModal = false;
-    }
 }

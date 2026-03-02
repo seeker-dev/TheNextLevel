@@ -27,7 +27,7 @@
         else if (_project != null)
         {
             <h1 class="project-page-title">@_project.Name</h1>
-            
+
             <div class="project-action-buttons">
                 <button class="action-btn action-btn-primary" @onclick="ShowEditDialog">✏️</button>
                 <button title="Delete Project" class="action-btn action-btn-danger" @onclick="ShowDeleteDialog">🗑️</button>
@@ -60,8 +60,14 @@
         }
         else if (_project != null)
         {
+            <div class="tasks-section-header">
+                <button class="filter-btn" @onclick="OpenCreateTask">Add New Task ➕</button>
+            </div>
             <TaskGrid
-                Project="@_project"/>
+                @ref="_taskGrid"
+                Project="@_project"
+                OnEditRequested="HandleEditTask"
+                OnDeleteRequested="HandleDeleteTask" />
         }
     </div>
 </main>
@@ -79,6 +85,25 @@
     OnCancel="() => _isDeleteDialogVisible = false"
     OnConfirm="OnDeleteConfirmed" />
 
+<CreateModal
+    IsVisible="@_showCreateTaskModal"
+    ItemType="ModalType.Task"
+    OnResult="HandleTaskCreated"
+    OnCancel="CloseCreateTask" />
+
+<EditTaskDialog
+    Task="@_selectedTask"
+    IsVisible="@_showEditTaskDialog"
+    OnClose="CloseEditTask"
+    OnTaskSaved="HandleTaskUpdated" />
+
+<ConfirmDeleteDialog
+    IsVisible="@_showDeleteTaskDialog"
+    OnCancel="CloseDeleteTask"
+    OnConfirm="HandleDeleteTaskConfirmed"
+    ItemName="@(_selectedTask?.Name ?? "this task")"
+    ItemType="task" />
+
 @code {
     [Parameter]
     public int Id { get; set; }
@@ -88,6 +113,12 @@
     private bool _isEditDialogVisible = false;
     private ProjectDto? _project;
     private string? _errorMessage = null;
+
+    private TaskGrid? _taskGrid;
+    private TaskDto? _selectedTask;
+    private bool _showCreateTaskModal;
+    private bool _showEditTaskDialog;
+    private bool _showDeleteTaskDialog;
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,19 +150,11 @@
         }
     }
 
-    private void ShowDeleteDialog()
-    {
-        _isDeleteDialogVisible = true;
-    }
-    private void ShowEditDialog()
-    {
-        _isEditDialogVisible = true;
-    }
-    private void CloseEditDialog()
-    {
-        _isEditDialogVisible = false;
-    }
-    
+    // === PROJECT CRUD ===
+    private void ShowDeleteDialog() => _isDeleteDialogVisible = true;
+    private void ShowEditDialog() => _isEditDialogVisible = true;
+    private void CloseEditDialog() => _isEditDialogVisible = false;
+
     private async Task OnDeleteConfirmed()
     {
         if (_project != null)
@@ -150,14 +173,64 @@
 
         _isDeleteDialogVisible = false;
     }
-    
+
     private async Task HandleProjectUpdated(ProjectDto updatedProject)
     {
         _project = updatedProject;
         CloseEditDialog();
         StateHasChanged();
     }
-    
+
+    // === TASK CRUD ===
+    private void OpenCreateTask() => _showCreateTaskModal = true;
+    private void CloseCreateTask() => _showCreateTaskModal = false;
+
+    private async Task HandleTaskCreated(IItemDto? task)
+    {
+        _showCreateTaskModal = false;
+        if (_taskGrid != null) await _taskGrid.RefreshList();
+    }
+
+    private void HandleEditTask(TaskDto task)
+    {
+        _selectedTask = task;
+        _showEditTaskDialog = true;
+    }
+
+    private void CloseEditTask()
+    {
+        _showEditTaskDialog = false;
+        _selectedTask = null;
+    }
+
+    private async Task HandleTaskUpdated(TaskDto task)
+    {
+        CloseEditTask();
+        if (_taskGrid != null) await _taskGrid.RefreshList();
+    }
+
+    private void HandleDeleteTask(TaskDto task)
+    {
+        _selectedTask = task;
+        _showDeleteTaskDialog = true;
+    }
+
+    private void CloseDeleteTask()
+    {
+        _showDeleteTaskDialog = false;
+        _selectedTask = null;
+    }
+
+    private async Task HandleDeleteTaskConfirmed()
+    {
+        if (_selectedTask != null)
+        {
+            await TaskService.DeleteAsync(_selectedTask.Id);
+        }
+        CloseDeleteTask();
+        if (_taskGrid != null) await _taskGrid.RefreshList();
+    }
+
     private async Task NavigateBack()
     {
         await JSRuntime.InvokeVoidAsync("history.back");

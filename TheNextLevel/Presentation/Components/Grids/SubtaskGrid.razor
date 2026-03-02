@@ -2,17 +2,11 @@
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Presentation.Components.Cards
-@using TheNextLevel.Presentation.Dialogs
 
 @inject ITaskService TaskService
 
 <div class="subtask-grid-header controls-container">
     <h3>Subtasks</h3>
-    <div class="add-task-container">
-        <button class="filter-btn" @onclick="OpenAddTaskDialog">
-            Add New Subtask ➕
-        </button>
-    </div>
 </div>
 
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
@@ -21,8 +15,8 @@
             <TaskCard
                 Task="task"
                 Project="null"
-                OnEditRequested="OpenEditDialog"
-                OnDeleteRequested="OpenDeleteDialog" />
+                OnEditRequested="task => OnEditRequested.InvokeAsync(task)"
+                OnDeleteRequested="task => OnDeleteRequested.InvokeAsync(task)" />
         </ItemContent>
         <Placeholder>
             <div class="loading-card">Loading...</div>
@@ -46,39 +40,20 @@
     </Virtualize>
 </div>
 
-<NewTaskDialog
-    IsVisible="@_showNewTaskDialog"
-    OnCancel="CloseNewTaskDialog"
-    OnResult="HandleTaskCreated"
-    ParentTaskId="@(ParentTask?.Id)" />
-
-<EditTaskDialog
-    Task="@_selectedTask"
-    IsVisible="@_showEditDialog"
-    OnClose="CloseEditDialog"
-    OnTaskSaved="HandleTaskUpdated" />
-
-<ConfirmDeleteDialog
-    IsVisible="@_showDeleteDialog"
-    OnCancel="CloseDeleteDialog"
-    OnConfirm="HandleDeleteConfirmed"
-    ItemName="@(_selectedTask?.Name ?? "this subtask")"
-    ItemType="Subtask" />
-
 @code
 {
     [Parameter]
     public TaskDto? ParentTask { get; set; }
 
+    [Parameter]
+    public EventCallback<TaskDto> OnEditRequested { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskDto> OnDeleteRequested { get; set; }
+
     private Virtualize<TaskDto>? _virtualizeComponent;
-    private TaskDto? _selectedTask;
     private int _totalCount;
     private string _subtitleMessage = string.Empty;
-
-    // Dialog visibility flags
-    private bool _showNewTaskDialog;
-    private bool _showEditDialog;
-    private bool _showDeleteDialog;
 
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadSubtasksProvider(ItemsProviderRequest request)
     {
@@ -92,14 +67,9 @@
             var result = await TaskService.ListSubtasksByParentIdAsync(ParentTask.Id, request.StartIndex, request.Count);
             _totalCount = result.TotalCount;
 
-            if (result.TotalCount == 0)
-            {
-                _subtitleMessage = "You can add a new subtask using the 'Add New Subtask' button above.";
-            }
-            else
-            {
-                _subtitleMessage = string.Empty;
-            }
+            _subtitleMessage = result.TotalCount == 0
+                ? "You can add a new subtask using the 'Add New Subtask' button above."
+                : string.Empty;
 
             return new ItemsProviderResult<TaskDto>(result.Items, result.TotalCount);
         }
@@ -110,75 +80,6 @@
         }
     }
 
-    // === OPEN DIALOGS ===
-    private void OpenAddTaskDialog()
-    {
-        _showNewTaskDialog = true;
-        StateHasChanged();
-    }
-
-    private void OpenEditDialog(TaskDto task)
-    {
-        _selectedTask = task;
-        _showEditDialog = true;
-        StateHasChanged();
-    }
-
-    private void OpenDeleteDialog(TaskDto task)
-    {
-        _selectedTask = task;
-        _showDeleteDialog = true;
-        StateHasChanged();
-    }
-
-    // === CLOSE DIALOGS ===
-    private void CloseNewTaskDialog()
-    {
-        _showNewTaskDialog = false;
-        StateHasChanged();
-    }
-
-    private void CloseEditDialog()
-    {
-        _showEditDialog = false;
-        _selectedTask = null;
-        StateHasChanged();
-    }
-
-    private void CloseDeleteDialog()
-    {
-        _showDeleteDialog = false;
-        _selectedTask = null;
-        StateHasChanged();
-    }
-
-    // === HANDLE RESULTS ===
-    private async Task HandleTaskCreated(TaskDto task)
-    {
-        _showNewTaskDialog = false;
-        await RefreshList();
-    }
-
-    private async Task HandleTaskUpdated(TaskDto task)
-    {
-        _showEditDialog = false;
-        _selectedTask = null;
-        await RefreshList();
-    }
-
-    private async Task HandleDeleteConfirmed()
-    {
-        if (_selectedTask != null)
-        {
-            await TaskService.DeleteAsync(_selectedTask.Id);
-        }
-
-        _showDeleteDialog = false;
-        _selectedTask = null;
-        await RefreshList();
-    }
-
-    // === PUBLIC METHODS ===
     public async Task RefreshList()
     {
         if (_virtualizeComponent != null)

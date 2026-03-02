@@ -2,7 +2,6 @@
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Presentation.Components.Cards
-@using TheNextLevel.Presentation.Dialogs
 
 @inject ITaskService TaskService
 
@@ -21,12 +20,7 @@ else
                 Completed
             </button>
         </div>
-        <div class="add-task-container">
-            <button class="filter-btn" @onclick="OpenAddTaskDialog">
-                Add New Task ➕
-            </button>
-        </div>        
-    </div>        
+    </div>
 }
 
 <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
@@ -35,8 +29,8 @@ else
             <TaskCard
                 Task="task"
                 Project="Project"
-                OnEditRequested="OpenEditDialog"
-                OnDeleteRequested="OpenDeleteDialog" />
+                OnEditRequested="task => OnEditRequested.InvokeAsync(task)"
+                OnDeleteRequested="task => OnDeleteRequested.InvokeAsync(task)" />
         </ItemContent>
         <Placeholder>
             <div class="loading-card">Loading...</div>
@@ -66,39 +60,18 @@ else
     </Virtualize>
 </div>
 
-<CreateModal
-    IsVisible="@_showNewTaskDialog"
-    ItemType="ModalType.Task"
-    OnResult="HandleTaskCreated"
-    OnCancel="CloseNewTaskDialog" />
-
-<EditTaskDialog
-    Task="@_selectedTask"
-    IsVisible="@_showEditDialog"
-    OnClose="CloseEditDialog"
-    OnTaskSaved="HandleTaskUpdated" />
-
-<ConfirmDeleteDialog
-    IsVisible="@_showDeleteDialog"
-    OnCancel="CloseDeleteDialog"
-    OnConfirm="HandleDeleteConfirmed"
-    ItemName="@(_selectedTask?.Name ?? "this task")"
-    ItemType="Task" />
-
 @code {
     [Parameter]
     public ProjectDto? Project { get; set; }
 
+    [Parameter]
+    public EventCallback<TaskDto> OnEditRequested { get; set; }
+
+    [Parameter]
+    public EventCallback<TaskDto> OnDeleteRequested { get; set; }
+
     private Virtualize<TaskDto>? _virtualizeComponent;
-    private TaskDto? _selectedTask;
     private bool _isLoading = false;
-
-    // Dialog visibility flags
-    private bool _showNewTaskDialog;
-    private bool _showEditDialog;
-    private bool _showDeleteDialog;
-
-    // Filter state
     private bool _showCompleted;
     private int _totalCount;
 
@@ -112,36 +85,27 @@ else
     {
         if (Project == null)
         {
-            return new ItemsProviderResult<TaskDto>(
-                Array.Empty<TaskDto>(),
-                0);
+            return new ItemsProviderResult<TaskDto>(Array.Empty<TaskDto>(), 0);
         }
 
         try
         {
             _isLoading = true;
-            
             var pagedResult = await TaskService.ListByProjectAsync(
                 projectId: Project.Id,
                 skip: request.StartIndex,
                 take: request.Count);
 
             _totalCount = pagedResult.TotalCount;
-
             _isLoading = false;
-
             StateHasChanged();
 
-            return new ItemsProviderResult<TaskDto>(
-                pagedResult.Items,
-                pagedResult.TotalCount);
+            return new ItemsProviderResult<TaskDto>(pagedResult.Items, pagedResult.TotalCount);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading tasks: {ex.Message}");
-            return new ItemsProviderResult<TaskDto>(
-                Array.Empty<TaskDto>(),
-                0);
+            return new ItemsProviderResult<TaskDto>(Array.Empty<TaskDto>(), 0);
         }
         finally
         {
@@ -149,7 +113,6 @@ else
         }
     }
 
-    // === FILTER CONTROLS ===
     private async Task ShowPending()
     {
         _showCompleted = false;
@@ -162,75 +125,6 @@ else
         await RefreshList();
     }
 
-    // === OPEN DIALOGS ===
-    private void OpenAddTaskDialog()
-    {
-        _showNewTaskDialog = true;
-        StateHasChanged();
-    }
-
-    private void OpenEditDialog(TaskDto task)
-    {
-        _selectedTask = task;
-        _showEditDialog = true;
-        StateHasChanged();
-    }
-
-    private void OpenDeleteDialog(TaskDto task)
-    {
-        _selectedTask = task;
-        _showDeleteDialog = true;
-        StateHasChanged();
-    }
-
-    // === CLOSE DIALOGS ===
-    private void CloseNewTaskDialog()
-    {
-        _showNewTaskDialog = false;
-        StateHasChanged();
-    }
-
-    private void CloseEditDialog()
-    {
-        _showEditDialog = false;
-        _selectedTask = null;
-        StateHasChanged();
-    }
-
-    private void CloseDeleteDialog()
-    {
-        _showDeleteDialog = false;
-        _selectedTask = null;
-        StateHasChanged();
-    }
-
-    // === HANDLE RESULTS ===
-    private async Task HandleTaskCreated(IItemDto? task)
-    {
-        _showNewTaskDialog = false;
-        await RefreshList();
-    }
-
-    private async Task HandleTaskUpdated(TaskDto task)
-    {
-        _showEditDialog = false;
-        _selectedTask = null;
-        await RefreshList();
-    }
-
-    private async Task HandleDeleteConfirmed()
-    {
-        if (_selectedTask != null)
-        {
-            await TaskService.DeleteAsync(_selectedTask.Id);
-        }
-
-        _showDeleteDialog = false;
-        _selectedTask = null;
-        await RefreshList();
-    }
-
-    // === PUBLIC METHODS ===
     public async Task RefreshList()
     {
         if (_virtualizeComponent != null)

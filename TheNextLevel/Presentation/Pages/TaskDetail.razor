@@ -1,6 +1,7 @@
 @page "/task/{Id:int}"
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Presentation.Components.Grids
+@using TheNextLevel.Presentation.Dialogs
 @using System.Text.Json
 
 @inject ITaskService TaskService
@@ -41,19 +42,52 @@
                     <p>@_task.Description</p>
                 </div>
 
-                <SubtaskGrid ParentTask="_task" />
+                <div class="subtasks-section-header">
+                    <button class="filter-btn" @onclick="OpenCreateSubtask">Add New Subtask ➕</button>
+                </div>
+                <SubtaskGrid
+                    @ref="_subtaskGrid"
+                    ParentTask="_task"
+                    OnEditRequested="HandleEditSubtask"
+                    OnDeleteRequested="HandleDeleteSubtask" />
             </div>
         }
     </div>
 </main>
 
+<NewTaskDialog
+    IsVisible="@_showNewSubtaskDialog"
+    OnCancel="CloseNewSubtask"
+    OnResult="HandleSubtaskCreated"
+    ParentTaskId="@_task?.Id" />
+
+<EditTaskDialog
+    Task="@_selectedSubtask"
+    IsVisible="@_showEditSubtaskDialog"
+    OnClose="CloseEditSubtask"
+    OnTaskSaved="HandleSubtaskUpdated" />
+
+<ConfirmDeleteDialog
+    IsVisible="@_showDeleteSubtaskDialog"
+    OnCancel="CloseDeleteSubtask"
+    OnConfirm="HandleDeleteSubtaskConfirmed"
+    ItemName="@(_selectedSubtask?.Name ?? "this subtask")"
+    ItemType="subtask" />
+
 @code {
     [Parameter]
     public int Id { get; set; }
+
     private TaskDto? _task;
     private ProjectDto? _project;
     private bool _isLoading = true;
     private string? _errorMessage = null;
+
+    private SubtaskGrid? _subtaskGrid;
+    private TaskDto? _selectedSubtask;
+    private bool _showNewSubtaskDialog;
+    private bool _showEditSubtaskDialog;
+    private bool _showDeleteSubtaskDialog;
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,5 +127,55 @@
             _isLoading = false;
             StateHasChanged();
         }
+    }
+
+    // === SUBTASK CRUD ===
+    private void OpenCreateSubtask() => _showNewSubtaskDialog = true;
+    private void CloseNewSubtask() => _showNewSubtaskDialog = false;
+
+    private async Task HandleSubtaskCreated(TaskDto subtask)
+    {
+        _showNewSubtaskDialog = false;
+        if (_subtaskGrid != null) await _subtaskGrid.RefreshList();
+    }
+
+    private void HandleEditSubtask(TaskDto subtask)
+    {
+        _selectedSubtask = subtask;
+        _showEditSubtaskDialog = true;
+    }
+
+    private void CloseEditSubtask()
+    {
+        _showEditSubtaskDialog = false;
+        _selectedSubtask = null;
+    }
+
+    private async Task HandleSubtaskUpdated(TaskDto subtask)
+    {
+        CloseEditSubtask();
+        if (_subtaskGrid != null) await _subtaskGrid.RefreshList();
+    }
+
+    private void HandleDeleteSubtask(TaskDto subtask)
+    {
+        _selectedSubtask = subtask;
+        _showDeleteSubtaskDialog = true;
+    }
+
+    private void CloseDeleteSubtask()
+    {
+        _showDeleteSubtaskDialog = false;
+        _selectedSubtask = null;
+    }
+
+    private async Task HandleDeleteSubtaskConfirmed()
+    {
+        if (_selectedSubtask != null)
+        {
+            await TaskService.DeleteAsync(_selectedSubtask.Id);
+        }
+        CloseDeleteSubtask();
+        if (_subtaskGrid != null) await _subtaskGrid.RefreshList();
     }
 }

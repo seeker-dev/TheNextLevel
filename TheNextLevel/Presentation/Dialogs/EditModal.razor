@@ -21,7 +21,7 @@
 
             @if (Item is TaskDto || Item is ProjectDto)
             {
-                <select class="form-select mt-2">
+                <select @bind="_selectedParentId" class="form-select mt-2">
                     <option selected>Select @_parentLabel</option>
                     @if (_isLoading)
                     {
@@ -35,7 +35,7 @@
                     {
                         @foreach (var item in _parentItems)
                         {
-                            <option value="@item.Id" @onclick="() => Select(item)">@item.Name</option>
+                            <option value="@item.Id.ToString()">@item.Name</option>
                         }
                     }
                 </select>
@@ -63,8 +63,8 @@
     private string _parentLabel => Item is TaskDto ? "project" : "mission";
     private string _itemTypeName => Item.GetType().Name[..^3];
 
-    private IItemDto? selectedParent;
-    private bool HasSelection => selectedParent is not null;
+    private string _selectedParentId = string.Empty;
+    private IItemDto? selectedParent => _parentItems.FirstOrDefault(p => p.Id.ToString() == _selectedParentId);
 
     // Pagination
     private int _currentPage = 1;
@@ -117,12 +117,13 @@
                     _parentItems.AddRange(items);
             }
 
-            selectedParent = Item switch
+            var parent = Item switch
             {
                 ProjectDto project => _parentItems.FirstOrDefault(m => m.Id == project.MissionId),
                 TaskDto task => _parentItems.FirstOrDefault(p => p.Id == task.ProjectId),
                 _ => null
             };
+            _selectedParentId = parent?.Id.ToString() ?? string.Empty;
 
         }
         finally
@@ -139,7 +140,7 @@
 
     private void Select(IItemDto item)
     {
-        selectedParent = item;
+        _selectedParentId = item.Id.ToString();
     }
 
     private async Task Confirm()
@@ -194,11 +195,24 @@
         );
 
         var result = await ProjectService.UpdateAsync(project.Id, updateRequest);
-        if (result is not null)
+        if (result is null)
         {
-            await OnResult.InvokeAsync(result);
-            HideDialog();
+            // Show error message (not implemented here)
+            return;
         }
+
+        if (selectedParent.Id != project.MissionId)
+        {
+            var result2 = await ProjectService.MoveAsync(project.Id, selectedParent.Id);
+            if (!result2)
+            {
+                // Show error message (not implemented here)
+                return;
+            }
+        }
+
+        await OnResult.InvokeAsync(result);
+        HideDialog();
     }
     
     private async Task EditTask()
@@ -213,11 +227,22 @@
         );
 
         var result = await TaskService.UpdateAsync(task.Id, updateRequest);
-        if (result is not null)
+        if (result is null)
         {
-            await OnResult.InvokeAsync(result);
-            HideDialog();
+            // Show error message (not implemented here)
+            return;
         }
+        if (selectedParent.Id != task.ProjectId)
+        {
+            var result2 = await TaskService.MoveAsync(task.Id, selectedParent.Id);
+            if (!result2)
+            {
+                // Show error message (not implemented here)
+                return;
+            }
+        }
+        await OnResult.InvokeAsync(result);
+        HideDialog();
     }
 
     public void ShowDialog()

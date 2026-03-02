@@ -13,4 +13,5 @@ public interface IProjectService
     Task<bool> DeleteAsync(int id);
     Task<bool> CompleteAsync(int id);
     Task<bool> ResetAsync(int id);
+    Task<bool> MoveAsync(int projectId, int newParentId);
 }

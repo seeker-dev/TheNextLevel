@@ -79,4 +79,9 @@ public class ProjectService : IProjectService
             TotalCount = pagedResult.TotalCount
         };
     }
+
+    public async Task<bool> MoveAsync(int projectId, int newParentId)
+    {
+        return await _projectRepository.MoveAsync(projectId, newParentId);
+    }
 }

@@ -54,6 +54,8 @@
     public required bool IsVisible { get; set; }
     [Parameter]
     public required ModalType ItemType { get; set; }
+    [Parameter]
+    public IItemDto? ExistingItem { get; set; }
 
     // Events
     [Parameter]
@@ -88,6 +90,9 @@
 
     public async Task Load()
     {
+        itemName = string.Empty;
+        itemDescription = string.Empty;
+
         _isLoading = true;
         try
         {
@@ -113,6 +118,8 @@
                 else
                     _parentItems.AddRange(items);
             }
+
+            selectedParent = ExistingItem is not null ? _parentItems.FirstOrDefault(i => i.Id == ExistingItem.Id) : null;
         }
         finally
         {

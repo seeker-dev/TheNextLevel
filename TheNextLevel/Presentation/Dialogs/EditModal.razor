@@ -80,9 +80,6 @@
     {
         if (_isDialogVisible)
         {
-            itemName = Item.Name;
-            itemDescription = Item.Description ?? string.Empty;
-
             _currentPage = 1;
             _parentItems.Clear();
             await Load();
@@ -91,6 +88,9 @@
 
     public async Task Load()
     {
+        itemName = Item.Name;
+        itemDescription = Item.Description ?? string.Empty;
+
         _isLoading = true;
         try
         {
@@ -116,6 +116,14 @@
                 else
                     _parentItems.AddRange(items);
             }
+
+            selectedParent = Item switch
+            {
+                ProjectDto project => _parentItems.FirstOrDefault(m => m.Id == project.MissionId),
+                TaskDto task => _parentItems.FirstOrDefault(p => p.Id == task.ProjectId),
+                _ => null
+            };
+
         }
         finally
         {

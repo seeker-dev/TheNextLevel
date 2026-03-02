@@ -63,6 +63,7 @@
     </div>
 </main>
 
+<!-- For editing mission -->
 <EditModal 
     Item="@_mission"
     @ref="_editModal"
@@ -76,11 +77,12 @@
     OnCancel="() => _isDeleteDialogVisible = false"
     OnConfirm="OnDeleteConfirmed" />
 
-<NewProjectDialog
-    @ref="_newProjectDialog"
+<!-- For managing projects -->
+<CreateModal
+    @ref="_createModal"
     IsVisible="_showNewProjectDialog"
-    ExistingProject="_editingProject"
-    Mission="@_mission"
+    ItemType="ModalType.Project"
+    ExistingItem="_editingProject"
     OnResult="HandleProjectSaved"
     OnCancel="CloseNewProjectDialog" />
 
@@ -92,8 +94,8 @@
     private string? _errorMessage;
     private bool _isDeleteDialogVisible = false;
 
+    private CreateModal? _createModal;
     private EditModal? _editModal;
-    private NewProjectDialog? _newProjectDialog;
     private ProjectList? _projectList;
 
     private bool _showNewProjectDialog = false;
@@ -202,13 +204,13 @@
         _editingProject = null;  // reset state
     }
 
-    private async Task HandleProjectSaved(ProjectDto savedProject)
+    private async Task HandleProjectSaved(IItemDto? savedProject)
     {
         CloseNewProjectDialog();
         await RefreshListAsync();
     }
 
-    private async Task HandleProjectDeleted(ProjectDto project)
+    private async Task HandleProjectDeleted(IItemDto? deletedProject)
     {
         await RefreshListAsync();
     }

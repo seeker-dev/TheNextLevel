@@ -64,7 +64,7 @@ public class TursoProjectRepository : IProjectRepository
         var accountId = _accountContext.GetCurrentAccountId();
 
         // Get total count with filter
-        var totalCount = await CountAsync();
+        var totalCount = await CountByMissionIdAsync(missionId);
 
         // Get paged data with filter
         string query;
@@ -161,6 +161,32 @@ public class TursoProjectRepository : IProjectRepository
         {
             query = "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ?";
             parameters = new object[] { accountId };
+        }
+
+        var response = await _client.QueryAsync(query, parameters);
+        if (response.Result?.Rows == null || response.Result.Rows.Length == 0)
+            return 0;
+
+        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+        return int.Parse(GetColumnValue(response.Result.Rows[0], columns, "TotalCount"));
+    }
+
+    public async Task<int> CountByMissionIdAsync(int missionId, string? filterText = null)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+
+        string query;
+        object[] parameters;
+
+        if (!string.IsNullOrWhiteSpace(filterText))
+        {
+            query = "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ? AND MissionId = ? AND Name LIKE ?";
+            parameters = new object[] { accountId, missionId, $"%{filterText}%" };
+        }
+        else
+        {
+            query = "SELECT COUNT(*) as TotalCount FROM Projects WHERE AccountId = ? AND MissionId = ?";
+            parameters = new object[] { accountId, missionId };
         }
 
         var response = await _client.QueryAsync(query, parameters);

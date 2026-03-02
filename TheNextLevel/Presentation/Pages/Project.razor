@@ -71,12 +71,12 @@
         }
     </div>
 </main>
-
-<NewProjectDialog
-    IsVisible="@_isEditDialogVisible"
-    ExistingProject="@_project"
-    OnCancel="CloseEditDialog"
-    OnResult="HandleProjectUpdated" />
+<!-- For editing project -->
+<EditModal
+    Item="@_project"
+    @ref="_editModal"
+    OnResult="HandleProjectUpdated"
+    OnCancel="CloseEditDialog" />
 
 <ConfirmDeleteDialog
     IsVisible="@_isDeleteDialogVisible"
@@ -85,17 +85,18 @@
     OnCancel="() => _isDeleteDialogVisible = false"
     OnConfirm="OnDeleteConfirmed" />
 
+<!-- For managing tasks -->
 <CreateModal
     IsVisible="@_showCreateTaskModal"
     ItemType="ModalType.Task"
     OnResult="HandleTaskCreated"
     OnCancel="CloseCreateTask" />
 
-<EditTaskDialog
-    Task="@_selectedTask"
-    IsVisible="@_showEditTaskDialog"
-    OnClose="CloseEditTask"
-    OnTaskSaved="HandleTaskUpdated" />
+<EditModal
+    Item="@_selectedTask"
+    @ref="_editTaskModal"
+    OnResult="HandleTaskUpdated"
+    OnCancel="CloseEditTask" />
 
 <ConfirmDeleteDialog
     IsVisible="@_showDeleteTaskDialog"
@@ -110,14 +111,14 @@
 
     private bool _isLoading = true;
     private bool _isDeleteDialogVisible = false;
-    private bool _isEditDialogVisible = false;
     private ProjectDto? _project;
     private string? _errorMessage = null;
+    private EditModal? _editModal;
+    private EditModal? _editTaskModal;
 
     private TaskGrid? _taskGrid;
     private TaskDto? _selectedTask;
     private bool _showCreateTaskModal;
-    private bool _showEditTaskDialog;
     private bool _showDeleteTaskDialog;
 
     protected override async Task OnInitializedAsync()
@@ -152,8 +153,8 @@
 
     // === PROJECT CRUD ===
     private void ShowDeleteDialog() => _isDeleteDialogVisible = true;
-    private void ShowEditDialog() => _isEditDialogVisible = true;
-    private void CloseEditDialog() => _isEditDialogVisible = false;
+    private void ShowEditDialog() => _editModal?.ShowDialog();
+    private void CloseEditDialog() => _editModal?.HideDialog();
 
     private async Task OnDeleteConfirmed()
     {
@@ -174,9 +175,9 @@
         _isDeleteDialogVisible = false;
     }
 
-    private async Task HandleProjectUpdated(ProjectDto updatedProject)
+    private async Task HandleProjectUpdated(IItemDto updatedProject)
     {
-        _project = updatedProject;
+        _project = (ProjectDto)updatedProject;
         CloseEditDialog();
         StateHasChanged();
     }
@@ -194,16 +195,16 @@
     private void HandleEditTask(TaskDto task)
     {
         _selectedTask = task;
-        _showEditTaskDialog = true;
+        _editTaskModal?.ShowDialog();
     }
 
     private void CloseEditTask()
     {
-        _showEditTaskDialog = false;
+        _editTaskModal?.HideDialog();
         _selectedTask = null;
     }
 
-    private async Task HandleTaskUpdated(TaskDto task)
+    private async Task HandleTaskUpdated(IItemDto updatedTask)
     {
         CloseEditTask();
         if (_taskGrid != null) await _taskGrid.RefreshList();

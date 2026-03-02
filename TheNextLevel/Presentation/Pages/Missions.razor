@@ -1,7 +1,32 @@
 @page "/missions"
 @using TheNextLevel.Presentation.Components.Grids
+@using TheNextLevel.Presentation.Dialogs
 
 <main class="main-content">
-    <h1 class="page-title">Missions</h1>
-    <MissionList />
+    <div class="page-header">
+        <h1 class="page-title">Missions</h1>
+        <button class="add-mission-btn" @onclick="OpenCreateModal">Add Mission ➕</button>
+    </div>
+    <MissionList @ref="_missionList" />
 </main>
+
+<CreateModal
+    IsVisible="@_showCreateModal"
+    ItemType="ModalType.Mission"
+    OnResult="HandleMissionCreated"
+    OnCancel="CloseCreateModal" />
+
+@code {
+    private MissionList? _missionList;
+    private bool _showCreateModal = false;
+
+    private void OpenCreateModal() => _showCreateModal = true;
+    private void CloseCreateModal() => _showCreateModal = false;
+
+    private async Task HandleMissionCreated(IItemDto? newMission)
+    {
+        _showCreateModal = false;
+        if (newMission is MissionDto && _missionList != null)
+            await _missionList.RefreshMissionsAsync();
+    }
+}

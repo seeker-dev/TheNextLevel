@@ -36,7 +36,7 @@
                     {
                         @foreach (var item in _parentItems)
                         {
-                            <option value="@item.Id" @onclick="() => Select(item)">@item.Name</option>
+                            <option value="@item.Id" @onchange="() => Select(item)">@item.Name</option>
                         }
                     }
                 </select>

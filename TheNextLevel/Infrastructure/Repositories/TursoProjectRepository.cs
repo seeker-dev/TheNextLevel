@@ -197,12 +197,14 @@ public class TursoProjectRepository : IProjectRepository
         return int.Parse(GetColumnValue(response.Result.Rows[0], columns, "TotalCount"));
     }
 
-    public async System.Threading.Tasks.Task MoveAsync(int missionId, int projectId)
+    public async System.Threading.Tasks.Task<bool> MoveAsync(int id, int missionId)
     {
         var accountId = _accountContext.GetCurrentAccountId();
-        await _client.ExecuteAsync(
+        var response = await _client.ExecuteAsync(
             "UPDATE Projects SET MissionId = ? WHERE Id = ? AND AccountId = ?",
-            missionId, projectId, accountId);
+            missionId, id, accountId);
+
+        return response.Result?.AffectedRowCount > 0;
     }
 
     private IEnumerable<Project> MapToProjects(TursoResponse response)

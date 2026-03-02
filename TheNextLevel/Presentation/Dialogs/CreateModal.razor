@@ -171,12 +171,6 @@
 
     private async Task CreateProject()
     {
-        if (selectedParent is null)
-        {
-            // Show validation error (not implemented here)
-            return;
-        }
-
         var createRequest = new CreateProjectDto(selectedParent.Id, itemName.Trim(), itemDescription.Trim());
         var newProject = await ProjectService.CreateAsync(createRequest);
         var newProjectCreated = await ProjectService.GetByIdAsync(newProject.Id) != null;
@@ -188,12 +182,6 @@
 
     private async Task CreateTask()
     {
-        if (selectedParent is null)
-        {
-            // Show validation error (not implemented here)
-            return;
-        }
-
         var createRequest = new CreateTaskRequest(selectedParent.Id, itemName.Trim(), itemDescription.Trim());
         var task = await TaskService.CreateAsync(createRequest);
         var newTask = await TaskService.GetByIdAsync(task.Id);

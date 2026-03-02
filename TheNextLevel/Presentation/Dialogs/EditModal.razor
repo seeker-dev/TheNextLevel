@@ -1,6 +1,6 @@
-
 @inject IMissionService MissionService
 @inject IProjectService ProjectService
+@inject ITaskService TaskService
 
 @if (!_isDialogVisible)
 {
@@ -35,7 +35,7 @@
                     {
                         @foreach (var item in _parentItems)
                         {
-                            <option value="@item.Id">@item.Name</option>
+                            <option value="@item.Id" @onclick="() => Select(item)">@item.Name</option>
                         }
                     }
                 </select>
@@ -63,8 +63,8 @@
     private string _parentLabel => Item is TaskDto ? "project" : "mission";
     private string _itemTypeName => Item.GetType().Name[..^3];
 
-    private IItemDto? selectedItem;
-    private bool HasSelection => selectedItem is not null;
+    private IItemDto? selectedParent;
+    private bool HasSelection => selectedParent is not null;
 
     // Pagination
     private int _currentPage = 1;
@@ -131,7 +131,7 @@
 
     private void Select(IItemDto item)
     {
-        selectedItem = item;
+        selectedParent = item;
     }
 
     private async Task Confirm()
@@ -145,6 +145,14 @@
         if (Item is MissionDto)
         {
             await EditMission();            
+        }
+        else if (Item is ProjectDto)
+        {
+            await EditProject();
+        }
+        else if (Item is TaskDto)
+        {
+            await EditTask();
         }
     }
 
@@ -166,6 +174,44 @@
         }
     }
 
+    private async Task EditProject()
+    {
+        var project = (ProjectDto)Item!;
+        var updateRequest = new UpdateProjectDto
+        (
+            itemName,
+            itemDescription,
+            selectedParent.Id,
+            project.IsCompleted
+        );
+
+        var result = await ProjectService.UpdateAsync(project.Id, updateRequest);
+        if (result is not null)
+        {
+            await OnResult.InvokeAsync(result);
+            HideDialog();
+        }
+    }
+    
+    private async Task EditTask()
+    {
+        var task = (TaskDto)Item!;
+        var updateRequest = new UpdateTaskRequest
+        (
+            itemName,
+            itemDescription,
+            task.IsCompleted,
+            selectedParent.Id
+        );
+
+        var result = await TaskService.UpdateAsync(task.Id, updateRequest);
+        if (result is not null)
+        {
+            await OnResult.InvokeAsync(result);
+            HideDialog();
+        }
+    }
+
     public void ShowDialog()
     {
         _isDialogVisible = true;
@@ -175,6 +221,6 @@
         _isDialogVisible = false;
     }
 
-    private bool HasSelectedParent => (Item is ProjectDto || Item is TaskDto) && selectedItem is not null;
+    private bool HasSelectedParent => (Item is ProjectDto || Item is TaskDto) && selectedParent is not null;
     private bool HasValidMission => Item is MissionDto && !string.IsNullOrWhiteSpace(itemName);
 }

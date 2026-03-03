@@ -89,6 +89,7 @@
 <CreateModal
     IsVisible="@_showCreateTaskModal"
     ItemType="ModalType.Task"
+    ExistingParent="@_project"
     OnResult="HandleTaskCreated"
     OnCancel="CloseCreateTask" />
 

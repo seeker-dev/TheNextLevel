@@ -157,7 +157,7 @@ public class TursoStatement
             Args = Parameters.Length > 0 ? Parameters.Select(p => new TursoParameter
             {
                 Type = GetParameterType(p),
-                Value = p?.ToString()
+                Value = (p == null || p is DBNull) ? null : p.ToString()
             }).ToArray() : null
         };
     }
@@ -166,7 +166,7 @@ public class TursoStatement
     {
         return param switch
         {
-            null => "null",
+            null or DBNull => "null",
             int or long or short or byte => "integer",
             float or double or decimal => "float",
             bool => "integer",

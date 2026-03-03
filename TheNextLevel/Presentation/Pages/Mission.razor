@@ -82,7 +82,7 @@
     @ref="_createModal"
     IsVisible="_showNewProjectDialog"
     ItemType="ModalType.Project"
-    ExistingItem="_editingProject"
+    ExistingParent="@_mission"
     OnResult="HandleProjectSaved"
     OnCancel="CloseNewProjectDialog" />
 
@@ -99,7 +99,6 @@
     private ProjectList? _projectList;
 
     private bool _showNewProjectDialog = false;
-    private ProjectDto? _editingProject = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -194,14 +193,12 @@
 
     private void OpenNewProjectDialog()
     {
-        _editingProject = null;  // null = create mode
         _showNewProjectDialog = true;
     }
 
     private void CloseNewProjectDialog()
     {
         _showNewProjectDialog = false;
-        _editingProject = null;  // reset state
     }
 
     private async Task HandleProjectSaved(IItemDto? savedProject)

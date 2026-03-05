@@ -82,7 +82,7 @@
     {
         if (IsVisible)
         {
-            _currentPage = 1;
+            _currentPage = 0;
             _parentItems.Clear();
             await Load();
         }
@@ -113,7 +113,7 @@
 
             if (items is not null)
             {
-                if (_currentPage == 1)
+                if (_currentPage == 0)
                     _parentItems = items.ToList();
                 else
                     _parentItems.AddRange(items);

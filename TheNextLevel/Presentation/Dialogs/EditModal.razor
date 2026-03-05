@@ -94,27 +94,31 @@
         _isLoading = true;
         try
         {
-            IEnumerable<IItemDto>? items = null;
-
             if (Item is ProjectDto)
             {
-                var result = await MissionService.ListAsync(_currentPage, _pageSize);
-                items = result?.Items;
+                var result = await MissionService.ListAsync(0, _pageSize);
                 _totalCount = result?.TotalCount ?? 0;
+                _parentItems = result?.Items.Cast<IItemDto>().ToList() ?? [];
+
+                if (_totalCount > _pageSize)
+                {
+                    var rest = await MissionService.ListAsync(_pageSize, _totalCount - _pageSize);
+                    if (rest?.Items is not null)
+                        _parentItems.AddRange(rest.Items.Cast<IItemDto>());
+                }
             }
             else if (Item is TaskDto)
             {
-                var result = await ProjectService.ListAsync(_currentPage, _pageSize);
-                items = result?.Items;
+                var result = await ProjectService.ListAsync(0, _pageSize);
                 _totalCount = result?.TotalCount ?? 0;
-            }
+                _parentItems = result?.Items.Cast<IItemDto>().ToList() ?? [];
 
-            if (items is not null)
-            {
-                if (_currentPage == 0)
-                    _parentItems = items.ToList();
-                else
-                    _parentItems.AddRange(items);
+                if (_totalCount > _pageSize)
+                {
+                    var rest = await ProjectService.ListAsync(_pageSize, _totalCount - _pageSize);
+                    if (rest?.Items is not null)
+                        _parentItems.AddRange(rest.Items.Cast<IItemDto>());
+                }
             }
 
             var parent = Item switch
@@ -124,23 +128,11 @@
                 _ => null
             };
             _selectedParentId = parent?.Id.ToString() ?? string.Empty;
-
         }
         finally
         {
             _isLoading = false;
         }
-    }
-    
-    private async Task LoadMore()
-    {
-        _currentPage++;
-        await Load();
-    }
-
-    private void Select(IItemDto item)
-    {
-        _selectedParentId = item.Id.ToString();
     }
 
     private async Task Confirm()

@@ -48,6 +48,24 @@
     </div>
 </div>
 
+@if (_showDiscardConfirmation)
+{
+    <div class="dialog-overlay visible">
+        <div class="dialog-container" @onclick:stopPropagation="true">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Discard Changes?</h3>
+            </div>
+            <div class="dialog-body">
+                <p>You have unsaved changes. Are you sure you want to discard them?</p>
+                <div class="dialog-actions">
+                    <button class="dialog-btn dialog-btn-secondary" @onclick="OnDiscardCancel">Keep Editing</button>
+                    <button class="dialog-btn dialog-btn-danger" @onclick="OnDiscardConfirm">Discard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     [Parameter]
     public required IItemDto Item { get; set; }
@@ -75,6 +93,16 @@
     private string itemName = string.Empty;
     private string itemDescription = string.Empty;
     private bool _isDialogVisible = false;
+
+    // Discard confirmation
+    private bool _showDiscardConfirmation = false;
+    private string _originalName = string.Empty;
+    private string _originalDescription = string.Empty;
+    private string _originalParentId = string.Empty;
+    private bool _hasUnsavedChanges =>
+        itemName != _originalName ||
+        itemDescription != _originalDescription ||
+        _selectedParentId != _originalParentId;
     
     protected override async Task OnParametersSetAsync()
     {
@@ -128,6 +156,9 @@
                 _ => null
             };
             _selectedParentId = parent?.Id.ToString() ?? string.Empty;
+            _originalName = itemName;
+            _originalDescription = itemDescription;
+            _originalParentId = _selectedParentId;
         }
         finally
         {
@@ -171,7 +202,7 @@
         if (result is not null)
         {
             await OnResult.InvokeAsync(result);
-            HideDialog();
+            ForceHideDialog();
         }
     }
 
@@ -204,9 +235,9 @@
         }
 
         await OnResult.InvokeAsync(result);
-        HideDialog();
+        ForceHideDialog();
     }
-    
+
     private async Task EditTask()
     {
         var task = (TaskDto)Item!;
@@ -234,16 +265,38 @@
             }
         }
         await OnResult.InvokeAsync(result);
-        HideDialog();
+        ForceHideDialog();
     }
 
     public void ShowDialog()
     {
         _isDialogVisible = true;
     }
+
     public void HideDialog()
     {
+        if (_hasUnsavedChanges)
+        {
+            _showDiscardConfirmation = true;
+            return;
+        }
         _isDialogVisible = false;
+    }
+
+    private void ForceHideDialog()
+    {
+        _isDialogVisible = false;
+    }
+
+    private void OnDiscardConfirm()
+    {
+        _showDiscardConfirmation = false;
+        _isDialogVisible = false;
+    }
+
+    private void OnDiscardCancel()
+    {
+        _showDiscardConfirmation = false;
     }
 
     private bool HasSelectedParent => (Item is ProjectDto || Item is TaskDto) && selectedParent is not null;

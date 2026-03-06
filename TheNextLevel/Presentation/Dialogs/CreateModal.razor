@@ -48,6 +48,24 @@
         </div>
     </div>
 </div>
+
+@if (_showDiscardConfirmation)
+{
+    <div class="dialog-overlay visible">
+        <div class="dialog-container" @onclick:stopPropagation="true">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Discard Changes?</h3>
+            </div>
+            <div class="dialog-body">
+                <p>You have unsaved changes. Are you sure you want to discard them?</p>
+                <div class="dialog-actions">
+                    <button class="dialog-btn dialog-btn-secondary" @onclick="OnDiscardCancel">Keep Editing</button>
+                    <button class="dialog-btn dialog-btn-danger" @onclick="OnDiscardConfirm">Discard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 }
 @code {
     [Parameter]
@@ -77,6 +95,14 @@
     // Input binding
     private string itemName = string.Empty;
     private string itemDescription = string.Empty;
+
+    // Discard confirmation
+    private bool _showDiscardConfirmation = false;
+    private string _initialParentId = string.Empty;
+    private bool _hasUnsavedChanges =>
+        !string.IsNullOrEmpty(itemName) ||
+        !string.IsNullOrEmpty(itemDescription) ||
+        _selectedParentId != _initialParentId;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -124,6 +150,7 @@
             }
 
             _selectedParentId = ExistingParent is not null ? (_parentItems.FirstOrDefault(i => i.Id == ExistingParent.Id)?.Id.ToString() ?? string.Empty) : string.Empty;
+            _initialParentId = _selectedParentId;
         }
         finally
         {
@@ -166,7 +193,23 @@
 
     private async Task Cancel()
     {
+        if (_hasUnsavedChanges)
+        {
+            _showDiscardConfirmation = true;
+            return;
+        }
         await OnCancel.InvokeAsync();
+    }
+
+    private async Task OnDiscardConfirm()
+    {
+        _showDiscardConfirmation = false;
+        await OnCancel.InvokeAsync();
+    }
+
+    private void OnDiscardCancel()
+    {
+        _showDiscardConfirmation = false;
     }
 
     private async Task CreateMission()

@@ -48,7 +48,7 @@
     </div>
 </div>
 
-@if (_showDiscardConfirmation)
+@if (_showDiscardConfirmation && _isDialogVisible)
 {
     <div class="dialog-overlay visible">
         <div class="dialog-container" @onclick:stopPropagation="true">
@@ -201,8 +201,9 @@
         var result = await MissionService.UpdateAsync(mission.Id, updateRequest);
         if (result is not null)
         {
-            await OnResult.InvokeAsync(result);
+            
             ForceHideDialog();
+            await OnResult.InvokeAsync(result);
         }
     }
 
@@ -234,8 +235,8 @@
             }
         }
 
-        await OnResult.InvokeAsync(result);
         ForceHideDialog();
+        await OnResult.InvokeAsync(result);
     }
 
     private async Task EditTask()
@@ -264,8 +265,8 @@
                 return;
             }
         }
-        await OnResult.InvokeAsync(result);
         ForceHideDialog();
+        await OnResult.InvokeAsync(result);
     }
 
     public void ShowDialog()
@@ -285,6 +286,9 @@
 
     private void ForceHideDialog()
     {
+        _originalName = itemName;
+        _originalDescription = itemDescription;
+        _originalParentId = _selectedParentId;
         _isDialogVisible = false;
     }
 

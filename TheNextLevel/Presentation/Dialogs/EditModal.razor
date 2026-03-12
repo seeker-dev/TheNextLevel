@@ -87,7 +87,6 @@
     // Pagination
     private int _currentPage = 1;
     private int _pageSize = 10;
-    private int _totalCount = 0;
 
     // Input binding
     private string itemName = string.Empty;
@@ -123,31 +122,9 @@
         try
         {
             if (Item is ProjectDto)
-            {
-                var result = await MissionService.ListAsync(0, _pageSize);
-                _totalCount = result?.TotalCount ?? 0;
-                _parentItems = result?.Items.Cast<IItemDto>().ToList() ?? [];
-
-                if (_totalCount > _pageSize)
-                {
-                    var rest = await MissionService.ListAsync(_pageSize, _totalCount - _pageSize);
-                    if (rest?.Items is not null)
-                        _parentItems.AddRange(rest.Items.Cast<IItemDto>());
-                }
-            }
+                _parentItems = await DialogHelper.LoadAllAsync<MissionDto>(MissionService.ListAsync, _pageSize);
             else if (Item is TaskDto)
-            {
-                var result = await ProjectService.ListAsync(0, _pageSize);
-                _totalCount = result?.TotalCount ?? 0;
-                _parentItems = result?.Items.Cast<IItemDto>().ToList() ?? [];
-
-                if (_totalCount > _pageSize)
-                {
-                    var rest = await ProjectService.ListAsync(_pageSize, _totalCount - _pageSize);
-                    if (rest?.Items is not null)
-                        _parentItems.AddRange(rest.Items.Cast<IItemDto>());
-                }
-            }
+                _parentItems = await DialogHelper.LoadAllAsync<ProjectDto>(ProjectService.ListAsync, _pageSize);
 
             var parent = Item switch
             {

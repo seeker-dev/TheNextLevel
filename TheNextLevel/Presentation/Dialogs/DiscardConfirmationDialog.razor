@@ -1,0 +1,31 @@
+@if (IsVisible)
+{
+    <div class="dialog-overlay visible">
+        <div class="dialog-container" @onclick:stopPropagation="true">
+            <div class="dialog-header">
+                <h3 class="dialog-title">Discard Changes?</h3>
+            </div>
+            <div class="dialog-body">
+                <p>You have unsaved changes. Are you sure you want to discard them?</p>
+                <div class="dialog-actions">
+                    <button class="dialog-btn dialog-btn-secondary" @onclick="OnCancelClick">Keep Editing</button>
+                    <button class="dialog-btn dialog-btn-danger" @onclick="OnConfirmClick">Discard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public bool IsVisible { get; set; }
+
+    [Parameter]
+    public EventCallback OnConfirm { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task OnConfirmClick() => await OnConfirm.InvokeAsync();
+    private async Task OnCancelClick() => await OnCancel.InvokeAsync();
+}

@@ -48,23 +48,10 @@
     </div>
 </div>
 
-@if (_showDiscardConfirmation && _isDialogVisible)
-{
-    <div class="dialog-overlay visible">
-        <div class="dialog-container" @onclick:stopPropagation="true">
-            <div class="dialog-header">
-                <h3 class="dialog-title">Discard Changes?</h3>
-            </div>
-            <div class="dialog-body">
-                <p>You have unsaved changes. Are you sure you want to discard them?</p>
-                <div class="dialog-actions">
-                    <button class="dialog-btn dialog-btn-secondary" @onclick="OnDiscardCancel">Keep Editing</button>
-                    <button class="dialog-btn dialog-btn-danger" @onclick="OnDiscardConfirm">Discard</button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
+<DiscardConfirmationDialog
+    IsVisible="@(_showDiscardConfirmation && _isDialogVisible)"
+    OnConfirm="OnDiscardConfirm"
+    OnCancel="OnDiscardCancel" />
 
 @code {
     [Parameter]

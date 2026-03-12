@@ -9,10 +9,12 @@ namespace TheNextLevel.Application.Services;
 public class ProjectService : IProjectService
 {
     private readonly IProjectRepository _projectRepository;
+    private readonly ITaskRepository _taskRepository;
 
-    public ProjectService(IProjectRepository projectRepository)
+    public ProjectService(IProjectRepository projectRepository, ITaskRepository taskRepository)
     {
         _projectRepository = projectRepository ?? throw new ArgumentNullException(nameof(projectRepository));
+        _taskRepository = taskRepository ?? throw new ArgumentNullException(nameof(taskRepository));
     }
 
     public async Task<ProjectDto?> GetByIdAsync(int id)
@@ -56,6 +58,14 @@ public class ProjectService : IProjectService
 
     public async Task<bool> DeleteAsync(int id)
     {
+        var project = await _projectRepository.GetByIdAsync(id);
+        if (project == null)
+            return false;
+
+        var tasks = await _taskRepository.ListByProjectIdAsync(id, 0, 1);
+        if (tasks.TotalCount > 0)
+            throw new InvalidOperationException("Cannot delete a project that has tasks.");
+
         return await _projectRepository.DeleteAsync(id);
     }
 

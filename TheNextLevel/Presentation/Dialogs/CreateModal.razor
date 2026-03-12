@@ -22,24 +22,11 @@
 
             @if (ItemType == ModalType.Task || ItemType == ModalType.Project)
             {
-                <select @bind="_selectedParentId" class="form-select mt-2">
-                    <option value="">Select @_parentLabel</option>
-                    @if (_isLoading)
-                    {
-                        <option disabled>Loading @(_parentLabel)s</option>
-                    }
-                    else if (_parentItems.Count == 0)
-                    {
-                        <option disabled>No @_parentLabel found</option>
-                    }
-                    else
-                    {
-                        @foreach (var item in _parentItems)
-                        {
-                            <option value="@item.Id.ToString()">@item.Name</option>
-                        }
-                    }
-                </select>
+                <ParentSelector
+                    @bind-SelectedId="_selectedParentId"
+                    Items="_parentItems"
+                    IsLoading="_isLoading"
+                    Label="_parentLabel" />
             }
         </div>
         <div class="modal-footer">

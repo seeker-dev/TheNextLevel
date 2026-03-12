@@ -184,7 +184,7 @@ public class TursoTaskRepository : ITaskRepository
                 isCompleted: GetColumnValue(row, columns, "IsCompleted") == "1",
                 projectId: ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
                 parentTaskId: ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId")),
-                status: int.Parse(GetColumnValue(row, columns, "Status"))
+                status: int.TryParse(GetColumnValue(row, columns, "Status"), out var status) ? status : 0
             ));
         }
 

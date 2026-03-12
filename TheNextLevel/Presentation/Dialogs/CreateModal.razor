@@ -22,24 +22,11 @@
 
             @if (ItemType == ModalType.Task || ItemType == ModalType.Project)
             {
-                <select @bind="_selectedParentId" class="form-select mt-2">
-                    <option value="">Select @_parentLabel</option>
-                    @if (_isLoading)
-                    {
-                        <option disabled>Loading @(_parentLabel)s</option>
-                    }
-                    else if (_parentItems.Count == 0)
-                    {
-                        <option disabled>No @_parentLabel found</option>
-                    }
-                    else
-                    {
-                        @foreach (var item in _parentItems)
-                        {
-                            <option value="@item.Id.ToString()">@item.Name</option>
-                        }
-                    }
-                </select>
+                <ParentSelector
+                    @bind-SelectedId="_selectedParentId"
+                    Items="_parentItems"
+                    IsLoading="_isLoading"
+                    Label="_parentLabel" />
             }
         </div>
         <div class="modal-footer">
@@ -49,23 +36,10 @@
     </div>
 </div>
 
-@if (_showDiscardConfirmation)
-{
-    <div class="dialog-overlay visible">
-        <div class="dialog-container" @onclick:stopPropagation="true">
-            <div class="dialog-header">
-                <h3 class="dialog-title">Discard Changes?</h3>
-            </div>
-            <div class="dialog-body">
-                <p>You have unsaved changes. Are you sure you want to discard them?</p>
-                <div class="dialog-actions">
-                    <button class="dialog-btn dialog-btn-secondary" @onclick="OnDiscardCancel">Keep Editing</button>
-                    <button class="dialog-btn dialog-btn-danger" @onclick="OnDiscardConfirm">Discard</button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
+<DiscardConfirmationDialog
+    IsVisible="_showDiscardConfirmation"
+    OnConfirm="OnDiscardConfirm"
+    OnCancel="OnDiscardCancel" />
 }
 @code {
     [Parameter]
@@ -90,7 +64,6 @@
     // Pagination
     private int _currentPage = 1;
     private int _pageSize = 10;
-    private int _totalCount = 0;
 
     // Input binding
     private string itemName = string.Empty;
@@ -123,31 +96,9 @@
         try
         {
             if (ItemType == ModalType.Project)
-            {
-                var result = await MissionService.ListAsync(0, _pageSize);
-                _totalCount = result?.TotalCount ?? 0;
-                _parentItems = result?.Items.Cast<IItemDto>().ToList() ?? [];
-
-                if (_totalCount > _pageSize)
-                {
-                    var rest = await MissionService.ListAsync(_pageSize, _totalCount - _pageSize);
-                    if (rest?.Items is not null)
-                        _parentItems.AddRange(rest.Items.Cast<IItemDto>());
-                }
-            }
+                _parentItems = await DialogHelper.LoadAllAsync<MissionDto>(MissionService.ListAsync, _pageSize);
             else if (ItemType == ModalType.Task)
-            {
-                var result = await ProjectService.ListAsync(0, _pageSize);
-                _totalCount = result?.TotalCount ?? 0;
-                _parentItems = result?.Items.Cast<IItemDto>().ToList() ?? [];
-
-                if (_totalCount > _pageSize)
-                {
-                    var rest = await ProjectService.ListAsync(_pageSize, _totalCount - _pageSize);
-                    if (rest?.Items is not null)
-                        _parentItems.AddRange(rest.Items.Cast<IItemDto>());
-                }
-            }
+                _parentItems = await DialogHelper.LoadAllAsync<ProjectDto>(ProjectService.ListAsync, _pageSize);
 
             _selectedParentId = ExistingParent is not null ? (_parentItems.FirstOrDefault(i => i.Id == ExistingParent.Id)?.Id.ToString() ?? string.Empty) : string.Empty;
             _initialParentId = _selectedParentId;

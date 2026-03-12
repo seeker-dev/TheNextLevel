@@ -71,6 +71,16 @@ public class TursoTaskRepository : ITaskRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
+    public async Task<bool> SetStatusAsync(int id, int status)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+        var response = await _client.ExecuteAsync(
+            "UPDATE Tasks SET Status = ? WHERE Id = ? AND AccountId = ?",
+            status, id, accountId);
+
+        return response.Result?.AffectedRowCount > 0;
+    }
+
     public async Task<bool> ResetAsync(int id)
     {
         var accountId = _accountContext.GetCurrentAccountId();

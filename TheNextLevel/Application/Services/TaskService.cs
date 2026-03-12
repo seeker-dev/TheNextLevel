@@ -52,6 +52,17 @@ public class TaskService : ITaskService
         return true;
     }
 
+    public async Task<bool> SetStatusAsync(int id, TaskState status)
+    {
+        var task = await _taskRepository.GetByIdAsync(id);
+        if (task == null) return false;
+
+        int statusToInt = (int)status;
+
+        await _taskRepository.SetStatusAsync(id, statusToInt);
+        return true;
+    }
+
     public async Task<bool> ResetAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);

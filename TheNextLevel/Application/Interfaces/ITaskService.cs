@@ -12,6 +12,7 @@ public interface ITaskService
     Task<TaskDto> UpdateAsync(int id, UpdateTaskRequest request);
     Task<bool> DeleteAsync(int id);
     Task<bool> CompleteAsync(int id);
+    Task<bool> SetStatusAsync(int id, TaskState status);
     Task<bool> ResetAsync(int id);
     Task<bool> MoveAsync(int taskId, int newProjectId);
 

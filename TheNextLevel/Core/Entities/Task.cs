@@ -9,8 +9,9 @@ public class Task
     public bool IsCompleted { get; private set; }
     public int? ProjectId { get; private set; }
     public int? ParentTaskId { get; private set; }
+    public int Status { get; private set; }
 
-    public Task(int id, int accountId, string name, string description, bool isCompleted, int? projectId, int? parentTaskId)
+    public Task(int id, int accountId, string name, string description, bool isCompleted, int? projectId, int? parentTaskId, int status)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name, nameof(name));
 
@@ -21,5 +22,6 @@ public class Task
         IsCompleted = isCompleted;
         ProjectId = projectId;
         ParentTaskId = parentTaskId;
+        Status = status;
     }
 }

@@ -148,6 +148,43 @@
     color: #8B4513;
 }
 
+/* Status Button */
+.status-btn-container {
+    position: relative;
+}
+
+.status-btn {
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+    transition: opacity 0.2s ease;
+    white-space: nowrap;
+}
+
+.status-btn:hover {
+    opacity: 0.85;
+}
+
+.status-inactive  { background: #808080; }
+.status-active    { background: #1E90FF; }
+.status-onhold    { background: #B8860B; color: #fff; }
+.status-completed { background: #228B22; }
+
+.status-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+}
+
+.menu-item.active {
+    font-weight: 700;
+    background: rgba(139, 69, 19, 0.3);
+}
+
 /* Task Menu Styles */
 .task-actions {
     position: absolute;

@@ -4,6 +4,11 @@
 @inject ITaskService TaskService
 @inject NavigationManager Navigation
 
+@if (_showStatusMenu)
+{
+    <div class="status-menu-backdrop" @onclick="CloseStatusMenu"></div>
+}
+
 <div class="task-card @(_isCompleted ? "completed" : "")" style="cursor: pointer;">
     <div class="task-checkbox-container">
         <input class="task-checkbox" type="checkbox" checked="@_isCompleted" @onchange="OnStatusChange">
@@ -14,22 +19,36 @@
                 <div class="task-description">@Task.Description</div>
             }
             <div class="task-meta">
-                <span class="task-status">@(_isCompleted ? "Completed" : "Active")</span>
+                <span class="task-status">@_currentStatus</span>
             </div>
         </div>
-        @if (_editEnabled || _deleteEnabled)
-        {
-            <div class="task-card-actions">
-                @if (_editEnabled)
+        <div class="task-card-actions">
+            @if (_editEnabled)
+            {
+                <button class="action-btn" title="Edit Task" @onclick="RequestEdit" @onclick:stopPropagation="true">✏️</button>
+            }
+            @if (_deleteEnabled)
+            {
+                <button class="action-btn action-btn-danger" title="Delete Task" @onclick="RequestDelete" @onclick:stopPropagation="true">🗑️</button>
+            }
+            <div class="status-btn-container" @onclick:stopPropagation="true">
+                <button class="status-btn @GetStatusClass(_currentStatus)" @onclick="ToggleStatusMenu" title="Change Status">
+                    @_currentStatus
+                </button>
+                @if (_showStatusMenu)
                 {
-                    <button class="action-btn" title="Edit Task" @onclick="RequestEdit" @onclick:stopPropagation="true">✏️</button>
-                }
-                @if (_deleteEnabled)
-                {
-                    <button class="action-btn action-btn-danger" title="Delete Task" @onclick="RequestDelete" @onclick:stopPropagation="true">🗑️</button>
+                    <div class="task-menu">
+                        @foreach (var state in Enum.GetValues<TaskState>())
+                        {
+                            <button class="menu-item @(state == _currentStatus ? "active" : "")"
+                                    @onclick="() => SelectStatus(state)">
+                                @state
+                            </button>
+                        }
+                    </div>
                 }
             </div>
-        }
+        </div>
     </div>
 </div>
 
@@ -48,12 +67,40 @@
     public EventCallback<TaskDto> OnDeleteRequested { get; set; }
 
     private bool _editEnabled => OnEditRequested.HasDelegate;
-
     private bool _deleteEnabled => OnDeleteRequested.HasDelegate;
 
-    private bool _isCompleted => Task?.IsCompleted == true;
+    private TaskState _currentStatus;
+    private bool _showStatusMenu;
 
+    private bool _isCompleted => Task?.IsCompleted == true || _currentStatus == TaskState.Completed;
     private bool _isSubtask => Task?.ParentTaskId != null;
+
+    protected override void OnParametersSet()
+    {
+        _currentStatus = Task?.Status ?? TaskState.Inactive;
+    }
+
+    private static string GetStatusClass(TaskState status) => status switch
+    {
+        TaskState.Inactive => "status-inactive",
+        TaskState.Active => "status-active",
+        TaskState.OnHold => "status-onhold",
+        TaskState.Completed => "status-completed",
+        _ => "status-inactive"
+    };
+
+    private void ToggleStatusMenu() => _showStatusMenu = !_showStatusMenu;
+
+    private void CloseStatusMenu() => _showStatusMenu = false;
+
+    private async Task SelectStatus(TaskState state)
+    {
+        if (Task == null) return;
+        _showStatusMenu = false;
+        await TaskService.SetStatusAsync(Task.Id, state);
+        _currentStatus = state;
+        StateHasChanged();
+    }
 
     private async Task RequestEdit()
     {
@@ -76,15 +123,15 @@
         if (isChecked && !_isCompleted)
         {
             await TaskService.CompleteAsync(Task.Id);
+            _currentStatus = TaskState.Completed;
         }
         else if (!isChecked && _isCompleted)
         {
             await TaskService.ResetAsync(Task.Id);
+            _currentStatus = TaskState.Inactive;
         }
 
         StateHasChanged();
-
-        //Task.IsCompleted = isChecked;
     }
 
     private void NavigateToDetail()

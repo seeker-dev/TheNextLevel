@@ -74,7 +74,7 @@ public class TaskService : ITaskService
         if (task.ParentTaskId.HasValue)
         {
             var parentTask = await _taskRepository.GetByIdAsync(task.ParentTaskId.Value);
-            if (parentTask?.IsCompleted == true)
+            if (parentTask?.Status == 2) // If parent is completed, reset it as well
                 await _taskRepository.ResetAsync(parentTask.Id);
         }
 

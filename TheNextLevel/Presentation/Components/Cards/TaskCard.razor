@@ -11,7 +11,6 @@
 
 <div class="task-card @(_isCompleted ? "completed" : "")" style="cursor: pointer;">
     <div class="task-checkbox-container">
-        <input class="task-checkbox" type="checkbox" checked="@_isCompleted" @onchange="OnStatusChange">
         <div class="task-details">
             <div class="task-title @(_isCompleted ? "completed" : "")" @onclick="NavigateToDetail" @onclick:stopPropagation="true">@(Task?.Name ?? "Untitled")</div>
             @if (!string.IsNullOrEmpty(Task?.Description))
@@ -72,7 +71,7 @@
     private TaskState _currentStatus;
     private bool _showStatusMenu;
 
-    private bool _isCompleted => Task?.IsCompleted == true || _currentStatus == TaskState.Completed;
+    private bool _isCompleted => _currentStatus == TaskState.Completed;
     private bool _isSubtask => Task?.ParentTaskId != null;
 
     protected override void OnParametersSet()
@@ -112,26 +111,6 @@
     {
         if (Task != null)
             await OnDeleteRequested.InvokeAsync(Task);
-    }
-
-    private async Task OnStatusChange(ChangeEventArgs e)
-    {
-        if (Task == null) return;
-
-        var isChecked = (bool)(e.Value ?? false);
-
-        if (isChecked && !_isCompleted)
-        {
-            await TaskService.CompleteAsync(Task.Id);
-            _currentStatus = TaskState.Completed;
-        }
-        else if (!isChecked && _isCompleted)
-        {
-            await TaskService.ResetAsync(Task.Id);
-            _currentStatus = TaskState.Inactive;
-        }
-
-        StateHasChanged();
     }
 
     private void NavigateToDetail()

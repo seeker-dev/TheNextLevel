@@ -1,0 +1,82 @@
+@using TheNextLevel.Application.DTOs.Projections
+@using TheNextLevel.Application.Services
+@using TheNextLevel.Presentation.Components.Cards
+
+@inject ITaskService TaskService
+
+@if (_isLoading)
+{
+    <div class="loading-indicator">Loading tasks...</div>
+}
+
+<div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
+    <Virtualize ItemsProvider="ActiveTasksProvider"@ref="_activeTasksList" Context="task">
+        <ItemContent>
+                <div class="task-card">
+                    <div class="task-content">
+                        <div class="task-header">
+                            <div style="flex: 1;">
+                                <h3 class=task-title>@task?.Name</h3>
+                                <div class="task-metadata">
+                                    <span class="metadata-badge project-badge">
+                                        <svg class="metadata-icon" viewBox="0 0 24 24">
+                                            <path class="icon-check-circle" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                        </svg>
+                                        <span class="metadata-text">@task.ProjectTitle</span>
+                                    </span>
+                                    <span class="metadata-separator">•</span>
+                                    <span class="metadata-badge status-badge">
+                                        <svg class="metadata-icon" viewBox="0 0 24 24">
+                                            <path class="icon-check-circle" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span class="metadata-text">@task.Status</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <button class="menu-btn">
+                                <svg width="20" height="20" viewBox="0 0 24 24">
+                                    <path class="icon-menu" d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+        </ItemContent>
+    </Virtualize>
+</div>
+
+@code 
+{
+    private bool _isLoading = false;
+    private int _totalCount = 0;
+    private List<TaskFullHierarchyDto> _activeTasks;
+    private Virtualize<TaskFullHierarchyDto> _activeTasksList;
+
+    private async ValueTask<ItemsProviderResult<TaskFullHierarchyDto?>> ActiveTasksProvider(ItemsProviderRequest request)
+    {
+        try
+        {
+            _isLoading = true;
+            var result = await TaskService.ListByStatus(TaskState.Active, request.StartIndex, request.Count);
+            var tasks = result?.Items ?? [];
+            var totalCount = result?.TotalCount ?? 0;
+            return new ItemsProviderResult<TaskFullHierarchyDto?>(tasks, totalCount);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error loading tasks: {ex.Message}");
+            return new ItemsProviderResult<TaskFullHierarchyDto?>([], 0);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RefeshAsync()
+    {
+        await _activeTasksList.RefreshDataAsync();
+    }
+}

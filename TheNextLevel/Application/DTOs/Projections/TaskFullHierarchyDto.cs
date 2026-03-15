@@ -1,0 +1,2 @@
+namespace TheNextLevel.Application.DTOs.Projections;
+public record TaskFullHierarchyDto (int Id, string Name, string Description, TaskState Status, int ProjectId, string ProjectTitle, int MissionId, string MissionTitle) : IItemDto;

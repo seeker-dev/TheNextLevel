@@ -2,6 +2,7 @@
 @using TheNextLevel.Application.DTOs
 @using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Application.Services
+@using TheNextLevel.Presentation.Components.Grids
 @using TheNextLevel.Presentation.Dialogs
 @using TheNextLevel.Presentation.Components.Buttons
 @using TheNextLevel.Presentation.Components.Cards
@@ -13,6 +14,7 @@
     <p class="intro-text">Your journey to mastering project management starts here. Explore your projects, manage your tasks, and embark on exciting missions to level up your skills.</p>
     <div class="missions-link">
         <a href="/missions" class="missions-btn">Explore Missions ➡️</a>
+        <ActiveTasks />
     </div>
 </main>
 

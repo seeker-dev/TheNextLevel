@@ -1,4 +1,5 @@
 using TheNextLevel.Application.DTOs;
+using TheNextLevel.Application.DTOs.Projections;
 using TheNextLevel.Core.DTOs;
 
 namespace TheNextLevel.Application.Interfaces;
@@ -8,6 +9,7 @@ public interface ITaskService
     Task<TaskDto?> GetByIdAsync(int id);
     Task<PagedResult<TaskDto>> ListAsync(int skip, int take);
     Task<PagedResult<TaskDto>> ListByProjectAsync(int projectId, int skip, int take);
+    Task<PagedResult<TaskFullHierarchyDto>> ListByStatus(TaskState status, int skip, int take);
     Task<TaskDto> CreateAsync(CreateTaskRequest request);
     Task<TaskDto> UpdateAsync(int id, UpdateTaskRequest request);
     Task<bool> DeleteAsync(int id);

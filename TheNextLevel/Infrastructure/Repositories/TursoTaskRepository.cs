@@ -176,6 +176,38 @@ public class TursoTaskRepository : ITaskRepository
         };
     }
 
+    public async Task<PagedResult<Core.Entities.TaskFullHierarchyProjection>> ListByStatus(int status, int skip, int take)
+    {
+        var accountId = _accountContext.GetCurrentAccountId();
+
+        var countResponse = await _client.QueryAsync(
+            "SELECT COUNT(*) as Count FROM Tasks WHERE Status = ? AND AccountId = ? AND ParentTaskId IS NULL",
+            status, accountId);
+        
+        var totalCount = 0;
+
+        if (countResponse.Result?.Rows != null && countResponse.Result.Rows.Length > 0)
+        {
+            var countValue = countResponse.Result.Rows[0][0];
+            totalCount = countValue.GetInt32Value();
+        }
+
+        var dataResponse = await _client.QueryAsync(
+            "SELECT T.Id, T.AccountId, T.Name, T.Description, T.ProjectId, P.Name AS ProjectTitle, M.Id AS MissionId, M.Title AS MissionTitle, T.Status FROM Tasks AS T LEFT JOIN Projects AS P ON T.ProjectId = P.Id LEFT JOIN Missions AS M ON P.MissionId = M.Id WHERE T.Status = ? AND T.AccountId = ? AND T.ParentTaskId IS NULL ORDER BY T.Name DESC LIMIT ? OFFSET ?",
+            status,
+            accountId,
+            take,
+            skip);
+
+        var items = MapToHeirarchyProjection(dataResponse);
+
+        return new PagedResult<Core.Entities.TaskFullHierarchyProjection>
+        {
+            Items = items,
+            TotalCount = totalCount
+        };
+    }
+
     private IEnumerable<Core.Entities.Task> MapToTasks(TursoResponse response)
     {
         if (response.Result?.Rows == null)
@@ -195,6 +227,32 @@ public class TursoTaskRepository : ITaskRepository
                 projectId: ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
                 parentTaskId: ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId")),
                 status: int.TryParse(GetColumnValue(row, columns, "Status"), out var status) ? status : 0
+            ));
+        }
+
+        return tasks;
+    }
+
+    private IEnumerable<Core.Entities.TaskFullHierarchyProjection> MapToHeirarchyProjection(TursoResponse response)
+    {
+        if (response.Result?.Rows == null)
+            return Enumerable.Empty<Core.Entities.TaskFullHierarchyProjection>();
+
+        var tasks = new List<Core.Entities.TaskFullHierarchyProjection>();
+        var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
+
+        foreach (var row in response.Result.Rows)
+        {
+            tasks.Add(new Core.Entities.TaskFullHierarchyProjection(
+                Id: int.Parse(GetColumnValue(row, columns, "Id")),
+                AccountId: int.Parse(GetColumnValue(row, columns, "AccountId")),
+                Name: GetColumnValue(row, columns, "Name"),
+                Description: GetColumnValue(row, columns, "Description"),
+                ProjectId: ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
+                ProjectTitle: GetColumnValue(row, columns, "ProjectTitle"),
+                MissionId: ParseNullableInt(GetColumnValue(row, columns, "MissionId")),
+                MissionTitle: GetColumnValue(row, columns, "MissionTitle"),
+                Status: int.TryParse(GetColumnValue(row, columns, "Status"), out var status) ? status : 0
             ));
         }
 

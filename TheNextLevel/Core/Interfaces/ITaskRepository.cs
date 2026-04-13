@@ -7,6 +7,7 @@ public interface ITaskRepository
     Task<Entities.Task?> GetByIdAsync(int id);
     Task<PagedResult<Entities.Task>> ListAsync(int skip, int take);
     Task<PagedResult<Entities.Task>> ListByProjectIdAsync(int projectId, int skip, int take);
+    Task<PagedResult<Entities.TaskFullHierarchyProjection>> ListByStatus(int status, int skip, int take);
     Task<Entities.Task> CreateAsync(int projectId, string name, string description);
     Task<bool> UpdateAsync(int id, string name, string description);
     Task<bool> DeleteAsync(int id);

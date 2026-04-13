@@ -3,6 +3,7 @@ using TheNextLevel.Application.Extensions;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Core.DTOs;
+using TheNextLevel.Application.DTOs.Projections;
 
 namespace TheNextLevel.Application.Services;
 
@@ -105,6 +106,17 @@ public class TaskService : ITaskService
         var pagedResult = await _taskRepository.ListByProjectIdAsync(projectId, skip, take);
 
         return new PagedResult<TaskDto>
+        {
+            Items = pagedResult.Items.ToDto(),
+            TotalCount = pagedResult.TotalCount
+        };
+    }
+
+    public async Task<PagedResult<TaskFullHierarchyDto>> ListByStatus(TaskState status, int skip, int take)
+    {
+        var pagedResult = await _taskRepository.ListByStatus((int)status, skip, take);
+
+        return new PagedResult<TaskFullHierarchyDto>
         {
             Items = pagedResult.Items.ToDto(),
             TotalCount = pagedResult.TotalCount

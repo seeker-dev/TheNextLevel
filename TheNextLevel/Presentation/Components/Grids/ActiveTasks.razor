@@ -53,6 +53,12 @@
     private List<TaskFullHierarchyDto> _activeTasks;
     private Virtualize<TaskFullHierarchyDto> _activeTasksList;
 
+    protected override Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        return base.OnInitializedAsync();
+    }
+
     private async ValueTask<ItemsProviderResult<TaskFullHierarchyDto?>> ActiveTasksProvider(ItemsProviderRequest request)
     {
         try

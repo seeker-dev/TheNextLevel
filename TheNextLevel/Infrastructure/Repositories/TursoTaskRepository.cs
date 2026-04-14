@@ -19,7 +19,7 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId, Status FROM Tasks WHERE Id = ? AND AccountId = ?",
+            "SELECT Id, AccountId, Name, Description, ProjectId, ParentTaskId, Status FROM Tasks WHERE Id = ? AND AccountId = ?",
             id, accountId);
 
         var tasks = MapToTasks(response);
@@ -33,17 +33,16 @@ public class TursoTaskRepository : ITaskRepository
         var trimmedDescription = description?.Trim() ?? string.Empty;
 
         var response = await _client.ExecuteAsync(
-            "INSERT INTO Tasks (AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId, Status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO Tasks (AccountId, Name, Description, ProjectId, ParentTaskId, Status) VALUES (?, ?, ?, ?, ?, ?)",
             accountId,
             trimmedName,
             trimmedDescription,
-            0,
             projectId,
             DBNull.Value,
             0);
 
         if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var id))
-            return new Core.Entities.Task(id, accountId, trimmedName, trimmedDescription, false, projectId, null, 0);
+            return new Core.Entities.Task(id, accountId, trimmedName, trimmedDescription, projectId, null, 0);
 
         throw new InvalidOperationException("Failed to create task.");
     }
@@ -109,7 +108,7 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get paged data
         var dataResponse = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId, Status FROM Tasks WHERE AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
+            "SELECT Id, AccountId, Name, Description, ProjectId, ParentTaskId, Status FROM Tasks WHERE AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
             accountId,
             take,
             skip);
@@ -141,7 +140,7 @@ public class TursoTaskRepository : ITaskRepository
 
         // Get paged data
         var dataResponse = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ProjectId, ParentTaskId, Status FROM Tasks WHERE ProjectId = ? AND AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
+            "SELECT Id, AccountId, Name, Description, ProjectId, ParentTaskId, Status FROM Tasks WHERE ProjectId = ? AND AccountId = ? AND ParentTaskId IS NULL ORDER BY Name desc LIMIT ? OFFSET ?",
             projectId,
             accountId,
             take,
@@ -203,7 +202,6 @@ public class TursoTaskRepository : ITaskRepository
                 accountId: int.Parse(GetColumnValue(row, columns, "AccountId")),
                 name: GetColumnValue(row, columns, "Name"),
                 description: GetColumnValue(row, columns, "Description"),
-                isCompleted: GetColumnValue(row, columns, "IsCompleted") == "1",
                 projectId: ParseNullableInt(GetColumnValue(row, columns, "ProjectId")),
                 parentTaskId: ParseNullableInt(GetColumnValue(row, columns, "ParentTaskId")),
                 status: int.TryParse(GetColumnValue(row, columns, "Status"), out var status) ? status : 0
@@ -271,7 +269,7 @@ public class TursoTaskRepository : ITaskRepository
         }
 
         var dataResponse = await _client.QueryAsync(
-            "SELECT Id, AccountId, Name, Description, IsCompleted, ParentTaskId, Status FROM Tasks WHERE ParentTaskId = ? AND AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?",
+            "SELECT Id, AccountId, Name, Description, ParentTaskId, Status FROM Tasks WHERE ParentTaskId = ? AND AccountId = ? ORDER BY Name desc LIMIT ? OFFSET ?",
             parentId, accountId, take, skip);
 
         var items = MapToTasks(dataResponse);
@@ -290,16 +288,15 @@ public class TursoTaskRepository : ITaskRepository
         var trimmedDescription = description?.Trim() ?? string.Empty;
 
         var response = await _client.ExecuteAsync(
-            "INSERT INTO Tasks (AccountId, Name, Description, IsCompleted, ParentTaskId, Status) VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO Tasks (AccountId, Name, Description, ParentTaskId, Status) VALUES (?, ?, ?, ?, ?)",
             accountId,
             trimmedName,
             trimmedDescription,
-            0,
             parentId,
             0);
 
         if (response.Result?.LastInsertRowId != null && int.TryParse(response.Result.LastInsertRowId, out var id))
-            return new Core.Entities.Task(id, accountId, trimmedName, trimmedDescription, false, null, parentId, 0);
+            return new Core.Entities.Task(id, accountId, trimmedName, trimmedDescription, null, parentId, 0);
 
         throw new InvalidOperationException("Failed to create subtask.");
     }

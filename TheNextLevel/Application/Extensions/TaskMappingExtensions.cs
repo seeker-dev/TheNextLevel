@@ -13,7 +13,6 @@ public static class TaskMappingExtensions
             task.Id,
             task.Name,
             task.Description ?? string.Empty,
-            task.IsCompleted,
             (TaskState)task.Status,
             task.ProjectId,
             task.ParentTaskId

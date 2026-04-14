@@ -1,6 +1,6 @@
 namespace TheNextLevel.Application.DTOs;
 
-public record TaskDto(int Id, string Name, string Description, bool IsCompleted, TaskState Status, int? ProjectId = null, int? ParentTaskId = null) : IItemDto;
+public record TaskDto(int Id, string Name, string Description, TaskState Status, int? ProjectId = null, int? ParentTaskId = null) : IItemDto;
 
 public record CreateTaskRequest(int ProjectId, string Name, string Description);
 public record UpdateTaskRequest(string Name, string Description, int ProjectId);

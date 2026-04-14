@@ -61,32 +61,12 @@ public class TursoTaskRepository : ITaskRepository
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async Task<bool> CompleteAsync(int id)
-    {
-        var accountId = _accountContext.GetCurrentAccountId();
-        var response = await _client.ExecuteAsync(
-            "UPDATE Tasks SET IsCompleted = 1 WHERE Id = ? AND AccountId = ?",
-            id, accountId);
-
-        return response.Result?.AffectedRowCount > 0;
-    }
-
     public async Task<bool> SetStatusAsync(int id, int status)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
             "UPDATE Tasks SET Status = ? WHERE Id = ? AND AccountId = ?",
             status, id, accountId);
-
-        return response.Result?.AffectedRowCount > 0;
-    }
-
-    public async Task<bool> ResetAsync(int id)
-    {
-        var accountId = _accountContext.GetCurrentAccountId();
-        var response = await _client.ExecuteAsync(
-            "UPDATE Tasks SET IsCompleted = 0 WHERE Id = ? AND AccountId = ?",
-            id, accountId);
 
         return response.Result?.AffectedRowCount > 0;
     }
@@ -368,7 +348,7 @@ public class TursoTaskRepository : ITaskRepository
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
-            "UPDATE Tasks SET IsCompleted = 1 WHERE ParentTaskId = ? AND AccountId = ? AND IsCompleted = 0",
+            "UPDATE Tasks SET Status = 2 WHERE ParentTaskId = ? AND AccountId = ? AND Status != 2",
             parentId, accountId);
 
         return response.Result?.AffectedRowCount ?? 0;

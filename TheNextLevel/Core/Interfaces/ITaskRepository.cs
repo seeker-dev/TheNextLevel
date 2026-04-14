@@ -11,9 +11,7 @@ public interface ITaskRepository
     Task<Entities.Task> CreateAsync(int projectId, string name, string description);
     Task<bool> UpdateAsync(int id, string name, string description);
     Task<bool> DeleteAsync(int id);
-    Task<bool> CompleteAsync(int id);
     Task<bool> SetStatusAsync(int id, int status);
-    Task<bool> ResetAsync(int id);
     Task<bool> MoveAsync(int taskId, int newProjectId);
     
     

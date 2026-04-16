@@ -44,39 +44,23 @@ public class TaskService : ITaskService
         return await _taskRepository.DeleteAsync(id);
     }
 
-    public async Task<bool> CompleteAsync(int id)
-    {
-        var completed = await _taskRepository.CompleteAsync(id);
-        if (!completed) return false;
-
-        await _taskRepository.BulkCompleteSubtasksAsync(id);
-        return true;
-    }
-
     public async Task<bool> SetStatusAsync(int id, TaskState status)
     {
         var task = await _taskRepository.GetByIdAsync(id);
         if (task == null) return false;
 
-        int statusToInt = (int)status;
+        await _taskRepository.SetStatusAsync(id, (int)status);
 
-        await _taskRepository.SetStatusAsync(id, statusToInt);
-        return true;
-    }
+        // When completing a parent task, bulk-complete its subtasks
+        if (status == TaskState.Completed && !task.ParentTaskId.HasValue)
+            await _taskRepository.BulkCompleteSubtasksAsync(id);
 
-    public async Task<bool> ResetAsync(int id)
-    {
-        var task = await _taskRepository.GetByIdAsync(id);
-        if (task == null) return false;
-
-        await _taskRepository.ResetAsync(id);
-
-        // If resetting a subtask, reset parent if completed
-        if (task.ParentTaskId.HasValue)
+        // When moving a subtask away from Completed, reset parent if it was completed
+        if (status != TaskState.Completed && task.ParentTaskId.HasValue)
         {
             var parentTask = await _taskRepository.GetByIdAsync(task.ParentTaskId.Value);
-            if (parentTask?.Status == 2) // If parent is completed, reset it as well
-                await _taskRepository.ResetAsync(parentTask.Id);
+            if (parentTask?.Status == (int)TaskState.Completed)
+                await _taskRepository.SetStatusAsync(parentTask.Id, (int)TaskState.Inactive);
         }
 
         return true;
@@ -160,8 +144,4 @@ public class TaskService : ITaskService
          return await _taskRepository.DeleteSubtaskAsync(id, parentId);
      }
 
-    public async Task<int> BulkCompleteSubtasksAsync(int parentId)
-    {
-        return await _taskRepository.BulkCompleteSubtasksAsync(parentId);
-    }
 }

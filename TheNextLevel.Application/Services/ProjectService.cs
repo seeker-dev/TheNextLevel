@@ -1,5 +1,4 @@
 using TheNextLevel.Application.DTOs;
-using TheNextLevel.Application.Extensions;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Core.DTOs;
@@ -23,13 +22,13 @@ public class ProjectService : IProjectService
         if (project == null)
             return null;
 
-        return project.ToDto();
+        return ProjectDto.From(project);
     }
 
     public async Task<PagedResult<ProjectDto>> ListByMissionAsync(int missionId, int skip, int take)
     {
         var pagedProjects = await _projectRepository.ListByMissionIdAsync(missionId, skip, take);
-        var projectDtos = pagedProjects.Items.Select(p => p.ToDto()).ToList();
+        var projectDtos = pagedProjects.Items.Select(ProjectDto.From).ToList();
 
         return new PagedResult<ProjectDto>
         {
@@ -44,7 +43,7 @@ public class ProjectService : IProjectService
 
         ArgumentNullException.ThrowIfNull(createdProject, nameof(createdProject));
 
-        return createdProject.ToDto();
+        return ProjectDto.From(createdProject);
     }
 
     public async Task<ProjectDto> UpdateAsync(int id, UpdateProjectDto project)
@@ -53,7 +52,7 @@ public class ProjectService : IProjectService
 
         ArgumentNullException.ThrowIfNull(updatedProject, nameof(updatedProject));
 
-        return updatedProject.ToDto();
+        return ProjectDto.From(updatedProject);
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -85,7 +84,7 @@ public class ProjectService : IProjectService
 
         return new PagedResult<ProjectDto>
         {
-            Items = pagedResult.Items.ToDto(),
+            Items = pagedResult.Items.Select(ProjectDto.From),
             TotalCount = pagedResult.TotalCount
         };
     }

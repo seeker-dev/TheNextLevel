@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:TheNextLevel.Presentation.Components"
+             xmlns:local="clr-namespace:TheNextLevel.Presentation.Components;assembly=TheNextLevel.Presentation"
              x:Class="TheNextLevel.MainPage">
 
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">

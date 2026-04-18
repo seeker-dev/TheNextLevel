@@ -1,5 +1,4 @@
 using TheNextLevel.Application.DTOs;
-using TheNextLevel.Application.Extensions;
 using TheNextLevel.Application.Interfaces;
 using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Core.DTOs;
@@ -21,13 +20,13 @@ public class TaskService : ITaskService
     public async Task<TaskDto?> GetByIdAsync(int id)
     {
         var task = await _taskRepository.GetByIdAsync(id);
-        return task?.ToDto();
+        return task is null ? null : TaskDto.From(task);
     }
 
     public async Task<TaskDto> CreateAsync(CreateTaskRequest request)
     {
         var task = await _taskRepository.CreateAsync(request.ProjectId, request.Name, request.Description);
-        return task.ToDto();
+        return TaskDto.From(task);
     }
 
     public async Task<TaskDto> UpdateAsync(int id, UpdateTaskRequest request)
@@ -36,7 +35,7 @@ public class TaskService : ITaskService
         if (!updated) throw new InvalidOperationException("Task not found");
 
         var task = await _taskRepository.GetByIdAsync(id);
-        return task!.ToDto();
+        return TaskDto.From(task!);
     }
 
     public async Task<bool> DeleteAsync(int id)
@@ -80,7 +79,7 @@ public class TaskService : ITaskService
 
         return new PagedResult<TaskDto>
         {
-            Items = pagedResult.Items.ToDto(),
+            Items = pagedResult.Items.Select(TaskDto.From),
             TotalCount = pagedResult.TotalCount
         };
     }
@@ -91,7 +90,7 @@ public class TaskService : ITaskService
 
         return new PagedResult<TaskDto>
         {
-            Items = pagedResult.Items.ToDto(),
+            Items = pagedResult.Items.Select(TaskDto.From),
             TotalCount = pagedResult.TotalCount
         };
     }
@@ -102,7 +101,7 @@ public class TaskService : ITaskService
 
         return new PagedResult<TaskFullHierarchyDto>
         {
-            Items = pagedResult.Items.ToDto(),
+            Items = pagedResult.Items.Select(TaskFullHierarchyDto.From),
             TotalCount = pagedResult.TotalCount
         };
     }
@@ -113,7 +112,7 @@ public class TaskService : ITaskService
 
         return new PagedResult<TaskDto>
         {
-            Items = subtasks.Items.ToDto(),
+            Items = subtasks.Items.Select(TaskDto.From),
             TotalCount = subtasks.TotalCount
         };
     }
@@ -131,7 +130,7 @@ public class TaskService : ITaskService
 
         // Create subtask without project association - subtasks belong to their parent task, not directly to projects
         var subtask = await _taskRepository.CreateSubtaskAsync(parentTask.Id, request.Name, request.Description);
-        return subtask.ToDto();
+        return TaskDto.From(subtask);
     }
 
     public async Task<bool> UpdateSubtaskAsync(int id, int parentId, string name, string description)

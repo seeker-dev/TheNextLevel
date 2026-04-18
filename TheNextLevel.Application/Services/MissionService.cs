@@ -24,13 +24,13 @@ public class MissionService : IMissionService
         if (mission == null)
             return null;
 
-        return new MissionDto(mission.Id, mission.Title, mission.Description, mission.IsCompleted);
+        return MissionDto.From(mission);
     }
 
     public async Task<PagedResult<MissionDto>> ListAsync(int skip, int take)
     {
         var pagedMissions = await _missionRepository.ListAsync(skip, take);
-        var missionDtos = pagedMissions.Items.Select(m => new MissionDto(m.Id, m.Title, m.Description, m.IsCompleted)).ToList();
+        var missionDtos = pagedMissions.Items.Select(MissionDto.From).ToList();
 
         return new PagedResult<MissionDto>
         {
@@ -42,13 +42,13 @@ public class MissionService : IMissionService
     public async Task<MissionDto> CreateAsync(CreateMissionDto mission)
     {
         var addedMission = await _missionRepository.CreateAsync(mission.Name, mission.Description);
-        return new MissionDto(addedMission.Id, addedMission.Title, addedMission.Description, addedMission.IsCompleted);
+        return MissionDto.From(addedMission);
     }
 
     public async Task<MissionDto> UpdateAsync(int missionId, UpdateMissionDto mission)
     {
         var updatedMission = await _missionRepository.UpdateAsync(missionId, mission.Name, mission.Description);
-        return new MissionDto(updatedMission.Id, updatedMission.Title, updatedMission.Description, updatedMission.IsCompleted);
+        return MissionDto.From(updatedMission);
     }
 
     public async Task<bool> DeleteAsync(int id)

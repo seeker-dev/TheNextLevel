@@ -76,4 +76,12 @@
       <Folder Include="Controllers\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\TheNextLevel.Core\TheNextLevel.Core.csproj" />
+      <ProjectReference Include="..\TheNextLevel.Application\TheNextLevel.Application.csproj" />
+      <ProjectReference Include="..\TheNextLevel.Infrastructure\TheNextLevel.Infrastructure.csproj" />
+      <ProjectReference Include="..\TheNextLevel.Presentation\TheNextLevel.Presentation.csproj" />
+    </ItemGroup>
+
+
 </Project>

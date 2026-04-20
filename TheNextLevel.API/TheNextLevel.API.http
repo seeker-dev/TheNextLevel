@@ -1,0 +1,6 @@
+@TheNextLevel.API_HostAddress = http://localhost:5250
+
+GET {{TheNextLevel.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

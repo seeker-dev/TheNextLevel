@@ -50,8 +50,8 @@
 {
     private bool _isLoading = false;
     private int _totalCount = 0;
-    private List<TaskFullHierarchyDto> _activeTasks;
-    private Virtualize<TaskFullHierarchyDto> _activeTasksList;
+    private List<TaskSummaryDto> _activeTasks;
+    private Virtualize<TaskSummaryDto> _activeTasksList;
 
     protected override Task OnInitializedAsync()
     {
@@ -59,7 +59,7 @@
         return base.OnInitializedAsync();
     }
 
-    private async ValueTask<ItemsProviderResult<TaskFullHierarchyDto?>> ActiveTasksProvider(ItemsProviderRequest request)
+    private async ValueTask<ItemsProviderResult<TaskSummaryDto?>> ActiveTasksProvider(ItemsProviderRequest request)
     {
         try
         {
@@ -67,12 +67,12 @@
             var result = await TaskService.ListByStatus(TaskState.Active, request.StartIndex, request.Count);
             var tasks = result?.Items ?? [];
             var totalCount = result?.TotalCount ?? 0;
-            return new ItemsProviderResult<TaskFullHierarchyDto?>(tasks, totalCount);
+            return new ItemsProviderResult<TaskSummaryDto?>(tasks, totalCount);
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"Error loading tasks: {ex.Message}");
-            return new ItemsProviderResult<TaskFullHierarchyDto?>([], 0);
+            return new ItemsProviderResult<TaskSummaryDto?>([], 0);
         }
         finally
         {

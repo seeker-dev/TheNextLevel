@@ -95,13 +95,13 @@ public class TaskService : ITaskService
         };
     }
 
-    public async Task<PagedResult<TaskFullHierarchyDto>> ListByStatus(TaskState status, int skip, int take)
+    public async Task<PagedResult<TaskSummaryDto>> ListByStatus(TaskState status, int skip, int take)
     {
         var pagedResult = await _taskRepository.ListByStatus((int)status, skip, take);
 
-        return new PagedResult<TaskFullHierarchyDto>
+        return new PagedResult<TaskSummaryDto>
         {
-            Items = pagedResult.Items.Select(TaskFullHierarchyDto.From),
+            Items = pagedResult.Items.Select(TaskSummaryDto.From),
             TotalCount = pagedResult.TotalCount
         };
     }

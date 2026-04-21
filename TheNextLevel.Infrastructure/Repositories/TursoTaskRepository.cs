@@ -155,7 +155,7 @@ public class TursoTaskRepository : ITaskRepository
         };
     }
 
-    public async Task<PagedResult<Core.Entities.TaskFullHierarchyProjection>> ListByStatus(int status, int skip, int take)
+    public async Task<PagedResult<Core.Entities.TaskSummaryProjection>> ListByStatus(int status, int skip, int take)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
@@ -178,9 +178,9 @@ public class TursoTaskRepository : ITaskRepository
             take,
             skip);
 
-        var items = MapToHeirarchyProjection(dataResponse);
+        var items = MapToSummaryProjection(dataResponse);
 
-        return new PagedResult<Core.Entities.TaskFullHierarchyProjection>
+        return new PagedResult<Core.Entities.TaskSummaryProjection>
         {
             Items = items,
             TotalCount = totalCount
@@ -211,17 +211,17 @@ public class TursoTaskRepository : ITaskRepository
         return tasks;
     }
 
-    private IEnumerable<Core.Entities.TaskFullHierarchyProjection> MapToHeirarchyProjection(TursoResponse response)
+    private IEnumerable<Core.Entities.TaskSummaryProjection> MapToSummaryProjection(TursoResponse response)
     {
         if (response.Result?.Rows == null)
-            return Enumerable.Empty<Core.Entities.TaskFullHierarchyProjection>();
+            return Enumerable.Empty<Core.Entities.TaskSummaryProjection>();
 
-        var tasks = new List<Core.Entities.TaskFullHierarchyProjection>();
+        var tasks = new List<Core.Entities.TaskSummaryProjection>();
         var columns = response.Result.Cols.Select(c => c.Name ?? string.Empty).ToArray();
 
         foreach (var row in response.Result.Rows)
         {
-            tasks.Add(new Core.Entities.TaskFullHierarchyProjection(
+            tasks.Add(new Core.Entities.TaskSummaryProjection(
                 Id: int.Parse(GetColumnValue(row, columns, "Id")),
                 AccountId: int.Parse(GetColumnValue(row, columns, "AccountId")),
                 Name: GetColumnValue(row, columns, "Name"),

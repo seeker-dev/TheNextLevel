@@ -9,7 +9,7 @@ public interface ITaskService
     Task<TaskDto?> GetByIdAsync(int id);
     Task<PagedResult<TaskDto>> ListAsync(int skip, int take);
     Task<PagedResult<TaskDto>> ListByProjectAsync(int projectId, int skip, int take);
-    Task<PagedResult<TaskFullHierarchyDto>> ListByStatus(TaskState status, int skip, int take);
+    Task<PagedResult<TaskSummaryDto>> ListByStatus(TaskState status, int skip, int take);
     Task<TaskDto> CreateAsync(CreateTaskRequest request);
     Task<TaskDto> UpdateAsync(int id, UpdateTaskRequest request);
     Task<bool> DeleteAsync(int id);

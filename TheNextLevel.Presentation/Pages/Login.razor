@@ -1,0 +1,60 @@
+@page "/login"
+@layout LoginLayout
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>The Next Level</h1>
+        </div>
+        <div class="login-body">
+            @if (_errorMessage is not null)
+            {
+                <div class="login-error">@_errorMessage</div>
+            }
+            <div class="dialog-form-group">
+                <label class="dialog-form-label">Username</label>
+                <input class="dialog-form-input" type="text" @bind="_username" @bind:event="oninput" placeholder="Username" />
+            </div>
+            <div class="dialog-form-group">
+                <label class="dialog-form-label">Password</label>
+                <input class="dialog-form-input" type="password" @bind="_password" @bind:event="oninput"
+                       placeholder="Password" @onkeydown="HandleKeyDown" />
+            </div>
+            <button class="dialog-btn dialog-btn-primary login-btn" @onclick="HandleLogin" disabled="@_isLoading">
+                @(_isLoading ? "Signing in..." : "Sign In")
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _username = "";
+    private string _password = "";
+    private bool _isLoading;
+    private string? _errorMessage;
+
+    private async Task HandleLogin()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        var success = await AuthService.LoginAsync(_username, _password);
+        if (success)
+        {
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            _errorMessage = "Invalid credentials. Please try again.";
+            _isLoading = false;
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await HandleLogin();
+    }
+}

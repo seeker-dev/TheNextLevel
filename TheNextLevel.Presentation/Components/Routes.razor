@@ -1,8 +1,27 @@
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
 @using TheNextLevel.Presentation.Components
-<Router AppAssembly="@typeof(Routes).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-    </Found>
-</Router>
+@using TheNextLevel.Application.Interfaces
+@inject IAuthService AuthService
+@inject NavigationManager Navigation
+
+@if (_initialized)
+{
+    <Router AppAssembly="@typeof(Routes).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        </Found>
+    </Router>
+}
+
+@code {
+    private bool _initialized;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var isAuthenticated = await AuthService.InitializeAsync();
+        if (!isAuthenticated)
+            Navigation.NavigateTo("/login");
+        _initialized = true;
+    }
+}

@@ -8,6 +8,7 @@ using TheNextLevel.Infrastructure.Configuration;
 using TheNextLevel.Infrastructure.Data;
 using TheNextLevel.Infrastructure.Repositories;
 using TheNextLevel.Infrastructure.Services;
+using TheNextLevel.Services;
 
 namespace TheNextLevel
 {
@@ -37,6 +38,9 @@ namespace TheNextLevel
                 .AddJsonStream(stream)
                 .Build();
 
+            var apiBaseUrl = config["ApiBaseUrl"]
+                ?? throw new InvalidOperationException("ApiBaseUrl is missing in appsettings.json");
+
             var tursoConfig = config.GetSection("Turso").Get<TursoConfiguration>()
                 ?? throw new InvalidOperationException("Turso configuration is missing in appsettings.json");
 
@@ -50,6 +54,10 @@ namespace TheNextLevel
             // Register Turso client as singleton
             builder.Services.AddSingleton(tursoConfig);
             builder.Services.AddSingleton<TursoClient>();
+
+            // Register HTTP client and auth service
+            builder.Services.AddSingleton(new HttpClient { BaseAddress = new Uri(apiBaseUrl) });
+            builder.Services.AddSingleton<IAuthService, AuthService>();
 
             // Register account context
             builder.Services.AddSingleton<IAccountContext, AccountContext>();

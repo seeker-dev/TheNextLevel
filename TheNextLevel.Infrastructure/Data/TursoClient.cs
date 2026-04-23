@@ -20,9 +20,6 @@ public class TursoClient
             BaseAddress = new Uri(_databaseUrl),
             Timeout = TimeSpan.FromSeconds(30)
         };
-
-        _httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", config.AuthToken);
     }
 
     public void UpdateAuthToken(string authToken)

@@ -48,9 +48,6 @@ namespace TheNextLevel
             if (string.IsNullOrEmpty(tursoConfig.DatabaseUrl))
                 throw new InvalidOperationException("Turso DatabaseUrl is required");
 
-            if (string.IsNullOrEmpty(tursoConfig.AuthToken))
-                throw new InvalidOperationException("Turso AuthToken is required");
-
             // Register Turso client as singleton
             builder.Services.AddSingleton(tursoConfig);
             builder.Services.AddSingleton<TursoClient>();

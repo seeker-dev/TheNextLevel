@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
@@ -52,7 +53,19 @@ public class AuthController : ControllerBase
 
         return Ok(new LoginResponse(new JwtSecurityTokenHandler().WriteToken(token), expires));
     }
+
+    [Authorize]
+    [HttpGet("turso-token")]
+    public IActionResult GetTursoToken()
+    {
+        var token = _config["TURSO_AUTH_TOKEN"];
+        if (string.IsNullOrEmpty(token))
+            return StatusCode(500, "Turso token is not configured.");
+
+        return Ok(new TursoTokenResponse(token));
+    }
 }
 
 public record LoginRequest(string Username, string Password);
 public record LoginResponse(string Token, DateTime ExpiresAt);
+public record TursoTokenResponse(string AuthToken);

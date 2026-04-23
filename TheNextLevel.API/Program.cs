@@ -10,6 +10,9 @@ builder.Services.AddOpenApi();
 var signingKey = builder.Configuration["JWT_SIGNING_KEY"]
     ?? throw new InvalidOperationException("JWT_SIGNING_KEY environment variable is required.");
 
+var _ = builder.Configuration["TURSO_AUTH_TOKEN"]
+    ?? throw new InvalidOperationException("TURSO_AUTH_TOKEN environment variable is required.");
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

@@ -10,12 +10,10 @@ public class TursoClient
 {
     private readonly HttpClient _httpClient;
     private readonly string _databaseUrl;
-    private readonly string _authToken;
 
     public TursoClient(TursoConfiguration config)
     {
         _databaseUrl = config.DatabaseUrl.TrimEnd('/');
-        _authToken = config.AuthToken;
 
         _httpClient = new HttpClient
         {
@@ -24,7 +22,13 @@ public class TursoClient
         };
 
         _httpClient.DefaultRequestHeaders.Authorization =
-            new AuthenticationHeaderValue("Bearer", _authToken);
+            new AuthenticationHeaderValue("Bearer", config.AuthToken);
+    }
+
+    public void UpdateAuthToken(string authToken)
+    {
+        _httpClient.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", authToken);
     }
 
     public async Task<TursoResponse> ExecuteAsync(string sql, params object[] parameters)

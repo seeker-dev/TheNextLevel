@@ -17,6 +17,27 @@ public class AuthService : IAuthService
         _tursoClient = tursoClient;
     }
 
+    public async Task<bool> InitializeAsync()
+    {
+        try
+        {
+            var token = await GetTokenAsync();
+            if (string.IsNullOrEmpty(token))
+                return false;
+
+            var tursoToken = await FetchTursoTokenAsync(token);
+            if (tursoToken is null)
+                return false;
+
+            _tursoClient.UpdateAuthToken(tursoToken);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
     public async Task<bool> LoginAsync(string username, string password)
     {
         try

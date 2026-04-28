@@ -1,73 +1,27 @@
-@using Microsoft.AspNetCore.Components.Web.Virtualization
-@using TheNextLevel.Application.DTOs
-@using TheNextLevel.Core.DTOs
 @using TheNextLevel.Presentation.Components.Cards
-
 @inject IMissionService MissionService
 
-<div class="mission-list-container">
-    @if (_isLoading)
-    {
-        <div class="loading-indicator">Loading missions...</div>
-    }
-    else
-    {
-        <div class="button-container">
-            <button class="refresh-missions-btn" @onclick="RefreshMissionsAsync">Refresh Missions 🔄</button>
-        </div>
-        <Virtualize ItemsProvider="LoadMissionsProvider" @ref="_missionList" Context="mission">
-            <ItemContent>
-                <MissionCard Mission="mission" />
-            </ItemContent>
-            <Placeholder>
-                <div class="loading-card">Loading mission...</div>
-            </Placeholder>
-            <EmptyContent>
-                <div class="empty-state">
-                    <div class="empty-icon">No missions available</div>
-                </div>
-            </EmptyContent>
-        </Virtualize>
-    }
-</div>
+<VirtualizedList TItem="MissionDto"
+                 ItemsProvider="LoadMissionsProvider"
+                 EmptyMessage="No missions available"
+                 @ref="_list">
+    <ItemTemplate Context="mission">
+        <MissionCard Mission="mission" />
+    </ItemTemplate>
+</VirtualizedList>
 
 @code {
-    private bool _isLoading = true;
-    private Virtualize<MissionDto?> _missionList;
+    private VirtualizedList<MissionDto>? _list;
 
-    protected override async Task OnInitializedAsync()
+    private async ValueTask<ItemsProviderResult<MissionDto>> LoadMissionsProvider(ItemsProviderRequest request)
     {
-        _isLoading = false;
-    }
-
-    private async ValueTask<ItemsProviderResult<MissionDto?>> LoadMissionsProvider(ItemsProviderRequest request)
-    {
-        try
-        {
-            _isLoading = true;
-            var result = await MissionService.ListAsync(request.StartIndex, request.Count);
-            var missions = result?.Items ?? [];
-            var totalCount = result?.TotalCount ?? 0;
-            return new ItemsProviderResult<MissionDto?>(missions, totalCount);
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error loading missions: {ex.Message}");
-            return new ItemsProviderResult<MissionDto?>([], 0);
-        }
-        finally
-        {
-            _isLoading = false;
-            StateHasChanged();
-        }
+        var result = await MissionService.ListAsync(request.StartIndex, request.Count);
+        return new ItemsProviderResult<MissionDto>(result?.Items ?? [], result?.TotalCount ?? 0);
     }
 
     public async Task RefreshMissionsAsync()
     {
-        if (_missionList != null)
-        {
-            await _missionList.RefreshDataAsync();
-        }
+        if (_list is not null)
+            await _list.RefreshAsync();
     }
-
 }

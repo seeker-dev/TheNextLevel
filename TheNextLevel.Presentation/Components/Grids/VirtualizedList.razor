@@ -1,0 +1,76 @@
+@typeparam TItem
+
+<div class="virtualized-list-wrapper @(_totalCount > 0 ? WrapperClass : null)">
+    @if (_isLoading)
+    {
+        <div class="virtualized-list-loading-bar" role="status"></div>
+    }
+    <Virtualize TItem="TItem"
+                ItemsProvider="_wrappedProvider"
+                @ref="_virtualize">
+        <ItemContent Context="item">
+            @ItemTemplate(item)
+        </ItemContent>
+        <Placeholder>
+            <div class="virtualized-list-placeholder">Loading...</div>
+        </Placeholder>
+        <EmptyContent>
+            <div class="virtualized-list-empty">
+                <p class="virtualized-list-empty-message">@EmptyMessage</p>
+            </div>
+        </EmptyContent>
+    </Virtualize>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ItemsProviderDelegate<TItem> ItemsProvider { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
+
+    [Parameter]
+    public string EmptyMessage { get; set; } = "No items found";
+
+    [Parameter]
+    public string? WrapperClass { get; set; }
+
+    private Virtualize<TItem>? _virtualize;
+    private ItemsProviderDelegate<TItem> _wrappedProvider = default!;
+    private bool _isLoading;
+    private int _totalCount;
+
+    protected override void OnInitialized()
+    {
+        _wrappedProvider = WrappedProvider;
+    }
+
+    private async ValueTask<ItemsProviderResult<TItem>> WrappedProvider(ItemsProviderRequest request)
+    {
+        _isLoading = true;
+        StateHasChanged();
+        try
+        {
+            var result = await ItemsProvider(request);
+            _totalCount = result.TotalItemCount;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[VirtualizedList] Error loading items: {ex.Message}");
+            _totalCount = 0;
+            return new ItemsProviderResult<TItem>([], 0);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    public async Task RefreshAsync()
+    {
+        if (_virtualize is not null)
+            await _virtualize.RefreshDataAsync();
+    }
+}

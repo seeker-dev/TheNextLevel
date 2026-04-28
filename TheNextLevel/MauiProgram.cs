@@ -16,6 +16,9 @@ namespace TheNextLevel
     {
         public static MauiApp CreateMauiApp()
         {
+
+            HandleExceptions();
+
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
@@ -77,6 +80,35 @@ namespace TheNextLevel
             // Build the app
             var app = builder.Build();
             return app;
+        }
+
+        static void HandleExceptions()
+        {
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+            {
+                // Process is terminating — only synchronous operations are safe here.
+                var ex = e.ExceptionObject as Exception;
+                var entry = $"[{DateTime.Now:u}] FATAL{Environment.NewLine}{ex}{Environment.NewLine}{Environment.NewLine}";
+                var logPath = Path.Combine(FileSystem.AppDataDirectory, "crash.log");
+                File.AppendAllText(logPath, entry);
+            };
+
+            TaskScheduler.UnobservedTaskException += (sender, e) =>
+            {
+                e.SetObserved();
+                var entry = $"[{DateTime.Now:u}] UNOBSERVED TASK{Environment.NewLine}{e.Exception}{Environment.NewLine}{Environment.NewLine}";
+                var logPath = Path.Combine(FileSystem.AppDataDirectory, "crash.log");
+                File.AppendAllText(logPath, entry);
+
+                var message = e.Exception.InnerExceptions.FirstOrDefault()?.Message
+                    ?? "An unexpected background error occurred.";
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    var page = Microsoft.Maui.Controls.Application.Current?.Windows.FirstOrDefault()?.Page;
+                    if (page != null)
+                        await page.DisplayAlert("Background Error", message, "OK");
+                });
+            };            
         }
     }
 }

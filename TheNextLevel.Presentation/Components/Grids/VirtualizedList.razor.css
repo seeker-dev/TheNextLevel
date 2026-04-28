@@ -1,0 +1,41 @@
+.virtualized-list-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.virtualized-list-loading-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(205, 133, 63, 0.8), transparent);
+    background-size: 200% 100%;
+    animation: vl-sweep 1.2s linear infinite;
+    z-index: 1;
+}
+
+@keyframes vl-sweep {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.virtualized-list-placeholder {
+    height: 48px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 4px;
+    animation: vl-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes vl-pulse {
+    0%, 100% { opacity: 0.4; }
+    50%       { opacity: 0.8; }
+}
+
+.virtualized-list-empty {
+    padding: 40px 24px;
+    text-align: center;
+}
+
+.virtualized-list-empty-message {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.9rem;
+}

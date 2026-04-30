@@ -1,9 +1,49 @@
 @inject NavigationManager Navigation
-<div class="mission-card-wrapper">
-    <div class="mission-card" @onclick="@( () => Navigation.NavigateTo($"/missions/{Mission?.Id}"))">
-        <div class="mission-content">
-            <h3 class="mission-name">@Mission?.Name</h3>
+
+<div class="mission-row" @onclick="@(() => Navigation.NavigateTo($"/missions/{Mission?.Id}"))">
+    <div class="mission-accent"></div>
+    <div class="mission-body">
+        <div class="mission-icon-wrap">
+            <svg class="mission-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
         </div>
+        <div class="mission-text">
+            <div class="mission-name">@Mission?.Name</div>
+            <div class="description-scroll">
+                <div class="description-content">
+                    <span class="description-text">@Mission?.Description</span>
+                    <span class="description-text">@Mission?.Description</span>
+                </div>
+            </div>
+        </div>
+        <div class="mission-stats">
+            <div class="stat-item">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Projects</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Active</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-value">0</span>
+                <span class="stat-label">Total</span>
+            </div>
+        </div>
+    </div>
+    <div class="mission-controls">
+        <button class="mission-menu-btn" @onclick:stopPropagation="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+        </button>
+        <svg class="chevron" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 18l6-6-6-6"/>
+        </svg>
     </div>
 </div>
 

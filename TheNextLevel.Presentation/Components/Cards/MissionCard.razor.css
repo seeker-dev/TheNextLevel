@@ -1,32 +1,200 @@
-.mission-card-wrapper {
-    position: relative;
-    border-radius: 16px;
-    padding: 10px;
+.mission-row {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid rgba(139, 69, 19, 0.15);
+    border-radius: 4px;
+    margin-bottom: 16px;
+    background: rgba(20, 20, 20, 1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    overflow: hidden;
 }
 
-.mission-card {
-    position: relative;
-    border-radius: 16px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #8B0000 0%, #A0522D 100%);
-    cursor: pointer;
+.mission-row:hover {
+    border-color: rgba(139, 69, 19, 0.4);
+    background: rgba(26, 20, 14, 1);
+}
+
+.mission-accent {
+    width: 3px;
+    flex-shrink: 0;
+    background: rgba(139, 69, 19, 0.3);
+    transition: background 0.2s ease;
+}
+
+.mission-row:hover .mission-accent {
+    background: rgba(205, 133, 63, 0.7);
+}
+
+.mission-body {
+    flex: 1;
+    padding: 24px 32px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    min-width: 0;
+}
+
+.mission-icon-wrap {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(139, 69, 19, 0.2);
+    border-radius: 4px;
+    color: rgba(205, 133, 63, 0.5);
+    transition: all 0.2s ease;
+}
+
+.mission-row:hover .mission-icon-wrap {
+    border-color: rgba(205, 133, 63, 0.4);
+    color: rgba(205, 133, 63, 0.8);
+}
+
+.mission-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.mission-text {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    min-height: 280px;
-    padding: 30px;
-}
-
-.mission-content {
-    position: relative;
-    z-index: 3;
+    gap: 6px;
 }
 
 .mission-name {
-    font-size: 2rem;
+    font-size: 1.0625rem;
     font-weight: 400;
-    color: #ffffff;
-    letter-spacing: -0.01em;
-    line-height: 1.2;
-    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.02em;
+    transition: color 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mission-row:hover .mission-name {
+    color: rgba(205, 133, 63, 0.95);
+}
+
+.description-scroll {
+    position: relative;
+    height: 18px;
+    overflow: hidden;
+}
+
+.description-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: marquee 25s linear infinite;
+    will-change: transform;
+}
+
+.description-text {
+    padding-right: 48px;
+    font-size: 0.8125rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.description-scroll:hover .description-content {
+    animation-play-state: paused;
+}
+
+@keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+.mission-stats {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-shrink: 0;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1;
+}
+
+.stat-value.active-count {
+    color: rgba(205, 133, 63, 0.8);
+}
+
+.stat-label {
+    font-size: 0.6875rem;
+    font-weight: 400;
+    color: rgba(205, 133, 63, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 32px;
+    background: rgba(139, 69, 19, 0.2);
+}
+
+.mission-controls {
+    display: flex;
+    align-items: center;
+    padding: 0 20px 0 16px;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.chevron {
+    color: rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+    transform: translateX(-4px);
+}
+
+.mission-row:hover .chevron {
+    color: rgba(205, 133, 63, 0.5);
+    transform: translateX(0);
+}
+
+.mission-menu-btn {
+    padding: 6px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0;
+}
+
+.mission-row:hover .mission-menu-btn {
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.mission-menu-btn:hover {
+    color: rgba(255, 255, 255, 0.8) !important;
+    background: rgba(139, 69, 19, 0.15);
+}
+
+@media (max-width: 768px) {
+    .mission-body { flex-wrap: wrap; padding: 20px; gap: 20px; }
+    .mission-stats { gap: 20px; }
+    .mission-controls { padding: 0 16px; }
+    .chevron { display: none; }
 }

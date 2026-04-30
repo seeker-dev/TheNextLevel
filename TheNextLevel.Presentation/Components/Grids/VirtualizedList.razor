@@ -1,26 +1,36 @@
 @typeparam TItem
 
-<div class="virtualized-list-wrapper @(_totalCount > 0 ? WrapperClass : null)">
-    @if (_isLoading)
-    {
-        <div class="virtualized-list-loading-bar" role="status"></div>
-    }
-    <Virtualize TItem="TItem"
-                ItemsProvider="_wrappedProvider"
-                @ref="_virtualize">
-        <ItemContent Context="item">
-            @ItemTemplate(item)
-        </ItemContent>
-        <Placeholder>
-            <div class="virtualized-list-placeholder">Loading...</div>
-        </Placeholder>
-        <EmptyContent>
-            <div class="virtualized-list-empty">
-                <p class="virtualized-list-empty-message">@EmptyMessage</p>
-            </div>
-        </EmptyContent>
-    </Virtualize>
-</div>
+@if (_errorMessage is not null)
+{
+    <div class="virtualized-list-error">
+        <p class="virtualized-list-error-message">@_errorMessage</p>
+        <button class="virtualized-list-retry-btn" @onclick="Retry">Retry</button>
+    </div>
+}
+else
+{
+    <div class="virtualized-list-wrapper @(_totalCount > 0 ? WrapperClass : null)">
+        @if (_isLoading)
+        {
+            <div class="virtualized-list-loading-bar" role="status"></div>
+        }
+        <Virtualize TItem="TItem"
+                    ItemsProvider="_wrappedProvider"
+                    @ref="_virtualize">
+            <ItemContent Context="item">
+                @ItemTemplate(item)
+            </ItemContent>
+            <Placeholder>
+                <div class="virtualized-list-placeholder">Loading...</div>
+            </Placeholder>
+            <EmptyContent>
+                <div class="virtualized-list-empty">
+                    <p class="virtualized-list-empty-message">@EmptyMessage</p>
+                </div>
+            </EmptyContent>
+        </Virtualize>
+    </div>
+}
 
 @code {
     [Parameter, EditorRequired]
@@ -39,6 +49,7 @@
     private ItemsProviderDelegate<TItem> _wrappedProvider = default!;
     private bool _isLoading;
     private int _totalCount;
+    private string? _errorMessage;
 
     protected override void OnInitialized()
     {
@@ -53,11 +64,13 @@
         {
             var result = await ItemsProvider(request);
             _totalCount = result.TotalItemCount;
+            _errorMessage = null;
             return result;
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"[VirtualizedList] Error loading items: {ex.Message}");
+            _errorMessage = "Failed to load items. Please try again.";
             _totalCount = 0;
             return new ItemsProviderResult<TItem>([], 0);
         }
@@ -68,9 +81,19 @@
         }
     }
 
+    private void Retry()
+    {
+        _errorMessage = null;
+    }
+
     public async Task RefreshAsync()
     {
-        if (_virtualize is not null)
+        if (_errorMessage is not null)
+        {
+            _errorMessage = null;
+            StateHasChanged();
+        }
+        else if (_virtualize is not null)
             await _virtualize.RefreshDataAsync();
     }
 }

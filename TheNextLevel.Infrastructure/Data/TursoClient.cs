@@ -2,6 +2,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using TheNextLevel.Core.Interfaces;
 using TheNextLevel.Infrastructure.Configuration;
 
 namespace TheNextLevel.Infrastructure.Data;
@@ -10,10 +11,12 @@ public class TursoClient
 {
     private readonly HttpClient _httpClient;
     private readonly string _databaseUrl;
+    private readonly IConnectivityService _connectivity;
 
-    public TursoClient(TursoConfiguration config)
+    public TursoClient(TursoConfiguration config, IConnectivityService connectivity)
     {
         _databaseUrl = config.DatabaseUrl.TrimEnd('/');
+        _connectivity = connectivity;
 
         _httpClient = new HttpClient
         {
@@ -35,6 +38,9 @@ public class TursoClient
 
     public async Task<TursoResponse> ExecuteBatchAsync(IEnumerable<TursoStatement> statements)
     {
+        if (!_connectivity.IsConnected)
+            throw new InvalidOperationException("No internet connection. Please check your network and try again.");
+
         var requestItems = new List<TursoPipelineRequestItem>();
 
         // Add execute request for each statement

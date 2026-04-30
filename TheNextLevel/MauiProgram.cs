@@ -61,6 +61,7 @@ namespace TheNextLevel
 
             // Register account context
             builder.Services.AddSingleton<IAccountContext, AccountContext>();
+            builder.Services.AddSingleton<IConnectivityService, ConnectivityService>();
 
             // Register application services
             builder.Services.AddScoped<ITaskService, TaskService>();

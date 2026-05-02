@@ -1,4 +1,4 @@
-.projects-grid {
+::deep .projects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
     gap: 25px;

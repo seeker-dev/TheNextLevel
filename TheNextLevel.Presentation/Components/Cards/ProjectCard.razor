@@ -1,33 +1,43 @@
 @using TheNextLevel.Application.DTOs
 @inject NavigationManager Navigation
 
-<div class="project-card-wrapper" style="--bg-image: url('@GetBackgroundImage()')">
-    <div class="project-card" @onclick="@( () => Navigation.NavigateTo($"/project/{Project?.Id}"))">
-        <div class="project-content">
-            <div class="project-stats">
-                <div class="stat">
-                    <div class="stat-value"><!--Project?.Tasks.Count()--></div>
-                    <div class="stat-label">Tasks</div>
+<div class="project-row" @onclick="@(() => Navigation.NavigateTo($"/project/{Project?.Id}"))">
+    <div class="project-accent"></div>
+    <div class="project-body">
+        <div class="project-text">
+            <div class="project-name">@Project?.Name</div>
+            <div class="description-scroll">
+                <div class="description-content">
+                    <span class="description-text">@Project?.Description</span>
+                    <span class="description-text">@Project?.Description</span>
                 </div>
-
             </div>
-            <h3 class="project-name">@Project?.Name</h3>
         </div>
+        <div class="project-stats">
+            <div class="stat-item">
+                <span class="stat-value active-count">–</span>
+                <span class="stat-label">Active</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-value">–</span>
+                <span class="stat-label">Total</span>
+            </div>
+        </div>
+    </div>
+    <div class="project-controls">
+        <button class="project-menu-btn" @onclick:stopPropagation="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+            </svg>
+        </button>
+        <svg class="chevron" width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 18l6-6-6-6"/>
+        </svg>
     </div>
 </div>
 
 @code {
     [Parameter]
     public ProjectDto? Project { get; set; }
-
-    private string GetBackgroundImage()
-    {
-        // For now, use the default image
-        // In the future, when Project has a BackgroundImageUrl property, use:
-        // return !string.IsNullOrEmpty(Project?.BackgroundImageUrl)
-        //     ? Project.BackgroundImageUrl
-        //     : "";
-
-        return "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80";
-    }
 }

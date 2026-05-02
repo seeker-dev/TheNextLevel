@@ -45,12 +45,8 @@ body {
     display: contents;
 }
 
-/* Ensure project card wrappers and cards still render as grid items */
-.projects-grid .project-card-wrapper {
-    display: block;
-}
-
-.projects-grid .project-card {
+/* Ensure project rows still render as flex items */
+.projects-grid .project-row {
     display: flex;
 }
 

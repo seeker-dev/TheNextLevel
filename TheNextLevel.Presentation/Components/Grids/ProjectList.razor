@@ -1,65 +1,31 @@
 @using TheNextLevel.Presentation.Components.Cards
-@using TheNextLevel.Application.DTOs
-@using TheNextLevel.Application.Interfaces
-@inject IMissionService MissionService
 @inject IProjectService ProjectService
-@if (_isLoading)
-{
-    <div class="loading-container">
-        <p class="loading-text">Loading projects...</p>
-    </div>
-}
 
-<div class="@(_totalCount > 0 ? "projects-grid" : "")" tabindex="-1">
-    <Virtualize ItemsProvider="LoadProjectsProvider" @ref="_projectList" Context="project">
-        <ItemContent>
-            <ProjectCard Project="project" />
-        </ItemContent>
-        <Placeholder>
-            <div class="loading-card">Loading...</div>
-        </Placeholder>
-        <EmptyContent>
-            <div class="empty-project">
-                <p>No projects found. Create your first project!</p>
-            </div>
-        </EmptyContent>
-    </Virtualize>
-</div>
+<VirtualizedList TItem="ProjectDto"
+                 ItemsProvider="LoadProjectsProvider"
+                 WrapperClass="projects-grid"
+                 EmptyMessage="No projects found. Create your first project!"
+                 @ref="_list">
+    <ItemTemplate Context="project">
+        <ProjectCard Project="project" />
+    </ItemTemplate>
+</VirtualizedList>
 
 @code {
     [Parameter]
     public MissionDto? Mission { get; set; }
 
-    private bool _isLoading = false;
-    private Virtualize<ProjectDto>? _projectList;
-    private int _totalCount = 0;
+    private VirtualizedList<ProjectDto>? _list;
 
-    private async ValueTask<ItemsProviderResult<ProjectDto?>> LoadProjectsProvider(ItemsProviderRequest request)
+    private async ValueTask<ItemsProviderResult<ProjectDto>> LoadProjectsProvider(ItemsProviderRequest request)
     {
-        try
-        {
-            _isLoading = true;
-            var result = await ProjectService.ListByMissionAsync(Mission?.Id ?? 0, request.StartIndex, request.Count);
-            var projects = result?.Items ?? Array.Empty<ProjectDto>();
-            
-            _totalCount = result?.TotalCount ?? 0;
-            return new ItemsProviderResult<ProjectDto?>(projects, _totalCount);
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error loading projects: {ex.Message}");
-            return new ItemsProviderResult<ProjectDto?>(Array.Empty<ProjectDto>(), 0);
-        }
-        finally
-        {
-            _isLoading = false;
-            StateHasChanged();
-        }
+        var result = await ProjectService.ListByMissionAsync(Mission?.Id ?? 0, request.StartIndex, request.Count);
+        return new ItemsProviderResult<ProjectDto>(result?.Items ?? Array.Empty<ProjectDto>(), result?.TotalCount ?? 0);
     }
 
     public async Task RefreshAsync()
     {
-        await _projectList.RefreshDataAsync();
+        if (_list is not null)
+            await _list.RefreshAsync();
     }
-    
 }

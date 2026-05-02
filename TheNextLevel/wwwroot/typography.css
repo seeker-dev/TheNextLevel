@@ -69,29 +69,6 @@ h5, h6 {
 }
 
 /* ============================================
-   PROJECT CARDS
-   ============================================ */
-
-/* Apply Manrope to project card elements
-   Note: Sizing and weights are defined in ProjectCard.razor.css */
-
-.project-name {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 400; */ /* Defined in ProjectCard.razor.css */
-    letter-spacing: -0.01em;
-}
-
-.project-description {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 400; */ /* Defined in ProjectCard.razor.css */
-    /* line-height: 1.4; */ /* Defined in ProjectCard.razor.css */
-}
-
-.project-icon-wrapper {
-    font-family: 'Manrope', sans-serif;
-}
-
-/* ============================================
    STATS & NUMBERS
    ============================================ */
 

@@ -1,91 +1,42 @@
-@using Microsoft.AspNetCore.Components.Web.Virtualization
-@using TheNextLevel.Application.DTOs
-@using TheNextLevel.Application.Interfaces
 @using TheNextLevel.Presentation.Components.Cards
-
 @inject ITaskService TaskService
 
 <div class="subtask-grid-header controls-container">
     <h3>Subtasks</h3>
 </div>
 
-<div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
-    <Virtualize ItemsProvider="LoadSubtasksProvider" @ref="_virtualizeComponent" Context="task">
-        <ItemContent>
-            <TaskCard
-                Task="task"
-                Project="null"
-                OnEditRequested="task => OnEditRequested.InvokeAsync(task)"
-                OnDeleteRequested="task => OnDeleteRequested.InvokeAsync(task)" />
-        </ItemContent>
-        <Placeholder>
-            <div class="loading-card">Loading...</div>
-        </Placeholder>
-        <EmptyContent>
-            <div class="empty-state">
-                @if (ParentTask == null)
-                {
-                    <div class="empty-icon">📁</div>
-                    <p class="empty-title">No parent task selected</p>
-                    <p class="empty-subtitle">Please select a parent task to view its subtasks</p>
-                }
-                else
-                {
-                    <div class="empty-icon">🗂️</div>
-                    <p class="empty-title">No subtasks found</p>
-                    <p class="empty-subtitle">@_subtitleMessage</p>
-                }
-            </div>
-        </EmptyContent>
-    </Virtualize>
-</div>
+<VirtualizedList TItem="TaskDto"
+                 ItemsProvider="LoadSubtasksProvider"
+                 WrapperClass="task-grid"
+                 EmptyMessage="No subtasks found"
+                 @ref="_list">
+    <ItemTemplate Context="task">
+        <TaskCard Task="task"
+                  Project="null"
+                  OnEditRequested="t => OnEditRequested.InvokeAsync(t)"
+                  OnDeleteRequested="t => OnDeleteRequested.InvokeAsync(t)" />
+    </ItemTemplate>
+</VirtualizedList>
 
-@code
-{
-    [Parameter]
-    public TaskDto? ParentTask { get; set; }
+@code {
+    [Parameter] public TaskDto? ParentTask { get; set; }
+    [Parameter] public EventCallback<TaskDto> OnEditRequested { get; set; }
+    [Parameter] public EventCallback<TaskDto> OnDeleteRequested { get; set; }
 
-    [Parameter]
-    public EventCallback<TaskDto> OnEditRequested { get; set; }
-
-    [Parameter]
-    public EventCallback<TaskDto> OnDeleteRequested { get; set; }
-
-    private Virtualize<TaskDto>? _virtualizeComponent;
-    private int _totalCount;
-    private string _subtitleMessage = string.Empty;
+    private VirtualizedList<TaskDto>? _list;
 
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadSubtasksProvider(ItemsProviderRequest request)
     {
         if (ParentTask == null)
-        {
-            return new ItemsProviderResult<TaskDto>(Array.Empty<TaskDto>(), 0);
-        }
+            return new ItemsProviderResult<TaskDto>([], 0);
 
-        try
-        {
-            var result = await TaskService.ListSubtasksByParentIdAsync(ParentTask.Id, request.StartIndex, request.Count);
-            _totalCount = result.TotalCount;
-
-            _subtitleMessage = result.TotalCount == 0
-                ? "You can add a new subtask using the 'Add New Subtask' button above."
-                : string.Empty;
-
-            return new ItemsProviderResult<TaskDto>(result.Items, result.TotalCount);
-        }
-        catch (Exception ex)
-        {
-            _subtitleMessage = $"Error loading subtasks: {ex.Message}";
-            return new ItemsProviderResult<TaskDto>(Array.Empty<TaskDto>(), 0);
-        }
+        var result = await TaskService.ListSubtasksByParentIdAsync(ParentTask.Id, request.StartIndex, request.Count);
+        return new ItemsProviderResult<TaskDto>(result.Items, result.TotalCount);
     }
 
     public async Task RefreshList()
     {
-        if (_virtualizeComponent != null)
-        {
-            await _virtualizeComponent.RefreshDataAsync();
-        }
-        StateHasChanged();
+        if (_list is not null)
+            await _list.RefreshAsync();
     }
 }

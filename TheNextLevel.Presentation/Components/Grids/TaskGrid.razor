@@ -10,12 +10,13 @@
 
 <VirtualizedList TItem="TaskDto"
                  ItemsProvider="LoadTasksProvider"
-                 WrapperClass="task-grid"
+                 WrapperClass="task-list"
                  EmptyMessage="No tasks found"
                  @ref="_list">
     <ItemTemplate Context="task">
         <TaskCard Task="task"
                   Project="Project"
+                  ShowSubtasksInline="true"
                   OnEditRequested="t => OnEditRequested.InvokeAsync(t)"
                   OnDeleteRequested="t => OnDeleteRequested.InvokeAsync(t)" />
     </ItemTemplate>

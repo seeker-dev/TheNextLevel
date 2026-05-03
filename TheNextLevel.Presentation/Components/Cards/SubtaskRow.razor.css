@@ -1,0 +1,98 @@
+.subtask-row {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid rgba(139,69,19,0.1);
+    border-top: none;
+    background: rgba(14,14,14,1);
+    cursor: pointer;
+    overflow: hidden;
+    margin-left: 24px;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.subtask-row.last {
+    border-radius: 0 0 4px 4px;
+}
+
+.subtask-row:hover {
+    border-color: rgba(139,69,19,0.28);
+    background: rgba(20,14,8,1);
+}
+
+.subtask-stripe {
+    width: 3px;
+    flex-shrink: 0;
+}
+
+.subtask-body {
+    flex: 1;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    min-width: 0;
+}
+
+.subtask-name {
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.02em;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s;
+}
+
+.subtask-row:hover .subtask-name {
+    color: rgba(205,133,63,0.75);
+}
+
+.subtask-controls {
+    display: flex;
+    align-items: center;
+    padding: 0 16px 0 10px;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.task-menu-btn {
+    padding: 5px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: rgba(255,255,255,0.18);
+    cursor: pointer;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    transition: opacity 0.2s, color 0.2s, background 0.2s;
+}
+
+.subtask-row:hover .task-menu-btn {
+    opacity: 1;
+    color: rgba(255,255,255,0.4);
+}
+
+.task-menu-btn:hover {
+    color: rgba(255,255,255,0.82) !important;
+    background: rgba(139,69,19,0.12);
+}
+
+.status-pill {
+    flex-shrink: 0;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    border: 1px solid;
+    white-space: nowrap;
+}
+
+.status-pill.inactive  { border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.3);  background: transparent; }
+.status-pill.active    { border-color: rgba(205,133,63,0.4);   color: rgba(205,133,63,0.9);   background: rgba(205,133,63,0.07); }
+.status-pill.completed { border-color: rgba(100,180,100,0.35); color: rgba(100,180,100,0.8);  background: rgba(100,180,100,0.07); }
+.status-pill.onhold    { border-color: rgba(200,150,50,0.35);  color: rgba(200,160,60,0.8);   background: rgba(200,150,50,0.07); }

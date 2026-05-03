@@ -1,0 +1,49 @@
+.parent-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.opus-select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid rgba(139, 69, 19, 0.22);
+    border-radius: 4px;
+    padding: 10px 36px 10px 13px;
+    color: rgba(255, 255, 255, 0.22);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.opus-select:hover {
+    border-color: rgba(139, 69, 19, 0.4);
+}
+
+.opus-select:focus {
+    border-color: rgba(205, 133, 63, 0.45);
+}
+
+.opus-select.has-value {
+    color: rgba(205, 133, 63, 0.8);
+}
+
+.opus-select option {
+    background: #1a1a1a;
+    color: rgba(255, 255, 255, 0.75);
+    font-family: 'Montserrat', sans-serif;
+}
+
+.select-chevron {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(205, 133, 63, 0.3);
+    pointer-events: none;
+}

@@ -1,23 +1,32 @@
 @using TheNextLevel.Application.DTOs
 
-<select value="@SelectedId" @onchange="OnChanged" class="form-select mt-2">
-    <option value="" disabled>Select @Label</option>
-    @if (IsLoading)
-    {
-        <option disabled>Loading @(Label)s</option>
-    }
-    else if (Items.Count == 0)
-    {
-        <option disabled>No @Label found</option>
-    }
-    else
-    {
-        @foreach (var item in Items)
-        {
-            <option value="@item.Id.ToString()">@item.Name</option>
-        }
-    }
-</select>
+<div class="field-group">
+    <span class="field-label">@(char.ToUpper(Label[0]) + Label[1..])</span>
+    <div class="parent-select-wrapper">
+        <select value="@SelectedId" @onchange="OnChanged"
+                class="opus-select @(string.IsNullOrEmpty(SelectedId) ? "" : "has-value")">
+            <option value="">Select a @Label...</option>
+            @if (IsLoading)
+            {
+                <option disabled>Loading @(Label)s...</option>
+            }
+            else if (Items.Count == 0)
+            {
+                <option disabled>No @Label found</option>
+            }
+            else
+            {
+                @foreach (var item in Items)
+                {
+                    <option value="@item.Id.ToString()">@item.Name</option>
+                }
+            }
+        </select>
+        <svg class="select-chevron" width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </div>
+</div>
 
 @code {
     [Parameter] public List<IItemDto> Items { get; set; } = [];

@@ -3,11 +3,21 @@
 @using System.Text.Json
 @inject ITaskService TaskService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <div class="task-group">
     @if (_showStatusMenu)
     {
         <div class="status-menu-backdrop" @onclick="CloseStatusMenu"></div>
+        <div class="task-menu @_menuFlipClass" @ref="_menuRef" @onclick:stopPropagation="true">
+            @foreach (var state in Enum.GetValues<TaskState>())
+            {
+                <button class="menu-item @(state == _currentStatus ? "active" : "")"
+                        @onclick="() => SelectStatus(state)">
+                    @GetStatusLabel(state)
+                </button>
+            }
+        </div>
     }
     <div class="task-row @(_isCompleted ? "completed" : "") @(ShowSubtasksInline && _subtasks.Count > 0 ? "has-subtasks" : "")"
          @onclick="NavigateToDetail">
@@ -46,18 +56,6 @@
                 <span class="status-pill @GetPillClass(_currentStatus)" @onclick="ToggleStatusMenu">
                     @GetStatusLabel(_currentStatus)
                 </span>
-                @if (_showStatusMenu)
-                {
-                    <div class="task-menu">
-                        @foreach (var state in Enum.GetValues<TaskState>())
-                        {
-                            <button class="menu-item @(state == _currentStatus ? "active" : "")"
-                                    @onclick="() => SelectStatus(state)">
-                                @GetStatusLabel(state)
-                            </button>
-                        }
-                    </div>
-                }
             </div>
         </div>
         <div class="task-controls">
@@ -112,6 +110,10 @@
     private List<TaskDto> _subtasks = [];
     private int _loadedSubtasksForTaskId = -1;
 
+    private ElementReference _menuRef;
+    private string _menuFlipClass = "";
+    private bool _menuMeasured;
+
     private bool _isCompleted => _currentStatus == TaskState.Completed;
     private bool _isSubtask => Task?.ParentTaskId != null;
 
@@ -151,8 +153,27 @@
         _                   => "Inactive"
     };
 
-    private void ToggleStatusMenu() => _showStatusMenu = !_showStatusMenu;
+    private void ToggleStatusMenu()
+    {
+        _showStatusMenu = !_showStatusMenu;
+        if (_showStatusMenu) { _menuFlipClass = ""; _menuMeasured = false; }
+    }
+
     private void CloseStatusMenu() => _showStatusMenu = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_showStatusMenu && !_menuMeasured)
+        {
+            _menuMeasured = true;
+            var flipClass = await JS.InvokeAsync<string>("getMenuFlipClass", _menuRef);
+            if (flipClass != _menuFlipClass)
+            {
+                _menuFlipClass = flipClass;
+                StateHasChanged();
+            }
+        }
+    }
 
     private async Task SelectStatus(TaskState state)
     {

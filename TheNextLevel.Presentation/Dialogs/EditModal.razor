@@ -10,14 +10,25 @@
 <div class="dialog-overlay visible">
     <div class="dialog-container" @onclick:stopPropagation="true">
         <div class="modal-header">
-            <div class="modal-badge">
-                <h5 class="modal-title">Edit @_itemTypeName</h5>
+            <div class="title-group">
+                <span class="eyebrow">Editing</span>
+                <span class="modal-title">@_itemTypeName</span>
             </div>
-            <button type="button" class="dialog-btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="HideDialog">&times;</button>
+            <button type="button" class="close-btn" aria-label="Close" @onclick="HideDialog">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
         <div class="modal-body">
-            <input type="text" @bind="itemName" class="form-control" placeholder="Enter @_itemTypeName name" />
-            <input type="text" @bind="itemDescription" class="form-control mt-2" placeholder="Enter @_itemTypeName description" />
+            <div class="field-group">
+                <span class="field-label">Name</span>
+                <input type="text" @bind="itemName" class="opus-input" placeholder="Enter @_itemTypeName name" />
+            </div>
+            <div class="field-group">
+                <span class="field-label">Description <span class="field-optional">optional</span></span>
+                <textarea @bind="itemDescription" class="opus-textarea" placeholder="Brief description..."></textarea>
+            </div>
 
             @if (Item is TaskDto || Item is ProjectDto)
             {
@@ -25,12 +36,17 @@
                     @bind-SelectedId="_selectedParentId"
                     Items="_parentItems"
                     IsLoading="_isLoading"
-                    Label="_parentLabel" />
+                    Label="@_parentLabel" />
             }
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="HideDialog">Cancel</button>
-            <button type="button" class="btn btn-primary" @onclick="Confirm">Edit</button>
+            <button type="button" class="btn-ghost" @onclick="HideDialog">Cancel</button>
+            <button type="button" class="btn-primary" @onclick="Confirm">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Save
+            </button>
         </div>
     </div>
 </div>

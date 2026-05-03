@@ -1,0 +1,13 @@
+::deep .dialog-container {
+    background: #141414;
+    border: 1px solid rgba(139, 69, 19, 0.28);
+    border-radius: 6px;
+    width: 480px;
+    max-width: 100%;
+    box-shadow: 0 32px 64px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    opacity: 1;
+    transform: none;
+    transition: none;
+    animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}

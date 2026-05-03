@@ -10,15 +10,26 @@
 <div class="dialog-overlay visible">
     <div class="dialog-container" @onclick:stopPropagation="true">
         <div class="modal-header">
-            <div class="modal-badge">
-                <h5 class="modal-title">Create @ItemType</h5>
+            <div class="title-group">
+                <span class="eyebrow">New</span>
+                <span class="modal-title">@ItemType</span>
             </div>
-            <button type="button" class="dialog-btn-close" data-bs-dismiss="modal" aria-label="Close" @onclick="Cancel">&times;</button>
+            <button type="button" class="close-btn" aria-label="Close" @onclick="Cancel">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
         </div>
 
         <div class="modal-body">
-            <input type="text" @bind="itemName" class="form-control" placeholder="Enter @ItemType name" />
-            <input type="text" @bind="itemDescription" class="form-control mt-2" placeholder="Enter @ItemType description" />
+            <div class="field-group">
+                <span class="field-label">Name</span>
+                <input type="text" @bind="itemName" class="opus-input" placeholder="Enter @ItemType name" />
+            </div>
+            <div class="field-group">
+                <span class="field-label">Description <span class="field-optional">optional</span></span>
+                <textarea @bind="itemDescription" class="opus-textarea" placeholder="Brief description..."></textarea>
+            </div>
 
             @if (ItemType == ModalType.Task || ItemType == ModalType.Project)
             {
@@ -26,12 +37,18 @@
                     @bind-SelectedId="_selectedParentId"
                     Items="_parentItems"
                     IsLoading="_isLoading"
-                    Label="_parentLabel" />
+                    Label="@_parentLabel" />
             }
         </div>
+
         <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @onclick="Cancel">Cancel</button>
-            <button type="button" class="btn btn-primary" @onclick="Confirm">Create</button>
+            <button type="button" class="btn-ghost" @onclick="Cancel">Cancel</button>
+            <button type="button" class="btn-primary" @onclick="Confirm">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
+                </svg>
+                Create
+            </button>
         </div>
     </div>
 </div>

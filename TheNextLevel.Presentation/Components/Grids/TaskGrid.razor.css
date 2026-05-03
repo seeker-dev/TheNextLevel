@@ -8,14 +8,7 @@
     border: 1px solid rgba(139, 69, 19, 0.3);
 }
 
-::deep .task-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-    gap: 32px;
-}
-
-@media (max-width: 768px) {
-    ::deep .task-grid {
-        grid-template-columns: 1fr;
-    }
+::deep .task-list {
+    display: flex;
+    flex-direction: column;
 }

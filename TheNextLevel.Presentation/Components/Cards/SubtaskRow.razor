@@ -1,0 +1,76 @@
+@using TheNextLevel.Application.DTOs
+
+<div class="subtask-row @(IsLast ? "last" : "")">
+    <div class="subtask-stripe" style="background: @GetStripeColor(Task?.Status ?? TaskState.Inactive)"></div>
+    <div class="subtask-body">
+        <div class="subtask-name">@(Task?.Name ?? "Untitled")</div>
+        <span class="status-pill @GetPillClass(Task?.Status ?? TaskState.Inactive)" style="font-size:0.65rem;padding:3px 10px">
+            @GetStatusLabel(Task?.Status ?? TaskState.Inactive)
+        </span>
+    </div>
+    @if (_editEnabled || _deleteEnabled)
+    {
+        <div class="subtask-controls">
+            @if (_editEnabled)
+            {
+                <button class="task-menu-btn" title="Edit" @onclick="RequestEdit" @onclick:stopPropagation="true">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                </button>
+            }
+            @if (_deleteEnabled)
+            {
+                <button class="task-menu-btn" title="Delete" @onclick="RequestDelete" @onclick:stopPropagation="true">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public TaskDto? Task { get; set; }
+    [Parameter] public bool IsLast { get; set; }
+    [Parameter] public EventCallback<TaskDto> OnEditRequested { get; set; }
+    [Parameter] public EventCallback<TaskDto> OnDeleteRequested { get; set; }
+
+    private bool _editEnabled => OnEditRequested.HasDelegate;
+    private bool _deleteEnabled => OnDeleteRequested.HasDelegate;
+
+    private static string GetStripeColor(TaskState status) => status switch
+    {
+        TaskState.Active    => "rgba(205,133,63,0.75)",
+        TaskState.Completed => "rgba(100,180,100,0.6)",
+        TaskState.OnHold    => "rgba(200,150,50,0.55)",
+        _                   => "rgba(80,80,80,0.5)"
+    };
+
+    private static string GetPillClass(TaskState status) => status switch
+    {
+        TaskState.Active    => "active",
+        TaskState.Completed => "completed",
+        TaskState.OnHold    => "onhold",
+        _                   => "inactive"
+    };
+
+    private static string GetStatusLabel(TaskState status) => status switch
+    {
+        TaskState.Active    => "Active",
+        TaskState.Completed => "Completed",
+        TaskState.OnHold    => "On Hold",
+        _                   => "Inactive"
+    };
+
+    private async Task RequestEdit()
+    {
+        if (Task != null) await OnEditRequested.InvokeAsync(Task);
+    }
+
+    private async Task RequestDelete()
+    {
+        if (Task != null) await OnDeleteRequested.InvokeAsync(Task);
+    }
+}

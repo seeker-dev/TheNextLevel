@@ -1,5 +1,6 @@
 /* ═══ Task Group (wraps row + inline subtasks) ═══ */
 .task-group {
+    position: relative;
     margin-bottom: 10px;
 }
 
@@ -231,7 +232,49 @@
     z-index: 999;
 }
 
+/* Status dropdown menu */
+.task-menu {
+    position: absolute;
+    top: 8px;
+    right: 60px;
+    z-index: 1000;
+    background: rgba(20,14,8,0.98);
+    border: 1px solid rgba(139,69,19,0.3);
+    border-radius: 8px;
+    padding: 6px;
+    min-width: 130px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.menu-item {
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 5px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+}
+
+.menu-item:hover {
+    background: rgba(139,69,19,0.18);
+    color: rgba(205,133,63,0.95);
+}
+
 .menu-item.active {
-    font-weight: 700;
+    font-weight: 600;
     background: rgba(139,69,19,0.3);
+    color: rgba(205,133,63,1);
+}
+
+.task-menu.flip-up {
+    top: auto;
+    bottom: 8px;
 }

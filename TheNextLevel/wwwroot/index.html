@@ -21,6 +21,13 @@
 <body>
     <div id="app">Loading...</div>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
+    <script>
+        window.getMenuFlipClass = function (el) {
+            if (!el) return "";
+            const rect = el.getBoundingClientRect();
+            return rect.bottom > window.innerHeight ? "flip-up" : "";
+        };
+    </script>
 </body>
 
 </html>

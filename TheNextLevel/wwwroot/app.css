@@ -75,12 +75,6 @@ body {
     font-size: 0.9rem;
 }
 
-/* Mobile styles */
-@media (max-width: 768px) {
-    .app-container {
-        padding-bottom: 90px; /* Space for fixed footer on mobile */
-    }
-}
 
 /* Context menus */
 .btn-menu {

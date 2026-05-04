@@ -1,0 +1,142 @@
+.task-card {
+    background: rgba(20, 20, 20, 1);
+    border: 1px solid rgba(139, 69, 19, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.task-card:hover {
+    border-color: rgba(139, 69, 19, 0.4);
+}
+
+.task-content {
+    padding: 32px;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.task-title {
+    font-size: 1.125rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.task-card:hover .task-title {
+    color: #cd853f;
+}
+
+.task-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.8125rem;
+}
+
+.metadata-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.metadata-icon {
+    width: 12px;
+    height: 12px;
+    opacity: 0.6;
+}
+
+.metadata-text {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.metadata-separator {
+    color: rgba(205, 133, 63, 0.3);
+}
+
+.status-badge .metadata-text {
+    color: rgba(205, 133, 63, 0.6);
+}
+
+.project-badge .metadata-icon {
+    color: rgba(160, 82, 45, 0.6);
+}
+
+.mission-badge .metadata-icon {
+    color: rgba(205, 133, 63, 0.6);
+}
+
+.menu-btn {
+    padding: 4px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.menu-btn:hover {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.icon-folder,
+.icon-check-circle,
+.icon-lightning {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.icon-menu {
+    fill: currentColor;
+}
+
+.description-banner {
+    position: relative;
+    background: rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(139, 69, 19, 0.15);
+    height: 40px;
+    overflow: hidden;
+}
+
+.description-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: marquee 25s linear infinite;
+    will-change: transform;
+}
+
+.description-text {
+    padding-right: 48px;
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.description-banner:hover .description-content {
+    animation-play-state: paused;
+}
+
+@keyframes marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}

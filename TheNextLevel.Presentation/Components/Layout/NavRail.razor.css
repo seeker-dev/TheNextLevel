@@ -1,0 +1,88 @@
+.nav-rail {
+    flex-shrink: 0;
+    height: 100vh;
+    width: 48px;
+    transition: width 0.3s ease;
+    overflow: hidden;
+    z-index: 10;
+    background: #0a0a0a;
+    border-right: 1px solid rgba(139, 69, 19, 0.55);
+    display: flex;
+    align-items: center;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.nav-rail:hover {
+    width: 172px;
+}
+
+.nav-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    width: 172px;
+    overflow: hidden;
+    background: transparent;
+    border: none;
+    border-left: 2px solid transparent;
+    border-radius: 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.nav-btn:hover {
+    border-left-color: rgba(139, 69, 19, 0.5);
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(139, 69, 19, 0.06);
+}
+
+.nav-btn.active {
+    border-left-color: rgba(205, 133, 63, 0.9);
+    color: rgba(205, 133, 63, 0.95);
+    background: rgba(205, 133, 63, 0.05);
+}
+
+.nav-btn.active:hover {
+    border-left-color: rgba(205, 133, 63, 1);
+}
+
+.nav-btn-stub {
+    cursor: default;
+    opacity: 0.4;
+}
+
+.nav-btn-stub:hover {
+    border-left-color: transparent;
+    color: rgba(255, 255, 255, 0.4);
+    background: transparent;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.nav-label {
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+.nav-rail:hover .nav-label {
+    opacity: 1;
+}

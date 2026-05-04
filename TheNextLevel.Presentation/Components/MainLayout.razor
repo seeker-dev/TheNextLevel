@@ -1,27 +1,21 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Web
 @using TheNextLevel.Presentation.Components.Layout
-<div class="page">
-    <main>
-        <div class="">
-            <div class="app-container">
-                <article class="content">
-                    <Header />
-                    <ErrorBoundary>
-                        <ChildContent>
-                            @Body
-                        </ChildContent>
-                        <ErrorContent Context="ex">
-                            <div class="error-boundary">
-                                <p class="error-boundary-message">Something went wrong. Please restart the app.</p>
-                            </div>
-                        </ErrorContent>
-                    </ErrorBoundary>
-                    <Footer />
-                </article>
-            </div>
-        </div>
-    </main>
+
+<div class="app-layout">
+    <NavRail />
+    <div class="app-content">
+        <ErrorBoundary>
+            <ChildContent>
+                @Body
+            </ChildContent>
+            <ErrorContent Context="ex">
+                <div class="error-boundary">
+                    <p class="error-boundary-message">Something went wrong. Please restart the app.</p>
+                </div>
+            </ErrorContent>
+        </ErrorBoundary>
+    </div>
 </div>
 
 @code {

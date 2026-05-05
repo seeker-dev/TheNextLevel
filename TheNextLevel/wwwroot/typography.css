@@ -61,13 +61,6 @@ h5, h6 {
     letter-spacing: -0.01em;
 }
 
-.header-left h1,
-.header-left .date {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 300; */ /* h1 weight - defined in Header.razor.css */
-    /* font-weight: 400; */ /* .date weight - defined in Header.razor.css */
-}
-
 /* ============================================
    STATS & NUMBERS
    ============================================ */
@@ -88,11 +81,6 @@ h5, h6 {
     text-transform: uppercase;
 }
 
-.stat-number {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 600; */ /* May be overridden in component CSS */
-}
-
 /* ============================================
    TASKS
    ============================================ */
@@ -104,26 +92,6 @@ h5, h6 {
     font-family: 'Manrope', sans-serif;
     /* font-weight: 400; */ /* Defined in TaskCard.razor.css */
     letter-spacing: -0.01em;
-}
-
-.task-description {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 400; */ /* Defined in TaskCard.razor.css */
-}
-
-.task-meta {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 400; */ /* Defined in TaskCard.razor.css */
-}
-
-.task-preview-title {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 500; */ /* Defined in component CSS */
-}
-
-.task-preview-text {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 400; */ /* Defined in component CSS */
 }
 
 /* ============================================
@@ -139,42 +107,14 @@ h5, h6 {
     letter-spacing: 0.01em;
 }
 
-.btn-secondary,
-.btn-settings {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 500; */ /* .btn-secondary - defined in component CSS */
-    /* font-weight: 400; */ /* .btn-settings - defined in component CSS */
-}
-
 .filter-btn {
     font-family: 'Manrope', sans-serif;
     /* font-weight: 500; */ /* Defined in component CSS */
 }
 
-.new-project-btn {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 500; */ /* Defined in component CSS */
-}
-
-.view-all-tasks {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 400; */ /* Defined in component CSS */
-}
-
 /* ============================================
    NAVIGATION
    ============================================ */
-
-/* Apply Manrope to navigation elements
-   Note: Weights and sizing are defined in Header.razor.css */
-
-.nav-link,
-.mobile-nav-link {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 400; */ /* Defined in Header.razor.css */
-}
-
-/* .nav-link.active has font-weight: 500 defined in Header.razor.css */
 
 /* ============================================
    PAGES
@@ -186,17 +126,6 @@ h5, h6 {
 .page-title {
     font-family: 'Manrope', sans-serif;
     /* font-weight: 300; */ /* May be overridden in component CSS */
-    letter-spacing: -0.01em;
-}
-
-.section-title {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 500; */ /* May be overridden in component CSS */
-}
-
-.project-details-title {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 500; */ /* May be overridden in component CSS */
     letter-spacing: -0.01em;
 }
 
@@ -247,8 +176,7 @@ h5, h6 {
    Note: Weights and sizing are defined in component-scoped CSS */
 
 .menu-item,
-.project-menu-btn,
-.btn-menu {
+.project-menu-btn {
     font-family: 'Manrope', sans-serif;
     /* font-weight: 400; */ /* Defined in component CSS */
 }
@@ -259,13 +187,6 @@ h5, h6 {
 
 /* Apply Manrope to empty state elements
    Note: Weights and sizing are defined in component-scoped CSS */
-
-.empty-title,
-.empty-subtitle {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 300; */ /* .empty-title - defined in component CSS */
-    /* font-weight: 400; */ /* .empty-subtitle - defined in component CSS */
-}
 
 /* ============================================
    INPUTS & FORMS
@@ -282,41 +203,6 @@ input::placeholder,
 textarea::placeholder {
     font-family: 'Manrope', sans-serif;
     font-weight: 400;
-}
-
-.search-box,
-.filter-input {
-    font-family: 'Manrope', sans-serif;
-    font-weight: 400;
-}
-
-/* ============================================
-   LOADING & STATUS
-   ============================================ */
-
-/* Apply Manrope to status elements */
-
-.loading-state,
-.task-status {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 400; */ /* May be overridden in component CSS */
-}
-
-/* ============================================
-   PRIORITY BADGES
-   ============================================ */
-
-/* Apply Manrope to badge elements */
-
-.priority-badge {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 500; */ /* May be overridden in component CSS */
-    letter-spacing: 0.5px;
-}
-
-.category-label {
-    font-family: 'Manrope', sans-serif;
-    /* font-weight: 400; */ /* May be overridden in component CSS */
 }
 
 /* ============================================

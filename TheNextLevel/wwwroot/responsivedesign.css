@@ -1,44 +1,4 @@
-﻿@media (max-width: 768px) {
-    .header {
-        padding: 15px 20px;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    /* New additions for project grid */
-    .header-top {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-
-    .header-left h1 {
-        font-size: 1.6rem;
-    }
-
-    .header-actions {
-        width: 100%;
-        justify-content: flex-end;
-    }
-
-    .new-project-btn {
-        padding: 8px 16px;
-        font-size: 0.85rem;
-    }
-
-    .new-project-btn span:last-child {
-        display: none;
-    }
-
-    .new-project-btn::after {
-        content: 'New';
-    }
-
-    .search-box {
-        max-width: 100%;
-    }
-
+@media (max-width: 768px) {
     .main-content {
         padding: 20px;
     }
@@ -47,24 +7,12 @@
         grid-template-columns: 1fr;
     }
 
-    .stats-bar {
-        flex-direction: column;
-    }
-
     .stat-value {
         font-size: 1.3rem;
     }
 }
 
 @media (max-width: 480px) {
-    .header-left h1 {
-        font-size: 1.4rem;
-    }
-
-    .header-left .date {
-        font-size: 0.8rem;
-    }
-
     .main-content {
         padding: 15px;
     }

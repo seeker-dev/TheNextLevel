@@ -355,23 +355,6 @@
     box-shadow: 0 8px 25px rgba(139, 0, 0, 0.6);
 }
 
-/* ============================================
-   Utility Classes
-   ============================================ */
-.dialog-loading {
-    color: var(--dialog-text-accent);
-    text-align: center;
-    padding: 20px;
-    font-style: italic;
-}
-
-.dialog-empty-state {
-    color: #8B4513;
-    text-align: center;
-    padding: 30px;
-    font-style: italic;
-}
-
 .dialog-message {
     font-size: 1rem;
     line-height: 1.6;

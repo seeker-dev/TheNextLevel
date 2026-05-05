@@ -39,45 +39,6 @@
     color: #cd853f;
 }
 
-/* Navigation */
-.header-nav {
-    display: flex;
-    gap: 40px;
-    align-items: center;
-}
-
-.nav-link {
-    color: #f5f5f5;
-    text-decoration: none;
-    font-size: 1rem;
-    font-weight: 400;
-    padding: 8px 16px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.nav-link:hover {
-    color: #cd853f;
-    background: rgba(139, 69, 19, 0.1);
-}
-
-.nav-link.active {
-    color: #cd853f;
-    background: rgba(139, 0, 0, 0.2);
-}
-
-.nav-link.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 16px;
-    right: 16px;
-    height: 2px;
-    background: linear-gradient(90deg, #8B0000, #cd853f);
-    border-radius: 2px;
-}
-
 /* Mobile Menu Toggle */
 .menu-toggle {
     display: none;
@@ -114,32 +75,6 @@
     transform: translateY(5px);
 }
 
-/* Mobile Menu */
-.mobile-menu {
-    display: none;
-    flex-direction: column;
-    background: rgba(0, 0, 0, 0.98);
-    border-top: 1px solid rgba(139, 69, 19, 0.3);
-    padding: 20px 30px;
-    gap: 10px;
-}
-
-.mobile-nav-link {
-    color: #f5f5f5;
-    text-decoration: none;
-    font-size: 1.1rem;
-    font-weight: 400;
-    padding: 12px 16px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-}
-
-.mobile-nav-link:hover,
-.mobile-nav-link.active {
-    color: #cd853f;
-    background: rgba(139, 0, 0, 0.2);
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .header {
@@ -155,16 +90,8 @@
         font-weight: 400; /* Slightly heavier on mobile for visibility */
     }
 
-    .header-nav {
-        display: none;
-    }
-
     .menu-toggle {
         display: none;
-    }
-
-    .mobile-menu {
-        display: flex;
     }
 }
 
@@ -175,9 +102,5 @@
 
     .app-title {
         font-size: 1.1rem;
-    }
-
-    .mobile-menu {
-        padding: 15px 20px;
     }
 }

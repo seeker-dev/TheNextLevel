@@ -20,12 +20,6 @@ body {
     flex-direction: column;
 }
 
-.app-container {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
 /* Fix for Blazor Virtualize component breaking grid layout
    Makes the Virtualize wrapper divs transparent to grid layout */
 .task-grid > * {
@@ -50,31 +44,9 @@ body {
     display: flex;
 }
 
-.projects-grid .loading-card,
-.projects-grid .empty-project {
+.projects-grid .loading-card {
     display: block;
 }
-
-/* Project card empty state */
-.empty-project {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 30px;
-    color: #8B4513;
-    text-align: center;
-}
-
-.empty-project .emoji {
-    font-size: 2.5rem;
-    margin-bottom: 12px;
-}
-
-.empty-project p {
-    font-size: 0.9rem;
-}
-
 
 /* Context menus */
 .btn-menu {

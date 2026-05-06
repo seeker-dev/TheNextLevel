@@ -1,100 +1,149 @@
-/* Mission Page Header */
-.mission-page-header {
-    height: 40vh;
+/* Mission Hero Header */
+.mission-header {
+    position: relative;
+    height: 38vh;
+    min-height: 260px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    padding: 30px 40px;
-    position: relative;
-    margin-bottom: 2rem;
+    justify-content: flex-start;
+    padding: 0;
+    overflow: hidden;
     width: calc(100% + 60px);
     margin-left: -30px;
     margin-right: -30px;
     margin-top: -30px;
 }
 
-.mission-action-buttons {
+.mission-header::before {
+    content: '';
     position: absolute;
-    top: 30px;
-    right: 40px;
-    display: flex;
-    gap: 10px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, transparent, #0a0a0a);
+    pointer-events: none;
+    z-index: 1;
 }
 
-.mission-page-subtitle {
-    font-size: 1.5rem;
-    font-weight: 400;
-    color: #f0e68c;
-    margin: 0.5rem 0 0 0;
-    text-shadow: 0 1px 10px rgba(0, 0, 0, 0.3);
-    letter-spacing: -0.005em;
+.mission-header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top right, rgba(0, 0, 0, 0.5) 0%, transparent 60%);
+    pointer-events: none;
 }
 
 /* Sunrise Gradient Background */
 .custom-bg {
     background: radial-gradient(ellipse at bottom left,
-        rgba(205, 133, 63, 0.9) 0%,
-        rgba(160, 82, 45, 0.8) 25%,
-        rgba(139, 0, 0, 0.7) 60%,
-        rgba(26, 10, 10, 0.95) 100%);
+        rgba(205, 133, 63, 0.92) 0%,
+        rgba(160, 82, 45, 0.82) 22%,
+        rgba(139, 0, 0, 0.72) 55%,
+        rgba(12, 6, 3, 0.98) 100%);
+}
+
+/* Top bar: back button + action buttons */
+.header-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28px 44px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 3;
 }
 
 /* Back Button */
-.back-button {
-    position: absolute;
-    top: 30px;
-    left: 30px;
-    width: 50px;
-    height: 50px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(139, 69, 19, 0.3);
-    border-radius: 12px;
-    font-size: 1.5rem;
-    color: #f5f5f5;
-    cursor: pointer;
-    transition: all 0.3s ease;
+.back-btn {
     display: flex;
     align-items: center;
-    justify-content: center;
-}
-
-.back-button:hover {
-    background: rgba(139, 0, 0, 0.8);
-    border-color: rgba(139, 69, 19, 0.5);
-}
-
-/* Delete Project Button */
-.action-btn {
-    top: 30px;
-    right: 30px;
-    background: transparent;
-    border: 1px solid rgba(139, 69, 19, 0.3);
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 6px;
-    padding: 6px 10px;
+    padding: 8px 14px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.75rem;
+    font-weight: 400;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
     cursor: pointer;
-    font-size: 1rem;
-    color: #f5f5f5;
-    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
-.action-btn:hover {
-    background: rgba(139, 69, 19, 0.2);
-    border-color: #8B4513;
+.back-btn:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.65);
 }
 
-.action-btn-danger:hover {
-    background: rgba(139, 0, 0, 0.3);
-    border-color: #8B0000;
+/* Header action buttons (Edit, Delete) */
+.header-actions {
+    display: flex;
+    gap: 8px;
 }
 
-/* Mission Title */
-.mission-page-title {
-    font-size: 2.5rem;
-    font-weight: 500;
-    color: #ffffff;
-    margin: 0;
-    text-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
-    letter-spacing: -0.01em;
+.header-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.header-action-btn:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    background: rgba(0, 0, 0, 0.65);
+}
+
+.header-action-btn.danger {
+    border-color: rgba(192, 57, 43, 0.3);
+    color: rgba(255, 120, 100, 0.75);
+}
+
+.header-action-btn.danger:hover {
+    border-color: rgba(192, 57, 43, 0.6);
+    color: rgba(255, 120, 100, 1);
+    background: rgba(192, 57, 43, 0.15);
+}
+
+/* Mission title + description block */
+.mission-title-block {
+    position: relative;
+    z-index: 3;
+    padding: 0 44px;
+}
+
+.mission-name {
+    font-size: 2.75rem;
+    font-weight: 300;
+    color: #fff;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+    margin-bottom: 10px;
+}
+
+.mission-desc {
+    font-size: 0.9rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+    max-width: 580px;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Loading Text */
@@ -119,89 +168,109 @@
     margin: 0;
 }
 
-/* Description Section */
-.description-section {
-    margin-bottom: 2rem;
+/* Content body below hero */
+.content-body {
+    background: #0a0a0a;
+    padding: 40px 44px 60px;
+    margin-top: -2px;
+    width: calc(100% + 60px);
+    margin-left: -30px;
+    margin-right: -30px;
 }
 
-.description-section p {
-    min-height: 4.5em; /* Space for ~3 lines */
-    color: #d0d0d0;
-    line-height: 1.5;
-    margin: 0;
+/* Projects section header */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.new-project-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background: transparent;
+    border: 1px solid rgba(139, 69, 19, 0.3);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.new-project-btn:hover {
+    border-color: rgba(205, 133, 63, 0.5);
+    color: rgba(205, 133, 63, 0.9);
+    background: rgba(205, 133, 63, 0.05);
 }
 
 /* Tablet Responsive */
 @media (max-width: 768px) {
-    .mission-page-header {
+    .mission-header {
         height: 35vh;
-        padding: 20px 24px;
         width: calc(100% + 40px);
         margin-left: -20px;
         margin-right: -20px;
         margin-top: -20px;
     }
 
-    .back-button {
-        top: 20px;
-        left: 20px;
-        width: 45px;
-        height: 45px;
+    .header-top-bar {
+        padding: 20px 28px;
     }
 
-    .action-btn {
-        top: 20px;
-        right: 20px;
+    .mission-title-block {
+        padding: 0 28px;
     }
 
-    .mission-page-title {
-        font-size: 2rem;
+    .mission-name {
+        font-size: 2.25rem;
     }
 
-    .loading-text {
-        font-size: 1.25rem;
-    }
-
-    .error-message {
-        font-size: 1.1rem;
-        padding: 10px 16px;
+    .content-body {
+        padding: 32px 28px 48px;
+        width: calc(100% + 40px);
+        margin-left: -20px;
+        margin-right: -20px;
     }
 }
 
 /* Mobile Responsive */
 @media (max-width: 480px) {
-    .mission-page-header {
+    .mission-header {
         height: 30vh;
-        padding: 16px 20px;
         width: calc(100% + 30px);
         margin-left: -15px;
         margin-right: -15px;
         margin-top: -15px;
     }
 
-    .back-button {
-        top: 15px;
-        left: 15px;
-        width: 40px;
-        height: 40px;
-        font-size: 1.25rem;
+    .header-top-bar {
+        padding: 16px 20px;
     }
 
-    .action-btn {
-        top: 15px;
-        right: 15px;
+    .mission-title-block {
+        padding: 0 20px;
     }
 
-    .mission-page-title {
+    .mission-name {
         font-size: 1.75rem;
     }
 
-    .loading-text {
-        font-size: 1.1rem;
-    }
-
-    .error-message {
-        font-size: 1rem;
-        padding: 8px 12px;
+    .content-body {
+        padding: 28px 20px 40px;
+        width: calc(100% + 30px);
+        margin-left: -15px;
+        margin-right: -15px;
     }
 }

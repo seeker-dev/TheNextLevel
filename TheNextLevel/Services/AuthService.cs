@@ -17,15 +17,15 @@ public class AuthService : IAuthService
         _tursoClient = tursoClient;
     }
 
-    public async Task<bool> InitializeAsync()
+    public async Task<bool> InitializeAsync(CancellationToken ct = default)
     {
         try
         {
-            var token = await GetTokenAsync();
+            var token = await GetTokenAsync(ct);
             if (string.IsNullOrEmpty(token))
                 return false;
 
-            var tursoToken = await FetchTursoTokenAsync(token);
+            var tursoToken = await FetchTursoTokenAsync(token, ct);
             if (tursoToken is null)
                 return false;
 
@@ -38,21 +38,21 @@ public class AuthService : IAuthService
         }
     }
 
-    public async Task<bool> LoginAsync(string username, string password)
+    public async Task<bool> LoginAsync(string username, string password, CancellationToken ct = default)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("auth/login", new { username, password });
+            var response = await _httpClient.PostAsJsonAsync("auth/login", new { username, password }, ct);
             if (!response.IsSuccessStatusCode)
                 return false;
 
-            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>(ct);
             if (result?.Token is null)
                 return false;
 
             await SecureStorage.Default.SetAsync(TokenKey, result.Token);
 
-            var tursoToken = await FetchTursoTokenAsync(result.Token);
+            var tursoToken = await FetchTursoTokenAsync(result.Token, ct);
             if (tursoToken is null)
                 return false;
 
@@ -65,17 +65,17 @@ public class AuthService : IAuthService
         }
     }
 
-    private async Task<string?> FetchTursoTokenAsync(string jwtToken)
+    private async Task<string?> FetchTursoTokenAsync(string jwtToken, CancellationToken ct = default)
     {
         try
         {
             var request = new HttpRequestMessage(HttpMethod.Get, "auth/turso-token");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
-            var response = await _httpClient.SendAsync(request);
+            var response = await _httpClient.SendAsync(request, ct);
             if (!response.IsSuccessStatusCode)
                 return null;
 
-            var result = await response.Content.ReadFromJsonAsync<TursoTokenResponse>();
+            var result = await response.Content.ReadFromJsonAsync<TursoTokenResponse>(ct);
             return result?.AuthToken;
         }
         catch
@@ -84,10 +84,10 @@ public class AuthService : IAuthService
         }
     }
 
-    public Task<string?> GetTokenAsync() =>
+    public Task<string?> GetTokenAsync(CancellationToken ct = default) =>
         SecureStorage.Default.GetAsync(TokenKey);
 
-    public Task LogoutAsync()
+    public Task LogoutAsync(CancellationToken ct = default)
     {
         SecureStorage.Default.Remove(TokenKey);
         return Task.CompletedTask;

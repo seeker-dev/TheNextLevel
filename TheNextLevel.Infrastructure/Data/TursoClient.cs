@@ -31,12 +31,12 @@ public class TursoClient
             new AuthenticationHeaderValue("Bearer", authToken);
     }
 
-    public async Task<TursoResponse> ExecuteAsync(string sql, params object[] parameters)
+    public async Task<TursoResponse> ExecuteAsync(string sql, CancellationToken ct = default, params object[] parameters)
     {
-        return await ExecuteBatchAsync(new[] { new TursoStatement(sql, parameters) });
+        return await ExecuteBatchAsync(new[] { new TursoStatement(sql, parameters) }, ct);
     }
 
-    public async Task<TursoResponse> ExecuteBatchAsync(IEnumerable<TursoStatement> statements)
+    public async Task<TursoResponse> ExecuteBatchAsync(IEnumerable<TursoStatement> statements, CancellationToken ct = default)
     {
         if (!_connectivity.IsConnected)
             throw new InvalidOperationException("No internet connection. Please check your network and try again.");
@@ -86,11 +86,11 @@ public class TursoClient
             try
             {
                 content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync("/v2/pipeline", content);
+                var response = await _httpClient.PostAsync("/v2/pipeline", content, ct);
 
                 response.EnsureSuccessStatusCode();
 
-                var responseJson = await response.Content.ReadAsStringAsync();
+                var responseJson = await response.Content.ReadAsStringAsync(ct);
                 var pipelineResponse = JsonSerializer.Deserialize<TursoPipelineResponse>(responseJson, new JsonSerializerOptions
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -117,7 +117,7 @@ public class TursoClient
                 if (attempt < maxRetries)
                 {
                     Console.WriteLine($"Turso request failed (attempt {attempt + 1}/{maxRetries + 1}): {ex.Message}. Retrying in {retryDelays[attempt].TotalMilliseconds}ms...");
-                    await Task.Delay(retryDelays[attempt]);
+                    await Task.Delay(retryDelays[attempt], ct);
                 }
             }
             catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
@@ -127,7 +127,7 @@ public class TursoClient
                 if (attempt < maxRetries)
                 {
                     Console.WriteLine($"Turso request timed out (attempt {attempt + 1}/{maxRetries + 1}). Retrying in {retryDelays[attempt].TotalMilliseconds}ms...");
-                    await Task.Delay(retryDelays[attempt]);
+                    await Task.Delay(retryDelays[attempt], ct);
                 }
             }
             finally
@@ -139,9 +139,9 @@ public class TursoClient
         throw new InvalidOperationException($"Failed to execute Turso request after {maxRetries + 1} attempts", lastException);
     }
 
-    public async Task<TursoResponse> QueryAsync(string sql, params object[] parameters)
+    public async Task<TursoResponse> QueryAsync(string sql, CancellationToken ct = default, params object[] parameters)
     {
-        return await ExecuteAsync(sql, parameters);
+        return await ExecuteAsync(sql, ct, parameters);
     }
 }
 

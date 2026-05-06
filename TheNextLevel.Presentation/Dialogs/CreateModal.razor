@@ -113,9 +113,9 @@
         try
         {
             if (ItemType == ModalType.Project)
-                _parentItems = await DialogHelper.LoadAllAsync<MissionDto>(MissionService.ListAsync, _pageSize);
+                _parentItems = await DialogHelper.LoadAllAsync<MissionDto>((skip, take) => MissionService.ListAsync(skip, take, CancellationToken.None), _pageSize);
             else if (ItemType == ModalType.Task)
-                _parentItems = await DialogHelper.LoadAllAsync<ProjectDto>(ProjectService.ListAsync, _pageSize);
+                _parentItems = await DialogHelper.LoadAllAsync<ProjectDto>((skip, take) => ProjectService.ListAsync(skip, take, CancellationToken.None), _pageSize);
 
             _selectedParentId = ExistingParent is not null ? (_parentItems.FirstOrDefault(i => i.Id == ExistingParent.Id)?.Id.ToString() ?? string.Empty) : string.Empty;
             _initialParentId = _selectedParentId;

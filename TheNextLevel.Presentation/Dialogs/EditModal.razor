@@ -112,9 +112,9 @@
         try
         {
             if (Item is ProjectDto)
-                _parentItems = await DialogHelper.LoadAllAsync<MissionDto>(MissionService.ListAsync, _pageSize);
+                _parentItems = await DialogHelper.LoadAllAsync<MissionDto>((skip, take) => MissionService.ListAsync(skip, take, CancellationToken.None), _pageSize);
             else if (Item is TaskDto)
-                _parentItems = await DialogHelper.LoadAllAsync<ProjectDto>(ProjectService.ListAsync, _pageSize);
+                _parentItems = await DialogHelper.LoadAllAsync<ProjectDto>((skip, take) => ProjectService.ListAsync(skip, take, CancellationToken.None), _pageSize);
 
             var parent = Item switch
             {

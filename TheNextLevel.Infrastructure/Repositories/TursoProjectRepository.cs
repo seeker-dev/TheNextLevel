@@ -16,22 +16,22 @@ public class TursoProjectRepository : IProjectRepository
         _accountContext = accountContext;
     }
 
-    public async Task<Project?> GetByIdAsync(int id)
+    public async Task<Project?> GetByIdAsync(int id, CancellationToken ct = default)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.QueryAsync(
             "SELECT Id, AccountId, Name, Description, MissionId FROM Projects WHERE Id = ? AND AccountId = ?",
-            id, accountId);
+            ct, id, accountId);
 
         return MapToProjects(response).FirstOrDefault();
     }
 
-    public async Task<PagedResult<Project>> ListAsync(int skip, int take)
+    public async Task<PagedResult<Project>> ListAsync(int skip, int take, CancellationToken ct = default)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
         // Get total count with filter
-        var totalCount = await CountAsync();
+        var totalCount = await CountAsync(ct: ct);
 
         // Get paged data with filter
         string query;
@@ -48,7 +48,7 @@ public class TursoProjectRepository : IProjectRepository
             parameters = new object[] { accountId, take, skip };
         //}
 
-        var response = await _client.QueryAsync(query, parameters);
+        var response = await _client.QueryAsync(query, ct, parameters);
 
         var items = MapToProjects(response).ToList();
 
@@ -59,12 +59,12 @@ public class TursoProjectRepository : IProjectRepository
         };
     }
 
-    public async Task<PagedResult<Project>> ListByMissionIdAsync(int missionId, int skip, int take)
+    public async Task<PagedResult<Project>> ListByMissionIdAsync(int missionId, int skip, int take, CancellationToken ct = default)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
         // Get total count with filter
-        var totalCount = await CountByMissionIdAsync(missionId);
+        var totalCount = await CountByMissionIdAsync(missionId, ct: ct);
 
         // Get paged data with filter
         string query;
@@ -81,7 +81,7 @@ public class TursoProjectRepository : IProjectRepository
             parameters = new object[] { accountId, missionId, take, skip };
         //}
 
-        var response = await _client.QueryAsync(query, parameters);
+        var response = await _client.QueryAsync(query, ct, parameters);
 
         var items = MapToProjects(response).ToList();
 
@@ -92,11 +92,12 @@ public class TursoProjectRepository : IProjectRepository
         };
     }
 
-    public async Task<Project> CreateAsync(int missionId, string name, string description)
+    public async Task<Project> CreateAsync(int missionId, string name, string description, CancellationToken ct = default)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
             "INSERT INTO Projects (AccountId, Name, Description, MissionId) VALUES (?, ?, ?, ?)",
+            ct,
             accountId,
             name,
             description ?? string.Empty,
@@ -112,40 +113,42 @@ public class TursoProjectRepository : IProjectRepository
         throw new InvalidOperationException("Failed to create project.");
     }
 
-    public async Task<Project?> UpdateAsync(int id, string name, string description)
+    public async Task<Project?> UpdateAsync(int id, string name, string description, CancellationToken ct = default)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         await _client.ExecuteAsync(
             "UPDATE Projects SET Name = ?, Description = ? WHERE Id = ? AND AccountId = ?",
+            ct,
             name.Trim(),
             description?.Trim() ?? string.Empty,
             id,
             accountId);
 
-        return await GetByIdAsync(id);
+        return await GetByIdAsync(id, ct);
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id, CancellationToken ct = default)
     {
         var response = await _client.ExecuteAsync(
             "DELETE FROM Projects WHERE Id = ? AND AccountId = ?",
+            ct,
             id,
             _accountContext.GetCurrentAccountId());
 
         return response.Result?.AffectedRowCount > 0;
     }
 
-    public async Task<bool> CompleteAsync(int id)
+    public async Task<bool> CompleteAsync(int id, CancellationToken ct = default)
     {
         throw new NotImplementedException("CompleteAsync is not implemented for projects yet.");
     }
 
-    public async Task<bool> ResetAsync(int id)
+    public async Task<bool> ResetAsync(int id, CancellationToken ct = default)
     {
         throw new NotImplementedException("ResetAsync is not implemented for projects yet.");
     }
 
-    public async Task<int> CountAsync(string? filterText = null)
+    public async Task<int> CountAsync(string? filterText = null, CancellationToken ct = default)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
@@ -163,7 +166,7 @@ public class TursoProjectRepository : IProjectRepository
             parameters = new object[] { accountId };
         }
 
-        var response = await _client.QueryAsync(query, parameters);
+        var response = await _client.QueryAsync(query, ct, parameters);
         if (response.Result?.Rows == null || response.Result.Rows.Length == 0)
             return 0;
 
@@ -171,7 +174,7 @@ public class TursoProjectRepository : IProjectRepository
         return int.Parse(GetColumnValue(response.Result.Rows[0], columns, "TotalCount"));
     }
 
-    public async Task<int> CountByMissionIdAsync(int missionId, string? filterText = null)
+    public async Task<int> CountByMissionIdAsync(int missionId, string? filterText = null, CancellationToken ct = default)
     {
         var accountId = _accountContext.GetCurrentAccountId();
 
@@ -189,7 +192,7 @@ public class TursoProjectRepository : IProjectRepository
             parameters = new object[] { accountId, missionId };
         }
 
-        var response = await _client.QueryAsync(query, parameters);
+        var response = await _client.QueryAsync(query, ct, parameters);
         if (response.Result?.Rows == null || response.Result.Rows.Length == 0)
             return 0;
 
@@ -197,12 +200,12 @@ public class TursoProjectRepository : IProjectRepository
         return int.Parse(GetColumnValue(response.Result.Rows[0], columns, "TotalCount"));
     }
 
-    public async System.Threading.Tasks.Task<bool> MoveAsync(int id, int missionId)
+    public async System.Threading.Tasks.Task<bool> MoveAsync(int id, int missionId, CancellationToken ct = default)
     {
         var accountId = _accountContext.GetCurrentAccountId();
         var response = await _client.ExecuteAsync(
             "UPDATE Projects SET MissionId = ? WHERE Id = ? AND AccountId = ?",
-            missionId, id, accountId);
+            ct, missionId, id, accountId);
 
         return response.Result?.AffectedRowCount > 0;
     }
@@ -222,7 +225,7 @@ public class TursoProjectRepository : IProjectRepository
             var name = GetColumnValue(row, columns, "Name");
             var description = GetColumnValue(row, columns, "Description");
             var missionId = int.Parse(GetColumnValue(row, columns, "MissionId"));
-            
+
             var project = new Project(id, accountId, name, description, missionId);
             projects.Add(project);
         }

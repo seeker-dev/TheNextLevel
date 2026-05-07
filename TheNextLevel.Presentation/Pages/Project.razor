@@ -13,65 +13,87 @@
 @inject ITaskService TaskService
 @inject IJSRuntime JSRuntime
 
-<main class="main-content">
-    <div class="project-page-header custom-bg">
-        <button class="back-button" @onclick="NavigateBack">←</button>
-        @if (_isLoading)
-        {
-            <p class="loading-text">Loading...</p>
-        }
-        else if (_errorMessage != null)
-        {
-            <p class="error-message">@_errorMessage</p>
-        }
-        else if (_project != null)
-        {
-            <h1 class="project-page-title">@_project.Name</h1>
+<div class="content-wrapper">
 
-            <div class="project-action-buttons">
-                <button class="action-btn action-btn-primary" @onclick="ShowEditDialog">✏️</button>
-                <button title="Delete Project" class="action-btn action-btn-danger" @onclick="ShowDeleteDialog">🗑️</button>
-            </div>
-        }
+    <div class="project-header">
+        <div class="header-top-bar">
+            <button class="back-btn" @onclick="NavigateBack">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Back
+            </button>
+            @if (_project != null)
+            {
+                <div class="header-actions">
+                    <button class="header-action-btn" @onclick="ShowEditDialog">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        Edit
+                    </button>
+                    <button class="header-action-btn danger" @onclick="ShowDeleteDialog">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Delete
+                    </button>
+                </div>
+            }
+        </div>
+        <div class="project-title-block">
+            @if (_isLoading)
+            {
+                <div class="project-name loading-text">Loading…</div>
+            }
+            else if (_errorMessage != null)
+            {
+                <div class="error-message">@_errorMessage</div>
+            }
+            else if (_project != null)
+            {
+                <div class="project-name">@_project.Name</div>
+                @if (!string.IsNullOrEmpty(_project.Description))
+                {
+                    <div class="project-desc">@_project.Description</div>
+                }
+            }
+        </div>
     </div>
-    <div class="description-section">
-        @if (_isLoading)
-        {
-            <p class="loading-text">Loading project description...</p>
-        }
-        else if (_errorMessage != null)
-        {
-            <p class="error-message">@_errorMessage</p>
-        }
-        else if (_project != null)
-        {
-            <h3>Description</h3>
-            <p>@_project.Description</p>
-        }
-    </div>
-    <div class="tasks-section">
-        @if (_isLoading)
-        {
-            <p class="loading-text">Loading tasks...</p>
-        }
-        else if (_errorMessage != null)
-        {
-            <p class="error-message">@_errorMessage</p>
-        }
-        else if (_project != null)
-        {
-            <div class="tasks-section-header">
-                <button class="filter-btn" @onclick="OpenCreateTask">Add New Task ➕</button>
+
+    @if (_project != null)
+    {
+        <div class="content-body">
+            <div class="section-header">
+                <div class="section-left">
+                    <span class="section-title">Tasks</span>
+                </div>
+                <button class="new-task-btn" @onclick="OpenCreateTask">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
+                    </svg>
+                    New Task
+                </button>
             </div>
+
+            <div class="filter-bar">
+                <button class="filter-btn @(_filter == "all" ? "active" : "")" @onclick='() => SetFilter("all")'>All</button>
+                <button class="filter-btn @(_filter == "active" ? "active" : "")" @onclick='() => SetFilter("active")'>Active</button>
+                <button class="filter-btn @(_filter == "inactive" ? "active" : "")" @onclick='() => SetFilter("inactive")'>Inactive</button>
+                <button class="filter-btn @(_filter == "onhold" ? "active" : "")" @onclick='() => SetFilter("onhold")'>On Hold</button>
+                <button class="filter-btn @(_filter == "completed" ? "active" : "")" @onclick='() => SetFilter("completed")'>Completed</button>
+            </div>
+
             <TaskGrid
                 @ref="_taskGrid"
                 Project="@_project"
+                FilterStatus="@_filter"
                 OnEditRequested="HandleEditTask"
                 OnDeleteRequested="HandleDeleteTask" />
-        }
-    </div>
-</main>
-<!-- For editing project -->
+        </div>
+    }
+</div>
+
 <EditModal
     Item="@_project"
     @ref="_editModal"
@@ -85,7 +107,6 @@
     OnCancel="() => _isDeleteDialogVisible = false"
     OnConfirm="OnDeleteConfirmed" />
 
-<!-- For managing tasks -->
 <CreateModal
     IsVisible="@_showCreateTaskModal"
     ItemType="ModalType.Task"
@@ -121,6 +142,7 @@
     private TaskDto? _selectedTask;
     private bool _showCreateTaskModal;
     private bool _showDeleteTaskDialog;
+    private string _filter = "all";
 
     protected override async Task OnInitializedAsync()
     {
@@ -136,9 +158,7 @@
             _project = await ProjectService.GetByIdAsync(Id);
 
             if (_project == null)
-            {
                 _errorMessage = "Project could not be found.";
-            }
 
             _isLoading = false;
             StateHasChanged();
@@ -151,6 +171,8 @@
             StateHasChanged();
         }
     }
+
+    private void SetFilter(string f) => _filter = f;
 
     // === PROJECT CRUD ===
     private void ShowDeleteDialog() => _isDeleteDialogVisible = true;
@@ -226,9 +248,7 @@
     private async Task HandleDeleteTaskConfirmed()
     {
         if (_selectedTask != null)
-        {
             await TaskService.DeleteAsync(_selectedTask.Id);
-        }
         CloseDeleteTask();
         if (_taskGrid != null) await _taskGrid.RefreshList();
     }

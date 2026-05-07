@@ -4,9 +4,18 @@
 
 <main class="main-content">
     <div class="page-header">
-        <h1 class="page-title">Missions</h1>
+        <div class="page-title-group">
+            <h1 class="page-title">Missions</h1>
+            <span class="page-subtitle">@(_totalCount == 1 ? "1 mission" : $"{_totalCount} missions")</span>
+        </div>
+        <button class="new-mission-btn" @onclick="OpenCreateModal">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
+            </svg>
+            New Mission
+        </button>
     </div>
-    <MissionList @ref="_missionList" />
+    <MissionList @ref="_missionList" OnTotalCountChanged="HandleCountChanged" />
 </main>
 
 <CreateModal
@@ -18,9 +27,16 @@
 @code {
     private MissionList? _missionList;
     private bool _showCreateModal = false;
+    private int _totalCount = 0;
 
     private void OpenCreateModal() => _showCreateModal = true;
     private void CloseCreateModal() => _showCreateModal = false;
+
+    private void HandleCountChanged(int count)
+    {
+        _totalCount = count;
+        StateHasChanged();
+    }
 
     private async Task HandleMissionCreated(IItemDto? newMission)
     {

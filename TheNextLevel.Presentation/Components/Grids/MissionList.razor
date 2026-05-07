@@ -11,12 +11,17 @@
 </VirtualizedList>
 
 @code {
+    [Parameter] public EventCallback<int> OnTotalCountChanged { get; set; }
+
     private VirtualizedList<MissionDto>? _list;
 
     private async ValueTask<ItemsProviderResult<MissionDto>> LoadMissionsProvider(ItemsProviderRequest request)
     {
         var result = await MissionService.ListAsync(request.StartIndex, request.Count);
-        return new ItemsProviderResult<MissionDto>(result?.Items ?? [], result?.TotalCount ?? 0);
+        var total = result?.TotalCount ?? 0;
+        if (OnTotalCountChanged.HasDelegate)
+            await OnTotalCountChanged.InvokeAsync(total);
+        return new ItemsProviderResult<MissionDto>(result?.Items ?? [], total);
     }
 
     public async Task RefreshMissionsAsync()

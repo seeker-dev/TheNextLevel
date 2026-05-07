@@ -1,0 +1,223 @@
+@page "/projects"
+@using TheNextLevel.Presentation.Components.Cards
+@using TheNextLevel.Presentation.Dialogs
+@inject IProjectService ProjectService
+@inject IMissionService MissionService
+
+<main class="main-content">
+    <div class="page-header">
+        <div class="page-title-group">
+            <h1 class="page-title">Projects</h1>
+            <span class="page-subtitle">@(_allProjects.Count == 1 ? "1 project" : $"{_allProjects.Count} projects")</span>
+        </div>
+        <button class="new-project-btn" @onclick="OpenCreateModal">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
+            </svg>
+            New Project
+        </button>
+    </div>
+
+    <div class="controls-bar">
+        <div class="search-wrap">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input class="search-input"
+                   type="text"
+                   placeholder="Search projects…"
+                   value="@_searchQuery"
+                   @oninput="OnSearchInput" />
+        </div>
+
+        <div class="controls-sep"></div>
+
+        <span class="controls-label">Mission</span>
+        <div class="mission-dropdown">
+            <button class="mission-dropdown-trigger @(_selectedMissionIds.Count > 0 ? "has-selection" : "") @(_missionDropdownOpen ? "open" : "")"
+                    @onclick="ToggleMissionDropdown"
+                    @onclick:stopPropagation="true">
+                <span class="trigger-label">@GetDropdownTriggerLabel()</span>
+                @if (_selectedMissionIds.Count > 1)
+                {
+                    <span class="trigger-badge">@_selectedMissionIds.Count</span>
+                }
+                <svg class="trigger-chevron" width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            @if (_missionDropdownOpen)
+            {
+                <div class="mission-dropdown-panel" @onclick:stopPropagation="true">
+                    @foreach (var mission in _allMissions)
+                    {
+                        var isSelected = _selectedMissionIds.Contains(mission.Id);
+                        <div class="dropdown-option @(isSelected ? "selected" : "")" @onclick="() => ToggleMissionFilter(mission.Id)">
+                            <div class="dropdown-checkbox">
+                                @if (isSelected)
+                                {
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                }
+                            </div>
+                            <span class="dropdown-option-label">@mission.Name</span>
+                        </div>
+                    }
+                    <button class="dropdown-clear" @onclick="ClearMissionFilter">Clear selection</button>
+                </div>
+            }
+        </div>
+
+        <div class="controls-sep"></div>
+
+        <span class="controls-label">Sort</span>
+        <select class="sort-select" value="@_sortBy" @onchange="OnSortChange">
+            <option value="name">Name</option>
+            <option value="active">Active tasks</option>
+            <option value="total">Total tasks</option>
+            <option value="mission">Mission</option>
+        </select>
+
+        @if (FilteredProjects.Count < _allProjects.Count)
+        {
+            <span class="results-count">@FilteredProjects.Count shown</span>
+        }
+    </div>
+
+    <div class="project-list">
+        @if (_isLoading)
+        {
+            <div class="empty-state">Loading…</div>
+        }
+        else if (FilteredProjects.Count == 0)
+        {
+            <div class="empty-state">
+                @(_allProjects.Count == 0 ? "No projects yet. Create your first project!" : "No projects match your filters.")
+            </div>
+        }
+        else
+        {
+            @foreach (var project in FilteredProjects)
+            {
+                <ProjectCard Project="project" MissionName="@GetMissionName(project.MissionId)" />
+            }
+        }
+    </div>
+</main>
+
+<CreateModal
+    IsVisible="@_showCreateModal"
+    ItemType="ModalType.Project"
+    OnResult="HandleProjectCreated"
+    OnCancel="CloseCreateModal" />
+
+@code {
+    private List<ProjectDto> _allProjects = new();
+    private List<MissionDto> _allMissions = new();
+    private bool _isLoading = true;
+
+    private string _searchQuery = "";
+    private HashSet<int> _selectedMissionIds = new();
+    private string _sortBy = "name";
+    private bool _missionDropdownOpen = false;
+
+    private bool _showCreateModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projectsTask = ProjectService.ListAsync(0, 1000);
+        var missionsTask = MissionService.ListAsync(0, 100);
+        await Task.WhenAll(projectsTask, missionsTask);
+
+        var projectsResult = await projectsTask;
+        var missionsResult = await missionsTask;
+
+        _allProjects = projectsResult?.Items.ToList() ?? new();
+        _allMissions = missionsResult?.Items.ToList() ?? new();
+        _isLoading = false;
+    }
+
+    private List<ProjectDto> FilteredProjects
+    {
+        get
+        {
+            var result = _allProjects.AsEnumerable();
+
+            if (_selectedMissionIds.Count > 0)
+                result = result.Where(p => _selectedMissionIds.Contains(p.MissionId));
+
+            if (!string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                var q = _searchQuery.Trim().ToLowerInvariant();
+                result = result.Where(p =>
+                    p.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    p.Description.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    GetMissionName(p.MissionId).Contains(q, StringComparison.OrdinalIgnoreCase));
+            }
+
+            result = _sortBy switch
+            {
+                "mission" => result.OrderBy(p => p.MissionId),
+                _ => result.OrderBy(p => p.Name)
+            };
+
+            return result.ToList();
+        }
+    }
+
+    private string GetMissionName(int missionId)
+    {
+        return _allMissions.FirstOrDefault(m => m.Id == missionId)?.Name ?? "";
+    }
+
+    private string GetDropdownTriggerLabel()
+    {
+        return _selectedMissionIds.Count switch
+        {
+            0 => "All missions",
+            1 => GetMissionName(_selectedMissionIds.First()),
+            _ => "Missions"
+        };
+    }
+
+    private void OnSearchInput(ChangeEventArgs e)
+    {
+        _searchQuery = e.Value?.ToString() ?? "";
+    }
+
+    private void OnSortChange(ChangeEventArgs e)
+    {
+        _sortBy = e.Value?.ToString() ?? "name";
+    }
+
+    private void ToggleMissionDropdown()
+    {
+        _missionDropdownOpen = !_missionDropdownOpen;
+    }
+
+    private void ToggleMissionFilter(int missionId)
+    {
+        if (!_selectedMissionIds.Remove(missionId))
+            _selectedMissionIds.Add(missionId);
+    }
+
+    private void ClearMissionFilter()
+    {
+        _selectedMissionIds.Clear();
+        _missionDropdownOpen = false;
+    }
+
+    private void OpenCreateModal() => _showCreateModal = true;
+    private void CloseCreateModal() => _showCreateModal = false;
+
+    private async Task HandleProjectCreated(IItemDto? newProject)
+    {
+        _showCreateModal = false;
+        if (newProject is ProjectDto)
+        {
+            var result = await ProjectService.ListAsync(0, 1000);
+            _allProjects = result?.Items.ToList() ?? new();
+        }
+    }
+}

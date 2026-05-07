@@ -2,10 +2,14 @@
 @inject NavigationManager Navigation
 
 <div class="project-row" @onclick="@(() => Navigation.NavigateTo($"/project/{Project?.Id}"))">
-    <div class="project-accent"></div>
+    <div class="project-accent" style="@(AccentColor != null ? $"background:{AccentColor}" : "")"></div>
     <div class="project-body">
         <div class="project-text">
             <div class="project-name">@Project?.Name</div>
+            @if (MissionName != null)
+            {
+                <div class="project-mission">@MissionName</div>
+            }
             <div class="description-scroll">
                 <div class="description-content">
                     <span class="description-text">@Project?.Description</span>
@@ -40,4 +44,10 @@
 @code {
     [Parameter]
     public ProjectDto? Project { get; set; }
+
+    [Parameter]
+    public string? MissionName { get; set; }
+
+    [Parameter]
+    public string? AccentColor { get; set; }
 }

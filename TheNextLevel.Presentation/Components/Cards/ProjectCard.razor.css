@@ -52,6 +52,14 @@
     flex-shrink: 0;
 }
 
+.project-mission {
+    font-size: 0.75rem;
+    font-weight: 300;
+    color: rgba(205, 133, 63, 0.45);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
 .project-row:hover .project-name {
     color: rgba(205, 133, 63, 0.95);
 }

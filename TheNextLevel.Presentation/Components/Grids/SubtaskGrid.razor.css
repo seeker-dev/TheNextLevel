@@ -1,11 +1,53 @@
-::deep .task-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-    gap: 32px;
+::deep .subtask-list {
+    display: flex;
+    flex-direction: column;
 }
 
-@media (max-width: 768px) {
-    ::deep .task-grid {
-        grid-template-columns: 1fr;
-    }
+/* Card-style overrides for SubtaskRow when rendered inside the TaskDetail subtask list */
+::deep .subtask-list .subtask-row {
+    border: 1px solid rgba(139,69,19,0.14);
+    border-radius: 4px;
+    margin-bottom: 10px;
+    margin-left: 0;
+    background: rgba(18,18,18,1);
+}
+
+::deep .subtask-list .subtask-row.last {
+    border-radius: 4px;
+}
+
+::deep .subtask-list .subtask-row:hover {
+    border-color: rgba(139,69,19,0.32);
+    background: rgba(22,16,10,1);
+}
+
+::deep .subtask-list .subtask-stripe {
+    width: 4px;
+}
+
+::deep .subtask-list .subtask-row:hover .subtask-stripe {
+    width: 6px;
+    transition: width 0.2s;
+}
+
+::deep .subtask-list .subtask-body {
+    padding: 16px 24px;
+}
+
+::deep .subtask-list .subtask-name {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: rgba(255,255,255,0.85);
+}
+
+::deep .subtask-list .subtask-row:hover .subtask-name {
+    color: rgba(205,133,63,0.85);
+}
+
+::deep .subtask-list .subtask-row.completed .subtask-name {
+    color: rgba(255,255,255,0.3);
+}
+
+::deep .subtask-list .subtask-row.completed:hover .subtask-name {
+    color: rgba(255,255,255,0.4);
 }

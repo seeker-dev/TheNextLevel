@@ -1,3 +1,4 @@
+/* ── Base style (compact, used inside TaskCard on Project/Tasks pages) ── */
 .subtask-row {
     display: flex;
     align-items: stretch;
@@ -19,6 +20,15 @@
     background: rgba(20,14,8,1);
 }
 
+/* Completed state — safe in both compact and card contexts */
+.subtask-row.completed {
+    opacity: 0.5;
+}
+
+.subtask-row.completed:hover {
+    opacity: 0.7;
+}
+
 .subtask-stripe {
     width: 3px;
     flex-shrink: 0;
@@ -33,6 +43,34 @@
     min-width: 0;
 }
 
+/* Checkbox — only rendered when ShowCheckbox=true, so safe to style here */
+.subtask-check {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.subtask-check.done {
+    border-color: rgba(100,180,100,0.6);
+    background: rgba(100,180,100,0.12);
+}
+
+.subtask-check.done svg {
+    display: block;
+}
+
+.subtask-check svg {
+    display: none;
+}
+
+/* Name — flex:1 for compact (no description wrapper) */
 .subtask-name {
     font-size: 0.875rem;
     font-weight: 300;
@@ -48,6 +86,39 @@
 
 .subtask-row:hover .subtask-name {
     color: rgba(205,133,63,0.75);
+}
+
+.subtask-row.completed .subtask-name {
+    text-decoration: line-through;
+    color: rgba(255,255,255,0.3);
+}
+
+.subtask-row.completed:hover .subtask-name {
+    color: rgba(255,255,255,0.4);
+}
+
+/* Description wrapper — only rendered when ShowDescription=true */
+.subtask-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* When .subtask-text wraps the name, remove the flex:1 behaviour from .subtask-name */
+.subtask-text .subtask-name {
+    flex: unset;
+}
+
+.subtask-desc {
+    font-size: 0.75rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.22);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .subtask-controls {
@@ -81,6 +152,11 @@
     background: rgba(139,69,19,0.12);
 }
 
+.task-menu-btn.del:hover {
+    color: rgba(192,57,43,0.9) !important;
+    background: rgba(192,57,43,0.1);
+}
+
 .status-pill {
     flex-shrink: 0;
     padding: 4px 12px;
@@ -89,7 +165,13 @@
     font-weight: 400;
     letter-spacing: 0.06em;
     border: 1px solid;
+    cursor: pointer;
+    transition: all 0.2s;
     white-space: nowrap;
+}
+
+.status-pill:hover {
+    filter: brightness(1.2);
 }
 
 .status-pill.inactive  { border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.3);  background: transparent; }

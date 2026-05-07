@@ -1,0 +1,64 @@
+.main-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 40px;
+}
+
+/* ─── Page Header ──────────────────────────────────────────── */
+.page-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 56px;
+}
+
+.page-title-group {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.95);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.page-subtitle {
+    font-size: 0.875rem;
+    font-weight: 300;
+    color: rgba(205, 133, 63, 0.6);
+    letter-spacing: 0.05em;
+}
+
+.new-mission-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: transparent;
+    border: 1px solid rgba(139, 69, 19, 0.3);
+    border-radius: 4px;
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.new-mission-btn:hover {
+    border-color: rgba(205, 133, 63, 0.5);
+    color: rgba(205, 133, 63, 0.9);
+    background: rgba(205, 133, 63, 0.05);
+}
+
+/* ─── Responsive ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 32px 20px;
+    }
+}

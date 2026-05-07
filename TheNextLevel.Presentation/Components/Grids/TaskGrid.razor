@@ -1,13 +1,6 @@
 @using TheNextLevel.Presentation.Components.Cards
 @inject ITaskService TaskService
 
-<div class="filter-controls controls-container">
-    <div class="buttons-group">
-        <button class="filter-btn @(_showCompleted ? "" : "active")" @onclick="ShowPending">Active</button>
-        <button class="filter-btn @(_showCompleted ? "active" : "")" @onclick="ShowCompleted">Completed</button>
-    </div>
-</div>
-
 <VirtualizedList TItem="TaskDto"
                  ItemsProvider="LoadTasksProvider"
                  WrapperClass="task-list"
@@ -24,23 +17,43 @@
 
 @code {
     [Parameter] public ProjectDto? Project { get; set; }
+    [Parameter] public string FilterStatus { get; set; } = "all";
     [Parameter] public EventCallback<TaskDto> OnEditRequested { get; set; }
     [Parameter] public EventCallback<TaskDto> OnDeleteRequested { get; set; }
 
     private VirtualizedList<TaskDto>? _list;
-    private bool _showCompleted;
+    private string _prevFilter = "all";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_prevFilter != FilterStatus)
+        {
+            _prevFilter = FilterStatus;
+            await RefreshList();
+        }
+    }
 
     private async ValueTask<ItemsProviderResult<TaskDto>> LoadTasksProvider(ItemsProviderRequest request)
     {
         if (Project == null)
             return new ItemsProviderResult<TaskDto>([], 0);
 
-        var result = await TaskService.ListByProjectAsync(Project.Id, request.StartIndex, request.Count);
-        return new ItemsProviderResult<TaskDto>(result.Items, result.TotalCount);
+        var result = await TaskService.ListByProjectAsync(Project.Id, 0, 1000);
+        var filtered = FilterStatus == "all"
+            ? result.Items.ToList()
+            : result.Items.Where(MatchesFilter).ToList();
+        var page = filtered.Skip(request.StartIndex).Take(request.Count);
+        return new ItemsProviderResult<TaskDto>(page, filtered.Count);
     }
 
-    private async Task ShowPending() { _showCompleted = false; await RefreshList(); }
-    private async Task ShowCompleted() { _showCompleted = true; await RefreshList(); }
+    private bool MatchesFilter(TaskDto t) => FilterStatus switch
+    {
+        "active"    => t.Status == TaskState.Active,
+        "inactive"  => t.Status == TaskState.Inactive,
+        "onhold"    => t.Status == TaskState.OnHold,
+        "completed" => t.Status == TaskState.Completed,
+        _           => true
+    };
 
     public async Task RefreshList()
     {

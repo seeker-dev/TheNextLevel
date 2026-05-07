@@ -1,0 +1,399 @@
+@page "/tasks"
+@using TheNextLevel.Application.DTOs
+@using TheNextLevel.Application.Interfaces
+@using TheNextLevel.Presentation.Components.Cards
+@using TheNextLevel.Presentation.Dialogs
+@inject ITaskService TaskService
+@inject IProjectService ProjectService
+@inject IMissionService MissionService
+
+<main class="main-content">
+    <div class="page-header">
+        <div class="page-title-group">
+            <h1 class="page-title">Tasks</h1>
+            <span class="page-subtitle">@(_allTasks.Count == 1 ? "1 task" : $"{_allTasks.Count} tasks")</span>
+        </div>
+        <button class="new-task-btn" @onclick="OpenNewTaskDialog">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
+            </svg>
+            New Task
+        </button>
+    </div>
+
+    <div class="controls-bar">
+        <div class="search-wrap">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input class="search-input"
+                   type="text"
+                   placeholder="Search tasks…"
+                   value="@_searchQuery"
+                   @oninput="OnSearchInput" />
+        </div>
+
+        <div class="controls-sep"></div>
+
+        <span class="controls-label">Status</span>
+        <div class="multi-dropdown">
+            <button class="multi-dropdown-trigger @(_selectedStatuses.Count > 0 ? "has-selection" : "") @(_statusDropdownOpen ? "open" : "")"
+                    @onclick="ToggleStatusDropdown"
+                    @onclick:stopPropagation="true">
+                <span class="trigger-label">@GetStatusTriggerLabel()</span>
+                @if (_selectedStatuses.Count > 1)
+                {
+                    <span class="trigger-badge">@_selectedStatuses.Count</span>
+                }
+                <svg class="trigger-chevron" width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            @if (_statusDropdownOpen)
+            {
+                <div class="multi-dropdown-panel" @onclick:stopPropagation="true">
+                    @foreach (var state in _statusItems)
+                    {
+                        var isSelected = _selectedStatuses.Contains(state.Value);
+                        <div class="dropdown-option @(isSelected ? "selected" : "")" @onclick="() => ToggleStatusFilter(state.Value)">
+                            <div class="dropdown-checkbox">
+                                @if (isSelected)
+                                {
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                }
+                            </div>
+                            <span class="dropdown-option-label">@state.Label</span>
+                        </div>
+                    }
+                    <button class="dropdown-clear" @onclick="ClearStatusFilter">Clear selection</button>
+                </div>
+            }
+        </div>
+
+        <div class="controls-sep"></div>
+
+        <span class="controls-label">Mission</span>
+        <div class="multi-dropdown">
+            <button class="multi-dropdown-trigger @(_selectedMissionIds.Count > 0 ? "has-selection" : "") @(_missionDropdownOpen ? "open" : "")"
+                    @onclick="ToggleMissionDropdown"
+                    @onclick:stopPropagation="true">
+                <span class="trigger-label">@GetMissionTriggerLabel()</span>
+                @if (_selectedMissionIds.Count > 1)
+                {
+                    <span class="trigger-badge">@_selectedMissionIds.Count</span>
+                }
+                <svg class="trigger-chevron" width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            @if (_missionDropdownOpen)
+            {
+                <div class="multi-dropdown-panel" @onclick:stopPropagation="true">
+                    @foreach (var mission in _allMissions)
+                    {
+                        var isSelected = _selectedMissionIds.Contains(mission.Id);
+                        <div class="dropdown-option @(isSelected ? "selected" : "")" @onclick="() => ToggleMissionFilter(mission.Id)">
+                            <div class="dropdown-checkbox">
+                                @if (isSelected)
+                                {
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                }
+                            </div>
+                            <span class="dropdown-option-label">@mission.Name</span>
+                        </div>
+                    }
+                    <button class="dropdown-clear" @onclick="ClearMissionFilter">Clear selection</button>
+                </div>
+            }
+        </div>
+
+        <span class="controls-label">Project</span>
+        <div class="multi-dropdown">
+            <button class="multi-dropdown-trigger @(_selectedProjectIds.Count > 0 ? "has-selection" : "") @(_projectDropdownOpen ? "open" : "")"
+                    @onclick="ToggleProjectDropdown"
+                    @onclick:stopPropagation="true">
+                <span class="trigger-label">@GetProjectTriggerLabel()</span>
+                @if (_selectedProjectIds.Count > 1)
+                {
+                    <span class="trigger-badge">@_selectedProjectIds.Count</span>
+                }
+                <svg class="trigger-chevron" width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            @if (_projectDropdownOpen)
+            {
+                <div class="multi-dropdown-panel" @onclick:stopPropagation="true">
+                    @foreach (var project in _allProjects)
+                    {
+                        var isSelected = _selectedProjectIds.Contains(project.Id);
+                        <div class="dropdown-option @(isSelected ? "selected" : "")" @onclick="() => ToggleProjectFilter(project.Id)">
+                            <div class="dropdown-checkbox">
+                                @if (isSelected)
+                                {
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                }
+                            </div>
+                            <div class="dropdown-swatch" style="background: @GetProjectColor(project.Id)"></div>
+                            <span class="dropdown-option-label">@project.Name</span>
+                        </div>
+                    }
+                    <button class="dropdown-clear" @onclick="ClearProjectFilter">Clear selection</button>
+                </div>
+            }
+        </div>
+
+        <div class="controls-sep"></div>
+
+        <span class="controls-label">Sort</span>
+        <select class="sort-select" value="@_sortBy" @onchange="OnSortChange">
+            <option value="name">Name</option>
+            <option value="status">Status</option>
+            <option value="project">Project</option>
+            <option value="mission">Mission</option>
+        </select>
+
+        @if (FilteredTasks.Count < _allTasks.Count)
+        {
+            <span class="results-count">@FilteredTasks.Count shown</span>
+        }
+    </div>
+
+    <div class="task-list">
+        @if (_isLoading)
+        {
+            <div class="empty-state">Loading…</div>
+        }
+        else if (FilteredTasks.Count == 0)
+        {
+            <div class="empty-state">
+                @(_allTasks.Count == 0 ? "No tasks yet." : "No tasks match your filters.")
+            </div>
+        }
+        else
+        {
+            @foreach (var task in FilteredTasks)
+            {
+                var project = GetProject(task.ProjectId);
+                var mission = GetMission(task.ProjectId);
+                <TaskListRow Task="task"
+                             Project="project"
+                             Mission="mission"
+                             AccentColor="@GetProjectColor(task.ProjectId)" />
+            }
+        }
+    </div>
+</main>
+
+<NewTaskDialog IsVisible="@_showNewTaskDialog"
+               OnResult="HandleTaskCreated"
+               OnCancel="CloseNewTaskDialog" />
+
+@code {
+    private static readonly string[] Palette =
+    [
+        "#5C8A6E", "#5A7A9E", "#8E5C7A", "#7A6E3E",
+        "#5C6E8A", "#7A4E5C", "#4E7A6E", "#8A6E4E",
+        "#6E5C8A", "#6E8A5C"
+    ];
+
+    private static readonly (TaskState Value, string Label)[] _statusItems =
+    [
+        (TaskState.Inactive,  "Inactive"),
+        (TaskState.Active,    "Active"),
+        (TaskState.OnHold,    "On Hold"),
+        (TaskState.Completed, "Completed"),
+    ];
+
+    private List<TaskDto> _allTasks = new();
+    private List<ProjectDto> _allProjects = new();
+    private List<MissionDto> _allMissions = new();
+    private bool _isLoading = true;
+
+    private string _searchQuery = "";
+    private HashSet<TaskState> _selectedStatuses = new();
+    private HashSet<int> _selectedMissionIds = new();
+    private HashSet<int> _selectedProjectIds = new();
+    private string _sortBy = "name";
+
+    private bool _statusDropdownOpen = false;
+    private bool _missionDropdownOpen = false;
+    private bool _projectDropdownOpen = false;
+
+    private bool _showNewTaskDialog = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tasksTask   = TaskService.ListAsync(0, 1000);
+        var projectsTask = ProjectService.ListAsync(0, 1000);
+        var missionsTask = MissionService.ListAsync(0, 100);
+        await Task.WhenAll(tasksTask, projectsTask, missionsTask);
+
+        _allTasks    = (await tasksTask)?.Items.ToList()    ?? new();
+        _allProjects = (await projectsTask)?.Items.ToList() ?? new();
+        _allMissions = (await missionsTask)?.Items.ToList() ?? new();
+        _isLoading = false;
+    }
+
+    private List<TaskDto> FilteredTasks
+    {
+        get
+        {
+            var result = _allTasks.AsEnumerable();
+
+            if (_selectedStatuses.Count > 0)
+                result = result.Where(t => _selectedStatuses.Contains(t.Status));
+
+            if (_selectedMissionIds.Count > 0)
+            {
+                var allowedProjectIds = _allProjects
+                    .Where(p => _selectedMissionIds.Contains(p.MissionId))
+                    .Select(p => p.Id)
+                    .ToHashSet();
+                result = result.Where(t => t.ProjectId.HasValue && allowedProjectIds.Contains(t.ProjectId.Value));
+            }
+
+            if (_selectedProjectIds.Count > 0)
+                result = result.Where(t => t.ProjectId.HasValue && _selectedProjectIds.Contains(t.ProjectId.Value));
+
+            if (!string.IsNullOrWhiteSpace(_searchQuery))
+            {
+                var q = _searchQuery.Trim();
+                result = result.Where(t =>
+                    t.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    t.Description.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    (GetProject(t.ProjectId)?.Name ?? "").Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                    (GetMission(t.ProjectId)?.Name ?? "").Contains(q, StringComparison.OrdinalIgnoreCase));
+            }
+
+            result = _sortBy switch
+            {
+                "status"  => result.OrderBy(t => (int)t.Status),
+                "project" => result.OrderBy(t => GetProject(t.ProjectId)?.Name ?? ""),
+                "mission" => result.OrderBy(t => GetMission(t.ProjectId)?.Name ?? ""),
+                _         => result.OrderBy(t => t.Name)
+            };
+
+            return result.ToList();
+        }
+    }
+
+    private ProjectDto? GetProject(int? projectId) =>
+        projectId.HasValue ? _allProjects.FirstOrDefault(p => p.Id == projectId.Value) : null;
+
+    private MissionDto? GetMission(int? projectId)
+    {
+        var project = GetProject(projectId);
+        return project != null ? _allMissions.FirstOrDefault(m => m.Id == project.MissionId) : null;
+    }
+
+    private string GetProjectColor(int? projectId)
+    {
+        if (!projectId.HasValue) return "rgba(139,69,19,0.4)";
+        return Palette[projectId.Value % Palette.Length];
+    }
+
+    // ── Label helpers ────────────────────────────────────────────
+
+    private string GetStatusTriggerLabel() => _selectedStatuses.Count switch
+    {
+        0 => "All statuses",
+        1 => _statusItems.FirstOrDefault(s => s.Value == _selectedStatuses.First()).Label ?? "Status",
+        _ => "Statuses"
+    };
+
+    private string GetMissionTriggerLabel() => _selectedMissionIds.Count switch
+    {
+        0 => "All missions",
+        1 => _allMissions.FirstOrDefault(m => m.Id == _selectedMissionIds.First())?.Name ?? "Mission",
+        _ => "Missions"
+    };
+
+    private string GetProjectTriggerLabel() => _selectedProjectIds.Count switch
+    {
+        0 => "All projects",
+        1 => _allProjects.FirstOrDefault(p => p.Id == _selectedProjectIds.First())?.Name ?? "Project",
+        _ => "Projects"
+    };
+
+    // ── Filter toggles ───────────────────────────────────────────
+
+    private void ToggleStatusDropdown()
+    {
+        _statusDropdownOpen  = !_statusDropdownOpen;
+        _missionDropdownOpen = false;
+        _projectDropdownOpen = false;
+    }
+
+    private void ToggleMissionDropdown()
+    {
+        _missionDropdownOpen = !_missionDropdownOpen;
+        _statusDropdownOpen  = false;
+        _projectDropdownOpen = false;
+    }
+
+    private void ToggleProjectDropdown()
+    {
+        _projectDropdownOpen = !_projectDropdownOpen;
+        _statusDropdownOpen  = false;
+        _missionDropdownOpen = false;
+    }
+
+    private void ToggleStatusFilter(TaskState state)
+    {
+        if (!_selectedStatuses.Remove(state))
+            _selectedStatuses.Add(state);
+    }
+
+    private void ToggleMissionFilter(int missionId)
+    {
+        if (!_selectedMissionIds.Remove(missionId))
+            _selectedMissionIds.Add(missionId);
+    }
+
+    private void ToggleProjectFilter(int projectId)
+    {
+        if (!_selectedProjectIds.Remove(projectId))
+            _selectedProjectIds.Add(projectId);
+    }
+
+    private void ClearStatusFilter()
+    {
+        _selectedStatuses.Clear();
+        _statusDropdownOpen = false;
+    }
+
+    private void ClearMissionFilter()
+    {
+        _selectedMissionIds.Clear();
+        _missionDropdownOpen = false;
+    }
+
+    private void ClearProjectFilter()
+    {
+        _selectedProjectIds.Clear();
+        _projectDropdownOpen = false;
+    }
+
+    private void OnSearchInput(ChangeEventArgs e) =>
+        _searchQuery = e.Value?.ToString() ?? "";
+
+    private void OnSortChange(ChangeEventArgs e) =>
+        _sortBy = e.Value?.ToString() ?? "name";
+
+    private void OpenNewTaskDialog() => _showNewTaskDialog = true;
+    private void CloseNewTaskDialog() => _showNewTaskDialog = false;
+
+    private async Task HandleTaskCreated(TaskDto newTask)
+    {
+        _showNewTaskDialog = false;
+        var result = await TaskService.ListAsync(0, 1000);
+        _allTasks = result?.Items.ToList() ?? new();
+    }
+}

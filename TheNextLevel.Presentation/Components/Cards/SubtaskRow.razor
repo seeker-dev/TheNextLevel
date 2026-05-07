@@ -1,10 +1,37 @@
 @using TheNextLevel.Application.DTOs
 
-<div class="subtask-row @(IsLast ? "last" : "")">
+<div class="subtask-row @(IsCompleted ? "completed" : "") @(IsLast ? "last" : "")">
     <div class="subtask-stripe" style="background: @GetStripeColor(Task?.Status ?? TaskState.Inactive)"></div>
     <div class="subtask-body">
-        <div class="subtask-name">@(Task?.Name ?? "Untitled")</div>
-        <span class="status-pill @GetPillClass(Task?.Status ?? TaskState.Inactive)" style="font-size:0.65rem;padding:3px 10px">
+        @if (ShowCheckbox)
+        {
+            <div class="subtask-check @(IsCompleted ? "done" : "")">
+                @if (IsCompleted)
+                {
+                    <svg width="10" height="10" fill="none" stroke="rgba(100,180,100,0.9)" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                    </svg>
+                }
+            </div>
+        }
+        @if (ShowDescription)
+        {
+            <div class="subtask-text">
+                <div class="subtask-name">@(Task?.Name ?? "Untitled")</div>
+                @if (!string.IsNullOrEmpty(Task?.Description))
+                {
+                    <div class="subtask-desc">@Task.Description</div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="subtask-name">@(Task?.Name ?? "Untitled")</div>
+        }
+        <span class="status-pill @GetPillClass(Task?.Status ?? TaskState.Inactive)"
+              style="font-size:0.65rem;padding:3px 10px"
+              @onclick="CycleStatus"
+              @onclick:stopPropagation="true">
             @GetStatusLabel(Task?.Status ?? TaskState.Inactive)
         </span>
     </div>
@@ -21,7 +48,7 @@
             }
             @if (_deleteEnabled)
             {
-                <button class="task-menu-btn" title="Delete" @onclick="RequestDelete" @onclick:stopPropagation="true">
+                <button class="task-menu-btn del" title="Delete" @onclick="RequestDelete" @onclick:stopPropagation="true">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                     </svg>
@@ -34,11 +61,17 @@
 @code {
     [Parameter] public TaskDto? Task { get; set; }
     [Parameter] public bool IsLast { get; set; }
+    [Parameter] public bool ShowDescription { get; set; }
+    [Parameter] public bool ShowCheckbox { get; set; }
     [Parameter] public EventCallback<TaskDto> OnEditRequested { get; set; }
     [Parameter] public EventCallback<TaskDto> OnDeleteRequested { get; set; }
+    [Parameter] public EventCallback<(TaskDto, TaskState)> OnStatusChangeRequested { get; set; }
 
     private bool _editEnabled => OnEditRequested.HasDelegate;
     private bool _deleteEnabled => OnDeleteRequested.HasDelegate;
+    private bool IsCompleted => Task?.Status == TaskState.Completed;
+
+    private static readonly TaskState[] _statusCycle = [TaskState.Inactive, TaskState.Active, TaskState.OnHold, TaskState.Completed];
 
     private static string GetStripeColor(TaskState status) => status switch
     {
@@ -63,6 +96,15 @@
         TaskState.OnHold    => "On Hold",
         _                   => "Inactive"
     };
+
+    private async Task CycleStatus()
+    {
+        if (!OnStatusChangeRequested.HasDelegate || Task == null) return;
+        var current = Task.Status;
+        var idx = Array.IndexOf(_statusCycle, current);
+        var next = _statusCycle[(idx + 1) % _statusCycle.Length];
+        await OnStatusChangeRequested.InvokeAsync((Task, next));
+    }
 
     private async Task RequestEdit()
     {

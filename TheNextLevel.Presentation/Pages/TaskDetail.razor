@@ -8,59 +8,108 @@
 @inject IJSRuntime JSRuntime
 @inject NavigationManager Navigation
 
-<main class="main-content">
-    <div class="task-detail-page-header sunrise-bg">
-        <button class="back-button" @onclick="NavigateBack">←</button>
-        @if (_isLoading)
-        {
-            <p class="loading-text">Loading...</p>
-        }
-        else if (_errorMessage != null)
-        {
-            <p class="error-message">@_errorMessage</p>
-        }
-        else if (_task != null)
-        {
-            <h1 class="task-detail-page-title">@_task.Name</h1>
-            <h2 class="task-detail-page-subtitle">Project: @(_project?.Name ?? "Unknown")</h2>
-        }
+@if (_isLoading)
+{
+    <div class="content-body">
+        <p class="loading-text">Loading…</p>
     </div>
-    <div class="task-detail-section">
-        @if (_isLoading)
-        {
-            <p class="loading-text">Loading task details...</p>
-        }
-        else if (_errorMessage != null)
-        {
-            <p class="error-message">@_errorMessage</p>
-        }
-        else if (_task != null)
-        {
-            <div class="task-detail-card">
-                <div class="description-section">
-                    <h3>Description</h3>
-                    <p>@_task.Description</p>
-                </div>
-
-                <div class="subtasks-section-header">
-                    <button class="filter-btn" @onclick="OpenCreateSubtask">Add New Subtask ➕</button>
-                </div>
-                <SubtaskGrid
-                    @ref="_subtaskGrid"
-                    ParentTask="_task"
-                    OnEditRequested="HandleEditSubtask"
-                    OnDeleteRequested="HandleDeleteSubtask" />
+}
+else if (_errorMessage != null)
+{
+    <div class="content-body">
+        <p class="error-message">@_errorMessage</p>
+    </div>
+}
+else if (_task != null)
+{
+    <div class="task-header">
+        <div class="header-top-bar">
+            <button class="back-btn" @onclick="NavigateBack">
+                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                @(_project?.Name ?? "Back")
+            </button>
+            <div class="header-actions">
+                <button class="header-action-btn" @onclick="OpenEditTask">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                    Edit
+                </button>
+                <button class="header-action-btn danger" @onclick="OpenDeleteTask">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Delete
+                </button>
             </div>
-        }
+        </div>
+        <div class="task-title-block">
+            <div class="task-name">@_task.Name</div>
+            <div class="task-desc" @onclick="OpenDescriptionModal">@_task.Description</div>
+            <div class="task-status-wrap">
+                <span class="header-status-pill @GetPillClass(_task.Status)" @onclick="CycleTaskStatus">
+                    <span class="status-dot"></span>
+                    @GetStatusLabel(_task.Status)
+                </span>
+            </div>
+        </div>
     </div>
-</main>
+
+    <div class="content-body">
+        <div class="section-header">
+            <div class="section-left">
+                <span class="section-title">Subtasks</span>
+                <span class="section-count">@_subtaskCount subtask@(_subtaskCount != 1 ? "s" : "")</span>
+            </div>
+            <button class="new-subtask-btn" @onclick="OpenCreateSubtask">
+                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14M5 12h14"/>
+                </svg>
+                New Subtask
+            </button>
+        </div>
+
+        <SubtaskGrid
+            @ref="_subtaskGrid"
+            ParentTask="_task"
+            OnEditRequested="HandleEditSubtask"
+            OnDeleteRequested="HandleDeleteSubtask"
+            OnStatusChangeRequested="HandleSubtaskStatusChange"
+            OnCountChanged="count => { _subtaskCount = count; StateHasChanged(); }" />
+    </div>
+}
+
+@if (_showDescriptionModal)
+{
+    <div class="modal-backdrop" @onclick="CloseDescriptionModal">
+        <div class="modal" @onclick:stopPropagation="true">
+            <div class="modal-header">
+                <h2 class="modal-title">Description</h2>
+                <button class="modal-close" @onclick="CloseDescriptionModal">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <textarea class="modal-textarea" @bind="_editedDescription"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-ghost" @onclick="CloseDescriptionModal">Cancel</button>
+                <button class="btn-primary" @onclick="SaveDescription">Save</button>
+            </div>
+        </div>
+    </div>
+}
 
 <NewTaskDialog
     IsVisible="@_showNewSubtaskDialog"
     OnCancel="CloseNewSubtask"
     OnResult="HandleSubtaskCreated"
     ParentTaskId="@_task?.Id" />
-    
+
 <EditTaskDialog
     Task="@_selectedSubtask"
     IsVisible="@_showEditSubtaskDialog"
@@ -71,8 +120,8 @@
     IsVisible="@_showDeleteSubtaskDialog"
     OnCancel="CloseDeleteSubtask"
     OnConfirm="HandleDeleteSubtaskConfirmed"
-    ItemName="@(_selectedSubtask?.Name ?? "this subtask")"
-    ItemType="subtask" />
+    ItemName="@(_selectedSubtask?.Name ?? "this task")"
+    ItemType="@(_isDeletingMainTask ? "task" : "subtask")" />
 
 @code {
     [Parameter]
@@ -81,13 +130,20 @@
     private TaskDto? _task;
     private ProjectDto? _project;
     private bool _isLoading = true;
-    private string? _errorMessage = null;
+    private string? _errorMessage;
 
     private SubtaskGrid? _subtaskGrid;
     private TaskDto? _selectedSubtask;
     private bool _showNewSubtaskDialog;
     private bool _showEditSubtaskDialog;
     private bool _showDeleteSubtaskDialog;
+    private bool _isDeletingMainTask;
+
+    private bool _showDescriptionModal;
+    private string _editedDescription = string.Empty;
+    private int _subtaskCount;
+
+    private static readonly TaskState[] _statusCycle = [TaskState.Inactive, TaskState.Active, TaskState.OnHold, TaskState.Completed];
 
     protected override async Task OnInitializedAsync()
     {
@@ -113,9 +169,7 @@
             _task = await TaskService.GetByIdAsync(Id);
 
             if (_task == null)
-            {
                 _errorMessage = "Task could not be found.";
-            }
 
             _isLoading = false;
             StateHasChanged();
@@ -127,6 +181,48 @@
             _isLoading = false;
             StateHasChanged();
         }
+    }
+
+    // === DESCRIPTION MODAL ===
+    private void OpenDescriptionModal()
+    {
+        _editedDescription = _task?.Description ?? string.Empty;
+        _showDescriptionModal = true;
+    }
+
+    private void CloseDescriptionModal() => _showDescriptionModal = false;
+
+    private async Task SaveDescription()
+    {
+        if (_task == null) return;
+        await TaskService.UpdateAsync(Id, new UpdateTaskRequest(_task.Name, _editedDescription, _task.ProjectId ?? 0));
+        _showDescriptionModal = false;
+        await LoadTask();
+    }
+
+    // === STATUS CYCLING ===
+    private async Task CycleTaskStatus()
+    {
+        if (_task == null) return;
+        var idx = Array.IndexOf(_statusCycle, _task.Status);
+        var next = _statusCycle[(idx + 1) % _statusCycle.Length];
+        await TaskService.SetStatusAsync(Id, next);
+        await LoadTask();
+    }
+
+    // === MAIN TASK EDIT / DELETE ===
+    private void OpenEditTask()
+    {
+        _selectedSubtask = _task;
+        _isDeletingMainTask = false;
+        _showEditSubtaskDialog = true;
+    }
+
+    private void OpenDeleteTask()
+    {
+        _selectedSubtask = _task;
+        _isDeletingMainTask = true;
+        _showDeleteSubtaskDialog = true;
     }
 
     // === SUBTASK CRUD ===
@@ -142,6 +238,7 @@
     private void HandleEditSubtask(TaskDto subtask)
     {
         _selectedSubtask = subtask;
+        _isDeletingMainTask = false;
         _showEditSubtaskDialog = true;
     }
 
@@ -154,12 +251,16 @@
     private async Task HandleSubtaskUpdated(TaskDto subtask)
     {
         CloseEditSubtask();
-        if (_subtaskGrid != null) await _subtaskGrid.RefreshList();
+        if (_isDeletingMainTask)
+            await LoadTask();
+        else if (_subtaskGrid != null)
+            await _subtaskGrid.RefreshList();
     }
 
     private void HandleDeleteSubtask(TaskDto subtask)
     {
         _selectedSubtask = subtask;
+        _isDeletingMainTask = false;
         _showDeleteSubtaskDialog = true;
     }
 
@@ -167,6 +268,7 @@
     {
         _showDeleteSubtaskDialog = false;
         _selectedSubtask = null;
+        _isDeletingMainTask = false;
     }
 
     private async Task HandleDeleteSubtaskConfirmed()
@@ -175,7 +277,38 @@
         {
             await TaskService.DeleteAsync(_selectedSubtask.Id);
         }
-        CloseDeleteSubtask();
+
+        if (_isDeletingMainTask)
+        {
+            CloseDeleteSubtask();
+            await NavigateBack();
+        }
+        else
+        {
+            CloseDeleteSubtask();
+            if (_subtaskGrid != null) await _subtaskGrid.RefreshList();
+        }
+    }
+
+    private async Task HandleSubtaskStatusChange((TaskDto subtask, TaskState newStatus) args)
+    {
+        await TaskService.SetStatusAsync(args.subtask.Id, args.newStatus);
         if (_subtaskGrid != null) await _subtaskGrid.RefreshList();
     }
+
+    private static string GetPillClass(TaskState status) => status switch
+    {
+        TaskState.Active    => "active",
+        TaskState.Completed => "completed",
+        TaskState.OnHold    => "onhold",
+        _                   => "inactive"
+    };
+
+    private static string GetStatusLabel(TaskState status) => status switch
+    {
+        TaskState.Active    => "Active",
+        TaskState.Completed => "Completed",
+        TaskState.OnHold    => "On Hold",
+        _                   => "Inactive"
+    };
 }

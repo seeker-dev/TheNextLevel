@@ -1,20 +1,18 @@
 @using TheNextLevel.Presentation.Components.Cards
 @inject ITaskService TaskService
 
-<div class="subtask-grid-header controls-container">
-    <h3>Subtasks</h3>
-</div>
-
 <VirtualizedList TItem="TaskDto"
                  ItemsProvider="LoadSubtasksProvider"
-                 WrapperClass="task-grid"
+                 WrapperClass="subtask-list"
                  EmptyMessage="No subtasks found"
                  @ref="_list">
     <ItemTemplate Context="task">
-        <TaskCard Task="task"
-                  Project="null"
-                  OnEditRequested="t => OnEditRequested.InvokeAsync(t)"
-                  OnDeleteRequested="t => OnDeleteRequested.InvokeAsync(t)" />
+        <SubtaskRow Task="task"
+                    ShowDescription="true"
+                    ShowCheckbox="true"
+                    OnEditRequested="t => OnEditRequested.InvokeAsync(t)"
+                    OnDeleteRequested="t => OnDeleteRequested.InvokeAsync(t)"
+                    OnStatusChangeRequested="pair => OnStatusChangeRequested.InvokeAsync(pair)" />
     </ItemTemplate>
 </VirtualizedList>
 
@@ -22,6 +20,8 @@
     [Parameter] public TaskDto? ParentTask { get; set; }
     [Parameter] public EventCallback<TaskDto> OnEditRequested { get; set; }
     [Parameter] public EventCallback<TaskDto> OnDeleteRequested { get; set; }
+    [Parameter] public EventCallback<(TaskDto, TaskState)> OnStatusChangeRequested { get; set; }
+    [Parameter] public EventCallback<int> OnCountChanged { get; set; }
 
     private VirtualizedList<TaskDto>? _list;
 
@@ -31,6 +31,10 @@
             return new ItemsProviderResult<TaskDto>([], 0);
 
         var result = await TaskService.ListSubtasksByParentIdAsync(ParentTask.Id, request.StartIndex, request.Count);
+
+        if (OnCountChanged.HasDelegate)
+            await OnCountChanged.InvokeAsync(result.TotalCount);
+
         return new ItemsProviderResult<TaskDto>(result.Items, result.TotalCount);
     }
 

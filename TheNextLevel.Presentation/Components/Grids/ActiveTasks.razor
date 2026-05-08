@@ -18,6 +18,14 @@ else
         <div class="loading-indicator">Loading tasks...</div>
     }
 
+    <div class="mobile-page-header">
+        <span class="mobile-page-title">Active Tasks</span>
+        @if (_totalCount > 0)
+        {
+            <span class="mobile-task-total">@_totalCount tasks</span>
+        }
+    </div>
+
     <div class="@(_totalCount > 0 ? "task-grid" : "")" tabindex="-1">
         <Virtualize ItemsProvider="ActiveTasksProvider" @ref="_activeTasksList" Context="task">
             <ItemContent>

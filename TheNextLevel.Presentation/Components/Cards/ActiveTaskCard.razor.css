@@ -140,3 +140,57 @@
     from { transform: translateX(0); }
     to   { transform: translateX(-50%); }
 }
+
+@media (max-width: 768px) {
+    .task-card:hover {
+        border-color: rgba(139, 69, 19, 0.2);
+    }
+
+    .task-card:active {
+        border-color: rgba(139, 69, 19, 0.4);
+    }
+
+    .task-content {
+        padding: 16px 16px 16px 20px;
+    }
+
+    .task-header {
+        margin-bottom: 0;
+    }
+
+    .task-title {
+        font-size: 0.9375rem;
+        margin-bottom: 10px;
+    }
+
+    .task-card:hover .task-title {
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .task-card:active .task-title {
+        color: #cd853f;
+    }
+
+    .task-metadata {
+        gap: 8px;
+        font-size: 0.6875rem;
+    }
+
+    .metadata-icon {
+        width: 11px;
+        height: 11px;
+    }
+
+    .description-banner {
+        height: 34px;
+    }
+
+    .description-text {
+        font-size: 0.6875rem;
+        padding-right: 40px;
+    }
+
+    .menu-btn {
+        touch-action: manipulation;
+    }
+}

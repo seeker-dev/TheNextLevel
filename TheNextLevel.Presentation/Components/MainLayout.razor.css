@@ -10,6 +10,13 @@
     min-height: 100vh;
 }
 
+@media (max-width: 768px) {
+    .app-content {
+        margin-left: 0;
+        padding-bottom: 64px;
+    }
+}
+
 .error-boundary {
     padding: 40px 24px;
     text-align: center;

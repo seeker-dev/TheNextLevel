@@ -158,9 +158,14 @@
         display: none;
     }
 
+    .home-nav {
+        display: none;
+    }
+
     .home-content-wrapper {
         height: auto;
         overflow-y: visible;
+        padding-bottom: 64px;
     }
 
     .home-main-content {

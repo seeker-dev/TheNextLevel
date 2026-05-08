@@ -1,6 +1,7 @@
 @inherits LayoutComponentBase
 @implements IDisposable
 @inject NavigationManager Navigation
+@using TheNextLevel.Presentation.Components.Layout
 
 <div class="home-layout">
     <aside class="home-sidebar">
@@ -43,6 +44,7 @@
             @Body
         </main>
     </div>
+    <BottomNav />
 </div>
 
 @code {

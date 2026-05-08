@@ -1,0 +1,64 @@
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: linear-gradient(0deg, #0d0606 0%, rgba(10, 10, 10, 0.97) 100%);
+    border-top: 1px solid rgba(139, 69, 19, 0.3);
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    justify-content: space-around;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .bottom-nav {
+        display: flex;
+    }
+}
+
+.bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.bottom-nav-icon {
+    width: 22px;
+    height: 22px;
+    color: rgba(255, 255, 255, 0.3);
+    transition: color 0.2s;
+}
+
+.bottom-nav-label {
+    font-size: 0.5625rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+    transition: color 0.2s;
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+    color: rgba(205, 133, 63, 0.95);
+}
+
+.bottom-nav-item.active .bottom-nav-label {
+    color: rgba(205, 133, 63, 0.95);
+}
+
+.bottom-nav-item:active .bottom-nav-icon {
+    color: rgba(255, 255, 255, 0.7);
+}

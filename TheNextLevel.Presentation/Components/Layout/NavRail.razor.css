@@ -86,3 +86,9 @@
 .nav-rail:hover .nav-label {
     opacity: 1;
 }
+
+@media (max-width: 768px) {
+    .nav-rail {
+        display: none;
+    }
+}

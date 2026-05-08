@@ -130,9 +130,9 @@ h5, h6 {
    INPUTS & FORMS
    ============================================ */
 
-/* Form elements don't inherit font-family from body in most browsers */
+/* Form/interactive elements don't inherit font-family from body in most browsers */
 
-input, textarea, select {
+input, textarea, select, button {
     font-family: 'Montserrat', sans-serif;
     font-weight: 400;
 }

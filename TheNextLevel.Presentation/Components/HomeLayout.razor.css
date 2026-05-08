@@ -117,58 +117,79 @@
     padding: 48px 40px;
 }
 
-@media (max-width: 968px) {
+.mobile-header {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .home-sidebar {
+        display: none;
+    }
+
+    .mobile-header {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 50;
+        height: 72px;
+        background: linear-gradient(180deg, #120808 0%, rgba(10,10,10,0.95) 100%);
+        border-bottom: 1px solid rgba(139, 69, 19, 0.2);
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    .mobile-logo {
+        font-size: 1.25rem;
+        font-weight: 300;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.95);
+    }
+
+    .mobile-header-right {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .mobile-header-date {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-size: 0.6875rem;
+        color: rgba(205, 133, 63, 0.6);
+        letter-spacing: 0.04em;
+        line-height: 1.4;
+    }
+
+    .mobile-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #8B0000, #A0522D);
+        border: 1px solid rgba(139, 69, 19, 0.4);
+        flex-shrink: 0;
+    }
+
     .home-layout {
         flex-direction: column;
-        overflow: auto;
-    }
-
-    .home-sidebar {
-        width: 100%;
-        height: auto;
-        min-height: auto;
-        border-right: none;
-        border-bottom: 1px solid rgba(139, 69, 19, 0.15);
-        padding: 32px 24px;
-    }
-
-    .home-logo {
-        margin-bottom: 32px;
-    }
-
-    .home-logo-text {
-        font-size: 1.5rem;
-    }
-
-    .home-nav {
-        position: static;
-        transform: none;
-        flex-direction: row;
-        justify-content: center;
-        gap: 12px;
-    }
-
-    .home-nav-btn,
-    .home-nav-btn:hover,
-    .home-nav-btn.active:hover {
-        width: 48px;
-    }
-
-    .home-nav-label {
-        display: none;
-    }
-
-    .home-nav {
-        display: none;
     }
 
     .home-content-wrapper {
-        height: auto;
-        overflow-y: visible;
-        padding-bottom: 64px;
+        padding-top: 72px;
+        height: 100vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
 
     .home-main-content {
-        padding: 32px 20px;
+        padding: 24px 16px 80px;
+        max-width: 100%;
     }
 }

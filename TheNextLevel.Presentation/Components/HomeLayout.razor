@@ -4,6 +4,17 @@
 @using TheNextLevel.Presentation.Components.Layout
 
 <div class="home-layout">
+    <div class="mobile-header">
+        <span class="mobile-logo">Opus</span>
+        <div class="mobile-header-right">
+            <div class="mobile-header-date">
+                <span>@DateTime.Now.ToString("ddd")</span>
+                <span>@DateTime.Now.ToString("MMM d")</span>
+            </div>
+            <div class="mobile-avatar"></div>
+        </div>
+    </div>
+
     <aside class="home-sidebar">
         <div class="home-logo">
             <div class="home-logo-text">Opus</div>

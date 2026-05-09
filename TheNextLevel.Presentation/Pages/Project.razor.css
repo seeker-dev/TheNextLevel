@@ -265,9 +265,9 @@
 .hero-more-btn:active { color: #fff; }
 
 .more-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
+    position: fixed;
+    top: 96px;   /* 52px top-bar padding + 36px button + 8px gap */
+    right: 20px;
     min-width: 152px;
     background: #1a1a1a;
     border: 1px solid rgba(139,69,19,0.2);

@@ -13,7 +13,7 @@
 @inject ITaskService TaskService
 @inject IJSRuntime JSRuntime
 
-<div class="content-wrapper">
+<main class="main-content">
 
     <div class="project-header">
         <div class="header-top-bar">
@@ -144,7 +144,7 @@
                 OnDeleteRequested="HandleDeleteTask" />
         </div>
     }
-</div>
+</main>
 
 <EditModal
     Item="@_project"

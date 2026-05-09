@@ -1,14 +1,3 @@
-/* ═══ Content Wrapper ════════════════════════════════════════════ */
-.content-wrapper {
-    flex: 1;
-    height: 100vh;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(139,69,19,0.2) transparent;
-}
-.content-wrapper::-webkit-scrollbar { width: 4px; }
-.content-wrapper::-webkit-scrollbar-thumb { background: rgba(139,69,19,0.2); border-radius: 2px; }
-
 /* ═══ Gradient Hero ══════════════════════════════════════════════ */
 .project-header {
     position: relative;
@@ -26,6 +15,10 @@
     -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
             mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
     overflow: hidden;
+    width: calc(100% + 60px);
+    margin-left: -30px;
+    margin-right: -30px;
+    margin-top: -30px;
 }
 
 .project-header::after {
@@ -43,7 +36,8 @@
     justify-content: space-between;
     padding: 28px 44px;
     flex-shrink: 0;
-    z-index: 2;
+    position: relative;
+    z-index: 3;
 }
 
 .back-btn {
@@ -107,7 +101,7 @@
 /* ── Title block ── */
 .project-title-block {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     padding: 0 44px;
 }
 
@@ -131,11 +125,32 @@
     text-shadow: 0 1px 8px rgba(0,0,0,0.4);
 }
 
+/* ── Loading / error states ── */
+.loading-text {
+    font-size: 2rem;
+    font-weight: 300;
+    color: rgba(205,133,63,0.6);
+    font-style: italic;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: #ff6b6b;
+    background: rgba(220,53,69,0.1);
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: 1px solid rgba(220,53,69,0.3);
+}
+
 /* ═══ Dark Content Body ══════════════════════════════════════════ */
 .content-body {
     background: #0a0a0a;
     padding: 40px 44px 60px;
     margin-top: -2px;
+    width: calc(100% + 60px);
+    margin-left: -30px;
+    margin-right: -30px;
 }
 
 /* ── Section header ── */
@@ -219,24 +234,6 @@
     background: rgba(205,133,63,0.06);
 }
 
-/* ── Loading / error states ── */
-.loading-text {
-    font-size: 2rem;
-    font-weight: 300;
-    color: rgba(205,133,63,0.6);
-    font-style: italic;
-}
-
-.error-message {
-    font-size: 1.1rem;
-    font-weight: 400;
-    color: #ff6b6b;
-    background: rgba(220,53,69,0.1);
-    padding: 12px 20px;
-    border-radius: 8px;
-    border: 1px solid rgba(220,53,69,0.3);
-}
-
 /* ═══ More menu (desktop: hidden) ════════════════════════════════ */
 .hero-more-wrap { display: none; position: relative; }
 
@@ -266,7 +263,7 @@
 
 .more-dropdown {
     position: fixed;
-    top: 96px;   /* 52px top-bar padding + 36px button + 8px gap */
+    top: 96px;
     right: 20px;
     min-width: 152px;
     background: #1a1a1a;
@@ -342,10 +339,23 @@
 
 /* ═══ Tablet (≤ 768px) ═══════════════════════════════════════════ */
 @media (max-width: 768px) {
+    .project-header {
+        width: calc(100% + 40px);
+        margin-left: -20px;
+        margin-right: -20px;
+        margin-top: -20px;
+    }
+
     .header-top-bar { padding: 20px 28px; }
     .project-title-block { padding: 0 28px; }
     .project-name { font-size: 2.25rem; }
-    .content-body { padding: 32px 28px 48px; }
+
+    .content-body {
+        padding: 32px 28px 48px;
+        width: calc(100% + 40px);
+        margin-left: -20px;
+        margin-right: -20px;
+    }
 }
 
 /* ═══ Mobile (≤ 480px) ═══════════════════════════════════════════ */
@@ -353,7 +363,10 @@
     .project-header {
         height: 260px;
         min-height: unset;
-        position: relative;
+        width: calc(100% + 30px);
+        margin-left: -15px;
+        margin-right: -15px;
+        margin-top: -15px;
         -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
                 mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
     }
@@ -374,9 +387,19 @@
     .project-name { font-size: 2rem; }
     .project-desc { font-size: 0.8rem; }
 
-    .stats-band { display: flex; }
+    .stats-band {
+        display: flex;
+        width: calc(100% + 30px);
+        margin-left: -15px;
+        margin-right: -15px;
+    }
 
-    .content-body { padding: 24px 16px 16px; }
+    .content-body {
+        padding: 24px 16px 16px;
+        width: calc(100% + 30px);
+        margin-left: -15px;
+        margin-right: -15px;
+    }
 
     .filter-bar {
         overflow-x: auto;

@@ -12,9 +12,19 @@
         rgba(120,  0,  40, 0.80) 22%,
         rgba( 80,  0,  30, 0.75) 50%,
         rgba( 10,  4,   8, 0.98) 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
-            mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
     overflow: hidden;
+}
+
+.task-header::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(to bottom, transparent, #0a0a0a);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .task-header::after {

@@ -8,6 +8,7 @@
     flex: 1;
     margin-left: 48px;
     min-height: 100vh;
+    min-width: 0;
 }
 
 @media (max-width: 768px) {

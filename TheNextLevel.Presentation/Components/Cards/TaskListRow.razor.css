@@ -219,13 +219,119 @@
     color: rgba(255, 255, 255, 0.3);
 }
 
+/* ─── Task-top wrapper — transparent to flex on desktop ─────── */
+.task-top {
+    display: contents;
+}
+
+/* ─── Mobile-only menu button ───────────────────────────────── */
+.task-menu-btn--always {
+    display: none;
+}
+
+/* ─── Mobile description (hidden on desktop) ────────────────── */
+.description-scroll--mobile {
+    display: none;
+}
+
 /* ─── Responsive ────────────────────────────────────────────── */
 @media (max-width: 768px) {
-    .task-status {
-        display: none;
-    }
+    .task-accent { width: 3px; }
+    .task-row:hover .task-accent { width: 3px; }
 
     .task-body {
-        padding: 14px 16px;
+        padding: 14px 14px 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+    }
+
+    /* task-top: flex row — text | status | menu btn */
+    .task-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .task-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .task-name {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+    }
+
+    .task-breadcrumb {
+        margin-bottom: 7px;
+        font-size: 0.625rem;
+        letter-spacing: 0.07em;
+    }
+
+    /* Status badge: visible on mobile */
+    .task-status {
+        display: flex;
+        flex-shrink: 0;
+        font-size: 0.5625rem;
+        padding: 4px 10px;
+        gap: 5px;
+        margin-top: 1px;
+    }
+
+    .status-dot {
+        width: 4px;
+        height: 4px;
+    }
+
+    /* Mobile menu button */
+    .task-menu-btn--always {
+        display: flex;
+        align-items: center;
+        padding: 8px;
+        opacity: 1;
+        color: rgba(255, 255, 255, 0.22);
+        touch-action: manipulation;
+        margin: -4px -4px 0 0;
+        border-radius: 4px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .task-menu-btn--always:active { color: rgba(255, 255, 255, 0.6); }
+
+    /* Hide desktop controls (menu + chevron on the right) */
+    .task-controls { display: none; }
+
+    /* Hide desktop description (inside task-text) */
+    .description-scroll--desktop { display: none; }
+
+    /* Mobile description banner below task-top */
+    .description-scroll--mobile {
+        display: block;
+        position: relative;
+        height: 30px;
+        overflow: hidden;
+        margin-top: 10px;
+        border-top: 1px solid rgba(139, 69, 19, 0.1);
+    }
+
+    .description-scroll--mobile .description-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        animation: marquee 22s linear infinite;
+        will-change: transform;
+    }
+
+    .description-scroll--mobile .description-text {
+        font-size: 0.6875rem;
+        color: rgba(255, 255, 255, 0.22);
     }
 }

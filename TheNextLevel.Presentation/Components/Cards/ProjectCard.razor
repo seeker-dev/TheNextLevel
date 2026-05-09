@@ -18,15 +18,21 @@
                     </div>
                 </div>
             </div>
-            <div class="project-stats">
-                <div class="stat-item">
-                    <span class="stat-value active-count">–</span>
-                    <span class="stat-label">Active</span>
-                </div>
-                <div class="stat-divider"></div>
-                <div class="stat-item">
-                    <span class="stat-value">–</span>
-                    <span class="stat-label">Total</span>
+            <div class="project-meta">
+                @if (MissionName != null)
+                {
+                    <span class="project-mission-mobile">@MissionName</span>
+                }
+                <div class="project-stats">
+                    <div class="stat-item">
+                        <span class="stat-value active-count">–</span>
+                        <span class="stat-label">Active</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-value">–</span>
+                        <span class="stat-label">Total</span>
+                    </div>
                 </div>
             </div>
             <button class="project-menu-btn project-menu-btn--always" @onclick:stopPropagation="true">

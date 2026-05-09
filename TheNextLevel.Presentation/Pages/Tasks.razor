@@ -163,6 +163,29 @@
         {
             <span class="results-count">@FilteredTasks.Count shown</span>
         }
+
+        <button class="mobile-filter-btn @(FilterCount > 0 ? "has-filters" : "")"
+                @onclick="OpenFilterSheet"
+                @onclick:stopPropagation="true">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M7 9h10M11 14h2M13 19h-2"/>
+            </svg>
+            Filter
+            @if (FilterCount > 0) { <span class="filter-badge">@FilterCount</span> }
+        </button>
+    </div>
+
+    <div class="pills-row">
+        @foreach (var status in _statusItems)
+        {
+            <button class="pill @(PillIsActive(status.Value) ? "active-pill " + GetPillStatusClass(status.Value) : "")"
+                    @onclick="() => ToggleStatusFilter(status.Value)">
+                @status.Label
+            </button>
+        }
+        <span class="results-pill">
+            @(FilteredTasks.Count < _allTasks.Count ? $"{FilteredTasks.Count} shown" : $"{_allTasks.Count} tasks")
+        </span>
     </div>
 
     <div class="task-list">
@@ -190,6 +213,71 @@
         }
     </div>
 </main>
+
+<div class="filter-sheet-backdrop @(_filterSheetOpen ? "open" : "")" @onclick="CloseFilterSheet"></div>
+<div class="filter-sheet @(_filterSheetOpen ? "open" : "")">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+        <span class="sheet-title">Filter &amp; Sort</span>
+        <button class="sheet-close" @onclick="CloseFilterSheet">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+    <div class="sheet-body">
+        <div class="sheet-section">
+            <div class="sheet-section-label">Mission</div>
+            @foreach (var m in _allMissions)
+            {
+                var sel = _tempSelectedMissionIds.Contains(m.Id);
+                <div class="sheet-option @(sel ? "selected" : "")" @onclick="() => ToggleTempMission(m.Id)">
+                    <div class="sheet-checkbox">
+                        @if (sel)
+                        {
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 13l4 4L19 7"/>
+                            </svg>
+                        }
+                    </div>
+                    <span class="sheet-option-label">@m.Name</span>
+                </div>
+            }
+        </div>
+        <div class="sheet-section">
+            <div class="sheet-section-label">Project</div>
+            @foreach (var p in _allProjects)
+            {
+                var sel = _tempSelectedProjectIds.Contains(p.Id);
+                <div class="sheet-option @(sel ? "selected" : "")" @onclick="() => ToggleTempProject(p.Id)">
+                    <div class="sheet-checkbox">
+                        @if (sel)
+                        {
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 13l4 4L19 7"/>
+                            </svg>
+                        }
+                    </div>
+                    <div class="sheet-swatch" style="background: @GetProjectColor(p.Id)"></div>
+                    <span class="sheet-option-label">@p.Name</span>
+                </div>
+            }
+        </div>
+        <div class="sheet-section">
+            <div class="sheet-section-label">Sort By</div>
+            <div class="sort-options">
+                @foreach (var (val, label) in new[] { ("name", "Name"), ("status", "Status"), ("project", "Project"), ("mission", "Mission") })
+                {
+                    <button class="sort-btn @(_tempSortBy == val ? "active-sort" : "")" @onclick="() => SetTempSort(val)">@label</button>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="sheet-footer">
+        <button class="sheet-clear-btn" @onclick="ClearSheetFilters">Clear</button>
+        <button class="sheet-apply-btn" @onclick="ApplySheetFilters">Apply</button>
+    </div>
+</div>
 
 <NewTaskDialog IsVisible="@_showNewTaskDialog"
                OnResult="HandleTaskCreated"
@@ -227,6 +315,23 @@
     private bool _projectDropdownOpen = false;
 
     private bool _showNewTaskDialog = false;
+
+    private bool _filterSheetOpen = false;
+    private HashSet<int> _tempSelectedMissionIds = new();
+    private HashSet<int> _tempSelectedProjectIds = new();
+    private string _tempSortBy = "name";
+
+    private int FilterCount => _selectedMissionIds.Count + _selectedProjectIds.Count + (_sortBy != "name" ? 1 : 0);
+
+    private bool PillIsActive(TaskState s) => _selectedStatuses.Count == 0 || _selectedStatuses.Contains(s);
+
+    private string GetPillStatusClass(TaskState s) => s switch
+    {
+        TaskState.Active    => "pill-active",
+        TaskState.Completed => "pill-complete",
+        TaskState.OnHold    => "pill-onhold",
+        _                   => ""
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -389,6 +494,45 @@
 
     private void OpenNewTaskDialog() => _showNewTaskDialog = true;
     private void CloseNewTaskDialog() => _showNewTaskDialog = false;
+
+    private void OpenFilterSheet()
+    {
+        _tempSelectedMissionIds = new HashSet<int>(_selectedMissionIds);
+        _tempSelectedProjectIds = new HashSet<int>(_selectedProjectIds);
+        _tempSortBy = _sortBy;
+        _filterSheetOpen = true;
+    }
+
+    private void CloseFilterSheet() => _filterSheetOpen = false;
+
+    private void ApplySheetFilters()
+    {
+        _selectedMissionIds = new HashSet<int>(_tempSelectedMissionIds);
+        _selectedProjectIds = new HashSet<int>(_tempSelectedProjectIds);
+        _sortBy = _tempSortBy;
+        _filterSheetOpen = false;
+    }
+
+    private void ClearSheetFilters()
+    {
+        _tempSelectedMissionIds.Clear();
+        _tempSelectedProjectIds.Clear();
+        _tempSortBy = "name";
+    }
+
+    private void ToggleTempMission(int id)
+    {
+        if (!_tempSelectedMissionIds.Remove(id))
+            _tempSelectedMissionIds.Add(id);
+    }
+
+    private void ToggleTempProject(int id)
+    {
+        if (!_tempSelectedProjectIds.Remove(id))
+            _tempSelectedProjectIds.Add(id);
+    }
+
+    private void SetTempSort(string sort) => _tempSortBy = sort;
 
     private async Task HandleTaskCreated(TaskDto newTask)
     {

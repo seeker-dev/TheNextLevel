@@ -6,27 +6,43 @@
      @onclick="NavigateToDetail">
     <div class="task-accent" style="background: @AccentColor"></div>
     <div class="task-body">
-        <div class="task-text">
-            <div class="task-name">@Task.Name</div>
-            <div class="task-breadcrumb">
-                @Mission?.Name
-                <span class="breadcrumb-sep">›</span>
-                @Project?.Name
-            </div>
-            @if (!string.IsNullOrEmpty(Task.Description))
-            {
-                <div class="description-scroll">
-                    <div class="description-content">
-                        <span class="description-text">@Task.Description</span>
-                        <span class="description-text">@Task.Description</span>
-                    </div>
+        <div class="task-top">
+            <div class="task-text">
+                <div class="task-name">@Task.Name</div>
+                <div class="task-breadcrumb">
+                    @Mission?.Name
+                    <span class="breadcrumb-sep">›</span>
+                    @Project?.Name
                 </div>
-            }
+                @if (!string.IsNullOrEmpty(Task.Description))
+                {
+                    <div class="description-scroll description-scroll--desktop">
+                        <div class="description-content">
+                            <span class="description-text">@Task.Description</span>
+                            <span class="description-text">@Task.Description</span>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="task-status @StatusClass">
+                <div class="status-dot"></div>
+                @StatusLabel
+            </div>
+            <button class="task-menu-btn task-menu-btn--always" title="Task menu" @onclick:stopPropagation="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                </svg>
+            </button>
         </div>
-        <div class="task-status @StatusClass">
-            <div class="status-dot"></div>
-            @StatusLabel
-        </div>
+        @if (!string.IsNullOrEmpty(Task.Description))
+        {
+            <div class="description-scroll description-scroll--mobile">
+                <div class="description-content">
+                    <span class="description-text">@Task.Description</span>
+                    <span class="description-text">@Task.Description</span>
+                </div>
+            </div>
+        }
     </div>
     <div class="task-controls">
         <button class="task-menu-btn" title="Task menu" @onclick:stopPropagation="true">

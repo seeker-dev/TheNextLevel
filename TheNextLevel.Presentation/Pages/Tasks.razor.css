@@ -331,21 +331,361 @@
     letter-spacing: 0.05em;
 }
 
+/* ─── Mobile filter button (hidden on desktop) ─────────────── */
+.mobile-filter-btn {
+    display: none;
+}
+
+/* ─── Status pills row (hidden on desktop) ──────────────────── */
+.pills-row {
+    display: none;
+}
+
+/* ─── Bottom sheet (always in DOM, hidden off-screen) ──────── */
+.filter-sheet-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 80;
+}
+
+.filter-sheet-backdrop.open {
+    display: block;
+}
+
+.filter-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 90;
+    background: #141414;
+    border-top: 1px solid rgba(139, 69, 19, 0.2);
+    border-radius: 12px 12px 0 0;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none;
+}
+
+.filter-sheet.open {
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* ─── Desktop: hide sheet always ──────────────────────────── */
+@media (min-width: 769px) {
+    .filter-sheet,
+    .filter-sheet-backdrop {
+        display: none !important;
+    }
+}
+
 /* ─── Responsive ────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .main-content {
-        padding: 32px 20px;
+        padding: 16px 16px 16px;
+    }
+
+    .page-header {
+        display: none;
     }
 
     .controls-bar {
-        gap: 8px;
-    }
-
-    .controls-sep {
-        display: none;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: rgba(10, 10, 10, 0.97);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        margin-bottom: 0;
+        padding: 12px 0 0;
+        flex-wrap: nowrap;
+        gap: 10px;
     }
 
     .search-wrap {
         max-width: none;
+        flex: 1;
+    }
+
+    .controls-sep,
+    .controls-label,
+    .multi-dropdown,
+    .sort-select,
+    .results-count {
+        display: none;
+    }
+
+    .task-list {
+        padding-top: 12px;
+    }
+
+    /* ── Mobile filter button ──────────────────────────── */
+    .mobile-filter-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 9px 12px;
+        background: rgba(20, 20, 20, 1);
+        border: 1px solid rgba(139, 69, 19, 0.2);
+        border-radius: 4px;
+        color: rgba(255, 255, 255, 0.5);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.2s;
+        touch-action: manipulation;
+    }
+
+    .mobile-filter-btn.has-filters {
+        border-color: rgba(205, 133, 63, 0.5);
+        color: rgba(205, 133, 63, 0.9);
+        background: rgba(205, 133, 63, 0.08);
+    }
+
+    .filter-badge {
+        background: rgba(205, 133, 63, 0.25);
+        color: rgba(205, 133, 63, 0.9);
+        border-radius: 2px;
+        padding: 1px 5px;
+        font-size: 0.625rem;
+        font-weight: 500;
+    }
+
+    /* ── Status pills ──────────────────────────────────── */
+    .pills-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 0 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .pills-row::-webkit-scrollbar {
+        display: none;
+    }
+
+    .pill {
+        padding: 5px 13px;
+        background: transparent;
+        border: 1px solid rgba(139, 69, 19, 0.2);
+        border-radius: 2px;
+        color: rgba(255, 255, 255, 0.4);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.6875rem;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.15s;
+        touch-action: manipulation;
+    }
+
+    .pill.active-pill {
+        border-color: rgba(205, 133, 63, 0.5);
+        color: rgba(205, 133, 63, 0.9);
+        background: rgba(205, 133, 63, 0.08);
+    }
+
+    .pill.active-pill.pill-active {
+        border-color: rgba(94, 160, 100, 0.55);
+        color: rgba(140, 210, 140, 0.9);
+        background: rgba(94, 160, 100, 0.07);
+    }
+
+    .pill.active-pill.pill-complete {
+        border-color: rgba(100, 130, 180, 0.55);
+        color: rgba(150, 180, 230, 0.9);
+        background: rgba(100, 130, 180, 0.07);
+    }
+
+    .pill.active-pill.pill-onhold {
+        border-color: rgba(180, 140, 60, 0.55);
+        color: rgba(220, 180, 100, 0.9);
+        background: rgba(180, 140, 60, 0.07);
+    }
+
+    .results-pill {
+        margin-left: auto;
+        flex-shrink: 0;
+        font-size: 0.6875rem;
+        color: rgba(255, 255, 255, 0.18);
+        letter-spacing: 0.04em;
+        padding-right: 4px;
+    }
+
+    /* ── Bottom sheet ──────────────────────────────────── */
+    .sheet-handle {
+        width: 36px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.12);
+        border-radius: 2px;
+        margin: 14px auto 0;
+    }
+
+    .sheet-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px 12px;
+        border-bottom: 1px solid rgba(139, 69, 19, 0.2);
+    }
+
+    .sheet-title {
+        font-size: 0.6875rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .sheet-close {
+        padding: 4px;
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.35);
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .sheet-body {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        max-height: 55vh;
+        overflow-y: auto;
+    }
+
+    .sheet-section-label {
+        font-size: 0.625rem;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(205, 133, 63, 0.4);
+        margin-bottom: 10px;
+    }
+
+    .sheet-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(139, 69, 19, 0.1);
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .sheet-option:last-child {
+        border-bottom: none;
+    }
+
+    .sheet-checkbox {
+        width: 18px;
+        height: 18px;
+        border: 1px solid rgba(139, 69, 19, 0.4);
+        border-radius: 3px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+    }
+
+    .sheet-option.selected .sheet-checkbox {
+        background: rgba(205, 133, 63, 0.8);
+        border-color: rgba(205, 133, 63, 0.8);
+    }
+
+    .sheet-swatch {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .sheet-option-label {
+        font-size: 0.875rem;
+        font-weight: 300;
+        color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 0.02em;
+    }
+
+    .sheet-option.selected .sheet-option-label {
+        color: rgba(205, 133, 63, 0.9);
+    }
+
+    .sort-options {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .sort-btn {
+        padding: 8px 16px;
+        background: transparent;
+        border: 1px solid rgba(139, 69, 19, 0.2);
+        border-radius: 3px;
+        color: rgba(255, 255, 255, 0.4);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 400;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        touch-action: manipulation;
+        transition: all 0.15s;
+    }
+
+    .sort-btn.active-sort {
+        border-color: rgba(205, 133, 63, 0.5);
+        color: rgba(205, 133, 63, 0.9);
+        background: rgba(205, 133, 63, 0.08);
+    }
+
+    .sheet-footer {
+        padding: 16px 20px;
+        border-top: 1px solid rgba(139, 69, 19, 0.2);
+        display: flex;
+        gap: 10px;
+    }
+
+    .sheet-clear-btn {
+        flex: 1;
+        padding: 12px;
+        background: transparent;
+        border: 1px solid rgba(139, 69, 19, 0.2);
+        border-radius: 4px;
+        color: rgba(255, 255, 255, 0.35);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 400;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        cursor: pointer;
+        touch-action: manipulation;
+    }
+
+    .sheet-apply-btn {
+        flex: 2;
+        padding: 12px;
+        background: linear-gradient(135deg, #8B0000, #A0522D);
+        border: none;
+        border-radius: 4px;
+        color: rgba(255, 255, 255, 0.9);
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        cursor: pointer;
+        touch-action: manipulation;
     }
 }

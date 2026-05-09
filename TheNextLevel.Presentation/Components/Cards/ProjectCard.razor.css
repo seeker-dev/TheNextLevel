@@ -177,9 +177,89 @@
     background: rgba(139, 69, 19, 0.15);
 }
 
+/* Top-row wrapper — transparent to flex layout on desktop */
+.project-top {
+    display: contents;
+}
+
+/* Mobile-only always-visible button */
+.project-menu-btn--always {
+    display: none;
+}
+
+/* Mobile-only description banner */
+.description-scroll--mobile {
+    display: none;
+}
+
 @media (max-width: 768px) {
-    .project-body { flex-wrap: wrap; padding: 20px; gap: 20px; }
-    .project-stats { gap: 20px; }
-    .project-controls { padding: 0 16px; }
-    .chevron { display: none; }
+    .project-accent { width: 3px; }
+    .project-row:hover .project-accent { width: 3px; }
+
+    .project-body {
+        padding: 14px 14px 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+    }
+
+    /* project-top: column so name row is on top, stats row below */
+    .project-top { display: flex; flex-direction: column; gap: 0; }
+
+    /* project-text becomes the name+mission row with menu btn on right */
+    .project-text {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+        flex: unset;
+    }
+
+    .project-name { font-size: 0.9375rem; flex: 1; }
+
+    /* Hide desktop description (inside project-text) */
+    .description-scroll--desktop { display: none; }
+
+    /* Stats: chip style — number + label side by side */
+    .project-stats { gap: 10px; margin-bottom: 12px; flex-shrink: unset; }
+    .stat-item { flex-direction: row; gap: 5px; align-items: center; }
+    .stat-value { font-size: 0.875rem; }
+    .stat-label { font-size: 0.5625rem; }
+    .stat-divider { height: 14px; }
+
+    /* Always-visible mobile menu button */
+    .project-menu-btn--always {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        opacity: 1;
+        flex-shrink: 0;
+        color: rgba(255,255,255,0.22);
+        touch-action: manipulation;
+        margin: -4px -4px 0 0;
+        border-radius: 4px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
+
+    .project-menu-btn--always:active { color: rgba(255,255,255,0.6); }
+
+    .project-controls { display: none; }
+
+    /* Mobile description banner */
+    .description-scroll--mobile {
+        display: block;
+        height: 30px;
+        border-top: 1px solid rgba(139,69,19,0.1);
+        margin-top: 0;
+    }
+
+    .description-scroll--mobile .description-text {
+        font-size: 0.6875rem;
+        color: rgba(255,255,255,0.22);
+    }
 }

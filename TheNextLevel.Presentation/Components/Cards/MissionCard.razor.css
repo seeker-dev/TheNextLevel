@@ -192,9 +192,90 @@
     background: rgba(139, 69, 19, 0.15);
 }
 
+/* Top-row wrapper — transparent to flex layout on desktop */
+.mission-top {
+    display: contents;
+}
+
+/* Mobile-only always-visible button */
+.mission-menu-btn--always {
+    display: none;
+}
+
+/* Mobile-only description banner */
+.description-scroll--mobile {
+    display: none;
+}
+
 @media (max-width: 768px) {
-    .mission-body { flex-wrap: wrap; padding: 20px; gap: 20px; }
-    .mission-stats { gap: 20px; }
-    .mission-controls { padding: 0 16px; }
-    .chevron { display: none; }
+    /* Accent becomes absolute so it doesn't participate in the column layout */
+    .mission-row { position: relative; }
+    .mission-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+
+    /* Body: column, left padding accounts for the 3px absolute accent */
+    .mission-body {
+        padding: 16px 16px 0 20px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+    }
+
+    /* Top row */
+    .mission-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+
+    /* Slightly smaller icon */
+    .mission-icon-wrap { width: 36px; height: 36px; }
+    .mission-icon { width: 16px; height: 16px; }
+
+    /* mission-text: flex:1, name only on mobile */
+    .mission-text { flex: 1; min-width: 0; gap: 0; }
+
+    /* Hide desktop description (inside mission-text) */
+    .description-scroll--desktop { display: none; }
+
+    /* mission-name: mobile sizing */
+    .mission-name { font-size: 0.9375rem; }
+
+    /* Always-visible mobile menu button */
+    .mission-menu-btn--always {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px;
+        opacity: 1;
+        flex-shrink: 0;
+        color: rgba(255,255,255,0.22);
+        touch-action: manipulation;
+        margin: -8px -8px 0 0;
+        border-radius: 4px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
+
+    .mission-menu-btn--always:active { color: rgba(255,255,255,0.6); }
+
+    /* Full-width stats band with negative margins */
+    .mission-stats {
+        margin: 0 -16px 0 -20px;
+        border-top: 1px solid rgba(139,69,19,0.12);
+        border-bottom: 1px solid rgba(139,69,19,0.12);
+        gap: 0;
+        flex-shrink: unset;
+    }
+
+    .stat-item { flex: 1; padding: 10px 0; align-items: center; }
+    .stat-value { font-size: 1.125rem; }
+    .stat-label { font-size: 0.5625rem; }
+    .stat-divider { height: 28px; }
+
+    .mission-controls { display: none; }
+
+    /* Mobile description banner */
+    .description-scroll--mobile { display: block; height: 30px; }
+
+    .description-scroll--mobile .description-text {
+        font-size: 0.6875rem;
+        color: rgba(255,255,255,0.28);
+    }
 }

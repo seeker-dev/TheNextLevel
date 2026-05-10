@@ -30,7 +30,7 @@
                 <textarea @bind="itemDescription" class="opus-textarea" placeholder="Brief description..."></textarea>
             </div>
 
-            @if (Item is TaskDto || Item is ProjectDto)
+            @if (Item is ProjectDto || (Item is TaskDto && !IsSubtask))
             {
                 <ParentSelector
                     @bind-SelectedId="_selectedParentId"
@@ -113,7 +113,7 @@
         {
             if (Item is ProjectDto)
                 _parentItems = await DialogHelper.LoadAllAsync<MissionDto>((skip, take) => MissionService.ListAsync(skip, take, CancellationToken.None), _pageSize);
-            else if (Item is TaskDto)
+            else if (Item is TaskDto && !IsSubtask)
                 _parentItems = await DialogHelper.LoadAllAsync<ProjectDto>((skip, take) => ProjectService.ListAsync(skip, take, CancellationToken.None), _pageSize);
 
             var parent = Item switch
@@ -209,30 +209,28 @@
     private async Task EditTask()
     {
         var task = (TaskDto)Item!;
-        var updateRequest = new UpdateTaskRequest
-        (
-            itemName,
-            itemDescription,
-            selectedParent.Id
-        );
 
-        var result = await TaskService.UpdateAsync(task.Id, updateRequest);
-        if (result is null)
+        if (IsSubtask)
         {
-            // Show error message (not implemented here)
+            var ok = await TaskService.UpdateSubtaskAsync(task.Id, task.ParentTaskId.Value, itemName, itemDescription);
+            if (!ok) return;
+            ForceHideDialog();
+            await OnResult.InvokeAsync(null);
             return;
         }
+
+        var updateRequest = new UpdateTaskRequest(itemName, itemDescription, selectedParent!.Id);
+        var taskResult = await TaskService.UpdateAsync(task.Id, updateRequest);
+        if (taskResult is null) return;
+
         if (selectedParent.Id != task.ProjectId)
         {
-            var result2 = await TaskService.MoveAsync(task.Id, selectedParent.Id);
-            if (!result2)
-            {
-                // Show error message (not implemented here)
-                return;
-            }
+            var moved = await TaskService.MoveAsync(task.Id, selectedParent.Id);
+            if (!moved) return;
         }
+
         ForceHideDialog();
-        await OnResult.InvokeAsync(result);
+        await OnResult.InvokeAsync(taskResult);
     }
 
     public void ShowDialog()
@@ -269,6 +267,7 @@
         _showDiscardConfirmation = false;
     }
 
-    private bool HasSelectedParent => (Item is ProjectDto || Item is TaskDto) && selectedParent is not null;
+    private bool IsSubtask => Item is TaskDto { ParentTaskId: not null };
+    private bool HasSelectedParent => IsSubtask || (Item is ProjectDto || Item is TaskDto) && selectedParent is not null;
     private bool HasValidMission => Item is MissionDto && !string.IsNullOrWhiteSpace(itemName);
 }

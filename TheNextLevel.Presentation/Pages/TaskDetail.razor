@@ -137,11 +137,11 @@ else if (_task != null)
     OnResult="HandleSubtaskCreated"
     ParentTaskId="@_task?.Id" />
 
-<EditTaskDialog
-    Task="@_selectedSubtask"
-    IsVisible="@_showEditSubtaskDialog"
-    OnClose="CloseEditSubtask"
-    OnTaskSaved="HandleSubtaskUpdated" />
+<EditModal
+    Item="@_selectedSubtask"
+    @ref="_editTaskModal"
+    OnResult="HandleSubtaskUpdated"
+    OnCancel="CloseEditSubtask" />
 
 <ConfirmDeleteDialog
     IsVisible="@_showDeleteSubtaskDialog"
@@ -160,9 +160,9 @@ else if (_task != null)
     private string? _errorMessage;
 
     private SubtaskGrid? _subtaskGrid;
+    private EditModal? _editTaskModal;
     private TaskDto? _selectedSubtask;
     private bool _showNewSubtaskDialog;
-    private bool _showEditSubtaskDialog;
     private bool _showDeleteSubtaskDialog;
     private bool _isDeletingMainTask;
 
@@ -243,7 +243,7 @@ else if (_task != null)
     {
         _selectedSubtask = _task;
         _isDeletingMainTask = false;
-        _showEditSubtaskDialog = true;
+        _editTaskModal?.ShowDialog();
     }
 
     private void OpenDeleteTask()
@@ -267,16 +267,16 @@ else if (_task != null)
     {
         _selectedSubtask = subtask;
         _isDeletingMainTask = false;
-        _showEditSubtaskDialog = true;
+        _editTaskModal?.ShowDialog();
     }
 
     private void CloseEditSubtask()
     {
-        _showEditSubtaskDialog = false;
+        _editTaskModal?.HideDialog();
         _selectedSubtask = null;
     }
 
-    private async Task HandleSubtaskUpdated(TaskDto subtask)
+    private async Task HandleSubtaskUpdated(IItemDto? updatedTask)
     {
         CloseEditSubtask();
         if (_isDeletingMainTask)
